@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プレイヤー背景の設定</title>
+  <style>
+    body {
+      width: 220px;
+      padding: 12px 16px;
+      font-family: "Segoe UI", "Yu Gothic UI", sans-serif;
+      font-size: 13px;
+      color: #0f0f0f;
+      margin: 0;
+    }
+    h3 {
+      margin: 0 0 12px 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .option {
+      display: flex;
+      align-items: center;
+      padding: 8px 0;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .option:hover {
+      background-color: #f1f1f1;
+    }
+    .option input {
+      margin: 0 10px 0 0;
+      cursor: pointer;
+    }
+    .option label {
+      cursor: pointer;
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <h3>プレイヤー背景</h3>
+  <div class="option">
+    <input type="radio" name="bgMode" id="modeSolid" value="solid">
+    <label for="modeSolid">単色（薄いグレー）</label>
+  </div>
+  <div class="option">
+    <input type="radio" name="bgMode" id="modeBlur" value="blur">
+    <label for="modeBlur">ブラー（動画のぼかし）</label>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

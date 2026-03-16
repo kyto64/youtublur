@@ -2,7 +2,7 @@
    1. プレイヤー周辺の余白を白にする
 ========================================================= */
 
-/* プレイヤー周辺：純白ではなく、少し落としたグレーに */
+/* プレイヤー周辺：純白ではなく、少し落としたグレーに（単色モード時） */
 .html5-video-player,
 .html5-video-player video,
 #player-full-bleed-container,
@@ -10,6 +10,15 @@
 ytd-player,
 .html5-video-player.fullscreen {
     background-color: #f1f1f1 !important; /* YouTube標準の薄いグレー */
+}
+
+/* ブラーモード時：背景を透明にしてCanvasのブラーが表示されるように */
+.html5-video-player[data-yt-light-bg-mode="blur"],
+.html5-video-player[data-yt-light-bg-mode="blur"] video,
+#player-full-bleed-container:has([data-yt-light-bg-mode="blur"]),
+#player-container:has([data-yt-light-bg-mode="blur"]),
+ytd-player:has([data-yt-light-bg-mode="blur"]) {
+    background-color: transparent !important;
 }
 
 /* 動画プレイヤーに柔らかな影をつけて境界をマイルドにする */
