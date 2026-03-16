@@ -1,0 +1,41 @@
+name: Publish to Chrome Web Store
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'manifest.json'
+      - 'content.js'
+      - 'style.css'
+      - 'popup.html'
+      - 'popup.js'
+      - 'icons/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create zip
+        run: |
+          zip -r extension.zip \
+            manifest.json \
+            content.js \
+            style.css \
+            popup.html \
+            popup.js \
+            icons/
+
+      - name: Upload & Publish to Chrome Web Store
+        uses: mnao305/chrome-extension-upload@v5.0.0
+        with:
+          file-path: extension.zip
+          extension-id: ${{ secrets.CHROME_EXTENSION_ID }}
+          client-id: ${{ secrets.CHROME_CLIENT_ID }}
+          client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
+          refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          publish: true
