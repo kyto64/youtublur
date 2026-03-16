@@ -70,9 +70,22 @@ ytd-searchbox #search-icon-legacy.ytd-searchbox {
     border: 1px solid #cccccc !important;
 }
 
-/* 音声検索ボタン（マイクの背景） */
+/* 音声検索ボタン（マイクの背景とアイコン） */
 ytd-masthead #voice-search-button {
     background-color: #f8f8f8 !important;
+}
+ytd-masthead #voice-search-button,
+ytd-masthead #voice-search-button .yt-spec-button-shape-next__icon,
+ytd-masthead #voice-search-button .ytIconWrapperHost,
+ytd-masthead #voice-search-button .yt-icon-shape {
+    color: #0f0f0f !important;
+}
+ytd-masthead #voice-search-button .yt-icon-shape svg,
+ytd-masthead #voice-search-button .yt-icon-shape svg path,
+ytd-masthead #voice-search-button .ytIconWrapperHost svg,
+ytd-masthead #voice-search-button .ytIconWrapperHost svg path {
+    fill: #0f0f0f !important;
+    color: #0f0f0f !important;
 }
 
 /* =========================================================
@@ -94,11 +107,21 @@ yt-searchbox input {
 .ytSearchboxComponentSearchButtonDark {
     background-color: #f8f8f8 !important;
     border-color: #cccccc !important;
+    color: #0f0f0f !important; /* currentColor 継承用 */
 }
 
 /* 検索ボタン内の虫眼鏡アイコンの色を黒に */
-.ytSearchboxComponentSearchButtonDark svg {
+.ytSearchboxComponentSearchButtonDark svg,
+.ytSearchboxComponentSearchButtonDark .yt-icon-shape svg,
+.ytSearchboxComponentSearchButtonDark .yt-icon-shape svg path {
     fill: #0f0f0f !important;
+    color: #0f0f0f !important;
+}
+
+/* 検索候補ドロップダウンをライトモードに */
+.ytSearchboxComponentSuggestionsContainerDark {
+    background-color: #ffffff !important;
+    border: 1px solid #e0e0e0 !important;
     color: #0f0f0f !important;
 }
 
@@ -113,7 +136,32 @@ ytd-masthead button yt-icon {
     color: #0f0f0f !important;
 }
 
+/* 右側ボタン群（作成＋、ベル、アカウント）用：currentColor 継承のため親に color を設定 */
+/* ※作成・ベルは yt-icon ではなく yt-icon-shape / ytIconWrapperHost を使用 */
+ytd-masthead #end,
+ytd-masthead #buttons,
+ytd-masthead #buttons ytd-button-renderer,
+ytd-masthead #buttons ytd-notification-topbar-button-renderer,
+ytd-masthead #buttons button,
+ytd-masthead #buttons .yt-spec-button-shape-next__icon,
+ytd-masthead #buttons .yt-spec-icon-badge-shape,
+ytd-masthead #buttons .yt-spec-icon-badge-shape__icon,
+ytd-masthead #buttons .ytIconWrapperHost,
+ytd-masthead #buttons .yt-icon-shape {
+    color: #0f0f0f !important;
+}
+
+/* 右側ボタンのアイコン（作成・ベル）を明示的に黒に - yt-icon-shape 経由の SVG */
+ytd-masthead #buttons .yt-icon-shape svg,
+ytd-masthead #buttons .yt-icon-shape svg path,
+ytd-masthead #buttons .ytIconWrapperHost svg,
+ytd-masthead #buttons .ytIconWrapperHost svg path {
+    fill: #0f0f0f !important;
+    color: #0f0f0f !important;
+}
+
 /* ※ただし、YouTubeロゴの赤い再生マークが黒くならないように除外 */
-ytd-masthead yt-icon svg path[fill="#FF0000"] {
+ytd-masthead yt-icon svg path[fill="#FF0000"],
+ytd-masthead yt-icon svg path[fill="#FF0033"] {
     fill: #FF0000 !important;
 }
