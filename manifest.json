@@ -1,12 +1,22 @@
 {
   "manifest_version": 3,
   "name": "youtublur",
-  "version": "2.0",
+  "version": "1.0",
   "description": "YouTubeを、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を。",
   "permissions": ["storage", "activeTab"],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "youtublur"
+    "default_title": "youtublur",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   },
   "content_scripts": [
     {
