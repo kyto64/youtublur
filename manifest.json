@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Light Player Background",
+  "version": "1.0",
+  "description": "YouTubeのプレイヤー背景を白に変更します",
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "css": ["style.css"]
+    }
+  ]
+}
