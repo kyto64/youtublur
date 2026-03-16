@@ -1,12 +1,12 @@
 {
   "manifest_version": 3,
-  "name": "YouTube Light Player Background",
-  "version": "1.1",
-  "description": "YouTubeのプレイヤー背景を白に変更します",
+  "name": "youtublur",
+  "version": "2.0",
+  "description": "YouTubeを、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を。",
   "permissions": ["storage", "activeTab"],
   "action": {
     "default_popup": "popup.html",
-    "default_title": "プレイヤー背景の設定"
+    "default_title": "youtublur"
   },
   "content_scripts": [
     {

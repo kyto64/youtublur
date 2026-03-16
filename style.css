@@ -1,15 +1,15 @@
 /* =========================================================
-   1. プレイヤー周辺の余白を白にする
+   youtublur - プレイヤー背景スタイル
 ========================================================= */
 
-/* プレイヤー周辺：純白ではなく、少し落としたグレーに（単色モード時） */
+/* 単色モード時：薄いグレーで落ち着いた背景に */
 .html5-video-player,
 .html5-video-player video,
 #player-full-bleed-container,
 #player-container,
 ytd-player,
 .html5-video-player.fullscreen {
-    background-color: #f1f1f1 !important; /* YouTube標準の薄いグレー */
+    background-color: #f1f1f1 !important;
 }
 
 /* ブラーモード時：背景を透明にしてCanvasのブラーが表示されるように */
@@ -24,153 +24,4 @@ ytd-player:has([data-yt-light-bg-mode="blur"]) {
 /* 動画プレイヤーに柔らかな影をつけて境界をマイルドにする */
 #player-container-inner {
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.05) !important;
-}
-
-/* ヘッダーとの境界に薄い線を入れ、立体感を出す */
-ytd-masthead {
-    background-color: #ffffff !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.1) !important;
-}
-
-/* 検索ボックスも背景になじむように少しだけ調整 */
-.ytSearchboxComponentInputBoxDark {
-    background-color: #ffffff !important;
-    border-color: #e0e0e0 !important;
-}
-
-/* =========================================================
-   2. ヘッダー全体の背景と変数をライトモードに強制
-========================================================= */
-ytd-masthead {
-    background-color: #ffffff !important;
-    --yt-spec-base-background: #ffffff !important;
-    --yt-spec-text-primary: #0f0f0f !important;
-    --yt-spec-text-secondary: #606060 !important;
-    --yt-spec-icon-inactive: #0f0f0f !important;
-    --yt-spec-icon-active-other: #0f0f0f !important;
-}
-
-/* --- YouTubeロゴ --- */
-/* ロゴ文字の色を黒に (赤の再生マークは維持) */
-ytd-topbar-logo-renderer yt-icon svg g path[fill="#fff"],
-ytd-topbar-logo-renderer yt-icon svg g path[fill="#FFFFFF"] {
-    fill: #212121 !important;
-}
-
-/* =========================================================
-   3. 検索ボックス周辺のスタイル修正
-========================================================= */
-/* 検索ボックスのコンテナ（枠線と背景） */
-ytd-searchbox #container.ytd-searchbox {
-    background-color: #ffffff !important;
-    border: 1px solid #cccccc !important;
-    border-right: none !important; /* 検索ボタンとの繋ぎ目を綺麗にするため */
-    box-shadow: none !important;
-}
-
-/* 検索入力テキスト */
-ytd-searchbox input {
-    color: #0f0f0f !important;
-}
-
-/* 検索ボタン（虫眼鏡の枠と背景） */
-ytd-searchbox #search-icon-legacy.ytd-searchbox {
-    background-color: #f8f8f8 !important;
-    border: 1px solid #cccccc !important;
-}
-
-/* 音声検索ボタン（マイクの背景とアイコン） */
-ytd-masthead #voice-search-button {
-    background-color: #f8f8f8 !important;
-}
-ytd-masthead #voice-search-button,
-ytd-masthead #voice-search-button .yt-spec-button-shape-next__icon,
-ytd-masthead #voice-search-button .ytIconWrapperHost,
-ytd-masthead #voice-search-button .yt-icon-shape {
-    color: #0f0f0f !important;
-}
-ytd-masthead #voice-search-button .yt-icon-shape svg,
-ytd-masthead #voice-search-button .yt-icon-shape svg path,
-ytd-masthead #voice-search-button .ytIconWrapperHost svg,
-ytd-masthead #voice-search-button .ytIconWrapperHost svg path {
-    fill: #0f0f0f !important;
-    color: #0f0f0f !important;
-}
-
-/* =========================================================
-   検索ボックス周辺のスタイル修正（新DOM構造対応版）
-========================================================= */
-
-/* 検索ボックスの入力エリア（枠線と背景） */
-.ytSearchboxComponentInputBoxDark {
-    background-color: #ffffff !important;
-    border-color: #cccccc !important;
-}
-
-/* 検索ボックス内の入力テキスト */
-yt-searchbox input {
-    color: #0f0f0f !important;
-}
-
-/* 検索ボタン（虫眼鏡アイコンの背景と枠） */
-.ytSearchboxComponentSearchButtonDark {
-    background-color: #f8f8f8 !important;
-    border-color: #cccccc !important;
-    color: #0f0f0f !important; /* currentColor 継承用 */
-}
-
-/* 検索ボタン内の虫眼鏡アイコンの色を黒に */
-.ytSearchboxComponentSearchButtonDark svg,
-.ytSearchboxComponentSearchButtonDark .yt-icon-shape svg,
-.ytSearchboxComponentSearchButtonDark .yt-icon-shape svg path {
-    fill: #0f0f0f !important;
-    color: #0f0f0f !important;
-}
-
-/* 検索候補ドロップダウンをライトモードに */
-.ytSearchboxComponentSuggestionsContainerDark {
-    background-color: #ffffff !important;
-    border: 1px solid #e0e0e0 !important;
-    color: #0f0f0f !important;
-}
-
-/* =========================================================
-   4. 消えているアイコン群（虫眼鏡、マイク、右側のボタン）を黒に
-========================================================= */
-/* SVGアイコンの塗りつぶし色をライトモード用の黒に強制 */
-ytd-masthead .yt-icon-container svg,
-ytd-masthead yt-icon svg,
-ytd-masthead button yt-icon {
-    fill: #0f0f0f !important;
-    color: #0f0f0f !important;
-}
-
-/* 右側ボタン群（作成＋、ベル、アカウント）用：currentColor 継承のため親に color を設定 */
-/* ※作成・ベルは yt-icon ではなく yt-icon-shape / ytIconWrapperHost を使用 */
-ytd-masthead #end,
-ytd-masthead #buttons,
-ytd-masthead #buttons ytd-button-renderer,
-ytd-masthead #buttons ytd-notification-topbar-button-renderer,
-ytd-masthead #buttons button,
-ytd-masthead #buttons .yt-spec-button-shape-next__icon,
-ytd-masthead #buttons .yt-spec-icon-badge-shape,
-ytd-masthead #buttons .yt-spec-icon-badge-shape__icon,
-ytd-masthead #buttons .ytIconWrapperHost,
-ytd-masthead #buttons .yt-icon-shape {
-    color: #0f0f0f !important;
-}
-
-/* 右側ボタンのアイコン（作成・ベル）を明示的に黒に - yt-icon-shape 経由の SVG */
-ytd-masthead #buttons .yt-icon-shape svg,
-ytd-masthead #buttons .yt-icon-shape svg path,
-ytd-masthead #buttons .ytIconWrapperHost svg,
-ytd-masthead #buttons .ytIconWrapperHost svg path {
-    fill: #0f0f0f !important;
-    color: #0f0f0f !important;
-}
-
-/* ※ただし、YouTubeロゴの赤い再生マークが黒くならないように除外 */
-ytd-masthead yt-icon svg path[fill="#FF0000"],
-ytd-masthead yt-icon svg path[fill="#FF0033"] {
-    fill: #FF0000 !important;
-}
+}
