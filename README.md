@@ -10,28 +10,42 @@ YouTubeを、もっと目に優しく。動画のブラー背景でやわらか�
 
 ## インストール方法
 
-1. このフォルダをダウンロードまたはクローンする
-2. Chromeで `chrome://extensions/` を開く
-3. 右上の「デベロッパーモード」をONにする
-4. 「パッケージ化されていない拡張機能を読み込む」をクリック
-5. このプロジェクトのフォルダを選択する
+1. このリポジトリをダウンロードまたはクローンする
+2. 依存関係のインストール: `npm ci`
+3. Chromeで `chrome://extensions/` を開く
+4. 右上の「デベロッパーモード」をONにする
+5. 「パッケージ化されていない拡張機能を読み込む」をクリック
+6. このプロジェクトのフォルダを選択する
 
 ## ファイル構成
 
 ```
 youtublur/
-├── manifest.json   # 拡張機能の設定
-├── style.css       # YouTube用のスタイル定義
-├── content.js      # プレイヤー検出・ブラー描画
-├── popup.html      # モード切替UI
-├── popup.js        # 設定保存
-├── icons/          # アイコン画像
-└── README.md       # このファイル
+├── .github/workflows/ # CI設定（テスト・Lint）
+├── manifest.json      # 拡張機能の設定
+├── package.json       # プロジェクト設定・スクリプト
+├── vite.config.ts     # Vite+ (テスト用) 設定
+├── style.css          # YouTube用のスタイル定義
+├── content.js         # プレイヤー検出・ブラー描画
+├── content.test.js    # content.jsのテスト
+├── popup.html         # モード切替UI
+├── popup.js           # 設定保存
+├── popup.test.js      # popup.jsのテスト
+├── icons/             # アイコン画像
+└── README.md          # このファイル
 ```
 
 ## 使い方
 
 拡張機能アイコンをクリックし、「単色」または「ブラー」を選択してください。設定は自動保存され、複数デバイス間で同期されます。
+
+## 開発とテスト
+
+本プロジェクトは **Vite+** を用いてテスト・Lintを行っています。
+- **テストの実行**: `npm test` または `vp test`
+- **Lintの実行**: `vp lint`
+
+また、`master` ブランチへのプッシュやPR作成時に、GitHub Actions（CI）によって自動的にテストとLintが実行されます。
 
 ## 対応ブラウザ
 
@@ -39,4 +53,5 @@ youtublur/
 
 ## バージョン
 
-1.0 - youtublurとしてリリース
+- **1.1** - テスト基盤（Vitest / Vite+）の導入とコードのリファクタリング
+- **1.0** - youtublurとしてリリース

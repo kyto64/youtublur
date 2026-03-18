@@ -195,16 +195,52 @@ function handleResize() {
   }
 }
 
-chrome.storage.sync.get({ [STORAGE_KEY]: 'solid' }, (items) => {
-  currentMode = items[STORAGE_KEY];
-  observePlayer();
-});
+function initExtension() {
+  if (typeof chrome !== 'undefined' && chrome.storage) {
+    chrome.storage.sync.get({ [STORAGE_KEY]: 'solid' }, (items) => {
+      currentMode = items[STORAGE_KEY];
+      observePlayer();
+    });
 
-chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.type === 'BG_MODE_CHANGED') {
-    currentMode = msg.mode;
-    applyMode(msg.mode, getPlayerContainer());
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.type === 'BG_MODE_CHANGED') {
+        currentMode = msg.mode;
+        applyMode(msg.mode, getPlayerContainer());
+      }
+    });
   }
-});
 
-window.addEventListener('resize', handleResize);
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('resize', handleResize);
+  }
+}
+
+initExtension();
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    getPlayerContainer,
+    getVideoElement,
+    createBlurCanvas,
+    drawBlurFrame,
+    resizeCanvas,
+    startBlurLoop,
+    stopBlurLoop,
+    showBlurMode,
+    hideBlurMode,
+    applyMode,
+    initBlurForPlayer,
+    observePlayer,
+    handleResize,
+    initExtension,
+    setMode: (m) => { currentMode = m; },
+    getMode: () => currentMode,
+    resetState: () => {
+      currentMode = 'solid';
+      blurCanvas = null;
+      blurCtx = null;
+      stopBlurLoop();
+      frameCount = 0;
+    }
+  };
+}

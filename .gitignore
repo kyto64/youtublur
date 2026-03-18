@@ -1,0 +1,5 @@
+# 拡張機能のパッケージ
+node_modules
+
+# zip
+*.zip
