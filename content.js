@@ -7,6 +7,8 @@ let blurCanvas = null;
 let blurCtx = null;
 let animationId = null;
 let frameCount = 0;
+/** Parsed body background for letterbox screen blend; set when blur mode starts. */
+let cachedBodyBackgroundRgba = null;
 
 function getPlayerContainer() {
   return document.querySelector('#movie_player') || document.querySelector('.html5-video-player');
@@ -38,6 +40,7 @@ function createBlurCanvas(container) {
     height: 100%;
     z-index: -1;
     pointer-events: none;
+    overflow: hidden;
   `;
 
   const video = getVideoElement(container);
@@ -50,6 +53,49 @@ function createBlurCanvas(container) {
 
   blurCtx = blurCanvas.getContext('2d');
   return blurCanvas;
+}
+
+const FALLBACK_BG = { r: 241, g: 241, b: 241, a: 1 };
+
+function parseCssColorToRgba(input) {
+  if (!input || typeof input !== 'string') return { ...FALLBACK_BG };
+  const s = input.trim();
+
+  const rgbMatch = s.match(
+    /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i
+  );
+  if (rgbMatch) {
+    const r = Math.min(255, parseInt(rgbMatch[1], 10));
+    const g = Math.min(255, parseInt(rgbMatch[2], 10));
+    const b = Math.min(255, parseInt(rgbMatch[3], 10));
+    const a =
+      rgbMatch[4] !== undefined
+        ? Math.min(1, Math.max(0, parseFloat(rgbMatch[4])))
+        : 1;
+    return { r, g, b, a };
+  }
+
+  if (s.startsWith('#')) {
+    const hex = s.slice(1);
+    if (hex.length === 3) {
+      const r = parseInt(hex[0] + hex[0], 16);
+      const g = parseInt(hex[1] + hex[1], 16);
+      const b = parseInt(hex[2] + hex[2], 16);
+      if (![r, g, b].some(Number.isNaN)) return { r, g, b, a: 1 };
+    } else if (hex.length === 6) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      if (![r, g, b].some(Number.isNaN)) return { r, g, b, a: 1 };
+    }
+  }
+
+  return { ...FALLBACK_BG };
+}
+
+function refreshBodyBackgroundCache() {
+  const bgColor = getComputedStyle(document.body).backgroundColor || '#f1f1f1';
+  cachedBodyBackgroundRgba = parseCssColorToRgba(bgColor);
 }
 
 function drawBlurFrame(video, canvas, ctx) {
@@ -81,6 +127,15 @@ function drawBlurFrame(video, canvas, ctx) {
   ctx.filter = `blur(${BLUR_STRENGTH}px)`;
   ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
   ctx.filter = 'none';
+
+  const { r, g, b, a } = cachedBodyBackgroundRgba || FALLBACK_BG;
+
+  // Screen blend: lighten near-black letterbox pixels toward page background without
+  // painting over the whole frame (source-over would replace the blurred video).
+  ctx.globalCompositeOperation = 'screen';
+  ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+  ctx.fillRect(0, 0, cw, ch);
+  ctx.globalCompositeOperation = 'source-over';
 }
 
 function resizeCanvas(container) {
@@ -125,11 +180,13 @@ function showBlurMode(container) {
   blurCanvas.style.display = '';
   blurCanvas.style.visibility = 'visible';
   container.dataset.ytLightBgMode = 'blur';
+  refreshBodyBackgroundCache();
   startBlurLoop(container);
 }
 
 function hideBlurMode(container) {
   stopBlurLoop();
+  cachedBodyBackgroundRgba = null;
   if (blurCanvas) {
     blurCanvas.style.display = 'none';
     blurCanvas.style.visibility = 'hidden';
@@ -222,6 +279,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getPlayerContainer,
     getVideoElement,
     createBlurCanvas,
+    parseCssColorToRgba,
     drawBlurFrame,
     resizeCanvas,
     startBlurLoop,
@@ -239,6 +297,7 @@ if (typeof module !== 'undefined' && module.exports) {
       currentMode = 'solid';
       blurCanvas = null;
       blurCtx = null;
+      cachedBodyBackgroundRgba = null;
       stopBlurLoop();
       frameCount = 0;
     }
