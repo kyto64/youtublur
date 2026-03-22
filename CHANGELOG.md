@@ -1,0 +1,33 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+
+## [1.2.1](https://github.com/kyto64/youtublur/compare/v1.2.0...v1.2.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* grant contents write permission for GitHub Release ([5a4a057](https://github.com/kyto64/youtublur/commit/5a4a0570a601e57d68e522b7492ed95e610c5720))
+
+## 1.2.0 (2026-03-22)
+
+### 🚀 Features & Enhancements
+* **CI/CD Automation:** GitHub Actions CI環境の構築とVite+によるテスト環境の追加 ([919a45b](https://github.com/kyto64/youtublur/commit/919a45b7f2c72ee337ffc17492b106512700ab5a))
+* **Release Pipeline:** 自動リリース用ワークフローの構築。Gitタグ作成時の各種チェック・アーカイブ作成と拡張機能のバージョン自動同期処理を追加 ([20c7da2](https://github.com/kyto64/youtublur/commit/20c7da2480b92022e986d536f85bcd3e08d83b49))
+* **Changelog Generation:** `npm run release` コマンドにより履歴から自動でChangelogを生成・管理する仕組みを導入 ([8c0c31d](https://github.com/kyto64/youtublur/commit/8c0c31d1e19d28f00cac5665ffe158d4a3a073cf))
+
+---
+
+## 1.1.0 (2026-03-18)
+
+### 🌟 Features & Enhancements
+* GitHub Actions CI および Vite+ によるテスト環境の導入
+* Chrome Web Store 自動公開用ワークフローの構築とREADMEの更新
+
+---
+
+## 1.0.0 (2026-03-01)
+
+### 🎉 Initial Release
+* YouTube動画の背景にやわらかいブラー効果を追加する機能の初期実装
+* アイコンの追加およびChrome Web Storeへの初回リリース
