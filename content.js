@@ -7,6 +7,8 @@ let blurCanvas = null;
 let blurCtx = null;
 let animationId = null;
 let frameCount = 0;
+/** Parsed body background for letterbox screen blend; set when blur mode starts. */
+let cachedBodyBackgroundRgba = null;
 
 function getPlayerContainer() {
   return document.querySelector('#movie_player') || document.querySelector('.html5-video-player');
@@ -91,6 +93,11 @@ function parseCssColorToRgba(input) {
   return { ...FALLBACK_BG };
 }
 
+function refreshBodyBackgroundCache() {
+  const bgColor = getComputedStyle(document.body).backgroundColor || '#f1f1f1';
+  cachedBodyBackgroundRgba = parseCssColorToRgba(bgColor);
+}
+
 function drawBlurFrame(video, canvas, ctx) {
   if (!video || !canvas || !ctx || video.readyState < 2) return;
 
@@ -121,8 +128,7 @@ function drawBlurFrame(video, canvas, ctx) {
   ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
   ctx.filter = 'none';
 
-  const bgColor = getComputedStyle(document.body).backgroundColor || '#f1f1f1';
-  const { r, g, b, a } = parseCssColorToRgba(bgColor);
+  const { r, g, b, a } = cachedBodyBackgroundRgba || FALLBACK_BG;
 
   // Screen blend: lighten near-black letterbox pixels toward page background without
   // painting over the whole frame (source-over would replace the blurred video).
@@ -174,11 +180,13 @@ function showBlurMode(container) {
   blurCanvas.style.display = '';
   blurCanvas.style.visibility = 'visible';
   container.dataset.ytLightBgMode = 'blur';
+  refreshBodyBackgroundCache();
   startBlurLoop(container);
 }
 
 function hideBlurMode(container) {
   stopBlurLoop();
+  cachedBodyBackgroundRgba = null;
   if (blurCanvas) {
     blurCanvas.style.display = 'none';
     blurCanvas.style.visibility = 'hidden';
@@ -289,6 +297,7 @@ if (typeof module !== 'undefined' && module.exports) {
       currentMode = 'solid';
       blurCanvas = null;
       blurCtx = null;
+      cachedBodyBackgroundRgba = null;
       stopBlurLoop();
       frameCount = 0;
     }
