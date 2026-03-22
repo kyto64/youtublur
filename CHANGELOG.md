@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.1](https://github.com/kyto64/youtublur/compare/v1.2.0...v1.2.1) (2026-03-22)
+
+
+### Bug Fixes
+
+* grant contents write permission for GitHub Release ([5a4a057](https://github.com/kyto64/youtublur/commit/5a4a0570a601e57d68e522b7492ed95e610c5720))
+
 ## 1.2.0 (2026-03-22)
 
 ### 🚀 Features & Enhancements
