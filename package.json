@@ -5,7 +5,8 @@
   "main": "content.js",
   "scripts": {
     "test": "vp test",
-    "version": "node scripts/sync-version.js && git add manifest.json"
+    "version": "node scripts/sync-version.js && git add manifest.json",
+    "release": "commit-and-tag-version"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,7 @@
   "devDependencies": {
     "@voidzero-dev/vite-plus-core": "^0.1.12",
     "@voidzero-dev/vite-plus-test": "^0.1.12",
+    "commit-and-tag-version": "^12.7.1",
     "jsdom": "^29.0.0",
     "vite-plus": "^0.1.12"
   },
