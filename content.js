@@ -38,6 +38,7 @@ function createBlurCanvas(container) {
     height: 100%;
     z-index: -1;
     pointer-events: none;
+    overflow: hidden;
   `;
 
   const video = getVideoElement(container);
@@ -81,6 +82,16 @@ function drawBlurFrame(video, canvas, ctx) {
   ctx.filter = `blur(${BLUR_STRENGTH}px)`;
   ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
   ctx.filter = 'none';
+
+  // Fill remaining areas with background color to prevent black bars from showing
+  const bgColor = getComputedStyle(document.body).backgroundColor || '#f1f1f1';
+  const bgR = parseInt(bgColor.slice(1, 3), 16) || 241;
+  const bgG = parseInt(bgColor.slice(3, 5), 16) || 241;
+  const bgA = bgColor.startsWith('rgba') ? parseFloat(bgColor.split(',')[3]) : 1;
+
+  // Draw background color for areas outside the video frame (letterbox/pillarbox areas)
+  ctx.fillStyle = `rgba(${bgR}, ${bgG}, 0, ${bgA})`;
+  ctx.fillRect(0, 0, cw, ch);
 }
 
 function resizeCanvas(container) {
