@@ -1,15 +1,32 @@
 name: Publish to Chrome Web Store
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '22'
+          cache: true
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: vp lint
+
+      - name: Run tests
+        run: vp test
 
       - name: Create zip
         run: |
@@ -20,6 +37,12 @@ jobs:
             popup.html \
             popup.js \
             icons/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: extension.zip
+          generate_release_notes: true
 
       - name: Upload & Publish to Chrome Web Store
         uses: mnao305/chrome-extension-upload@v5.0.0
