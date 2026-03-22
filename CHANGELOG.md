@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.2](https://github.com/kyto64/youtublur/compare/v1.2.1...v1.2.2) (2026-03-22)
+
+
+### Bug Fixes
+
+* PRレビュー対応 — 背景色パースと screen 合成 ([2292433](https://github.com/kyto64/youtublur/commit/2292433198d1865638e6c1565c66cd15528cade0))
+* 黒いエリアが見える不具合を修正 ([9f10060](https://github.com/kyto64/youtublur/commit/9f10060532d2e12ac8404eba06b2cd401d780481))
+
 ## [1.2.1](https://github.com/kyto64/youtublur/compare/v1.2.0...v1.2.1) (2026-03-22)
 
 
