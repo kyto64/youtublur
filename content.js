@@ -53,6 +53,44 @@ function createBlurCanvas(container) {
   return blurCanvas;
 }
 
+const FALLBACK_BG = { r: 241, g: 241, b: 241, a: 1 };
+
+function parseCssColorToRgba(input) {
+  if (!input || typeof input !== 'string') return { ...FALLBACK_BG };
+  const s = input.trim();
+
+  const rgbMatch = s.match(
+    /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+)\s*)?\)$/i
+  );
+  if (rgbMatch) {
+    const r = Math.min(255, parseInt(rgbMatch[1], 10));
+    const g = Math.min(255, parseInt(rgbMatch[2], 10));
+    const b = Math.min(255, parseInt(rgbMatch[3], 10));
+    const a =
+      rgbMatch[4] !== undefined
+        ? Math.min(1, Math.max(0, parseFloat(rgbMatch[4])))
+        : 1;
+    return { r, g, b, a };
+  }
+
+  if (s.startsWith('#')) {
+    const hex = s.slice(1);
+    if (hex.length === 3) {
+      const r = parseInt(hex[0] + hex[0], 16);
+      const g = parseInt(hex[1] + hex[1], 16);
+      const b = parseInt(hex[2] + hex[2], 16);
+      if (![r, g, b].some(Number.isNaN)) return { r, g, b, a: 1 };
+    } else if (hex.length === 6) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      if (![r, g, b].some(Number.isNaN)) return { r, g, b, a: 1 };
+    }
+  }
+
+  return { ...FALLBACK_BG };
+}
+
 function drawBlurFrame(video, canvas, ctx) {
   if (!video || !canvas || !ctx || video.readyState < 2) return;
 
@@ -83,15 +121,15 @@ function drawBlurFrame(video, canvas, ctx) {
   ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
   ctx.filter = 'none';
 
-  // Fill remaining areas with background color to prevent black bars from showing
   const bgColor = getComputedStyle(document.body).backgroundColor || '#f1f1f1';
-  const bgR = parseInt(bgColor.slice(1, 3), 16) || 241;
-  const bgG = parseInt(bgColor.slice(3, 5), 16) || 241;
-  const bgA = bgColor.startsWith('rgba') ? parseFloat(bgColor.split(',')[3]) : 1;
+  const { r, g, b, a } = parseCssColorToRgba(bgColor);
 
-  // Draw background color for areas outside the video frame (letterbox/pillarbox areas)
-  ctx.fillStyle = `rgba(${bgR}, ${bgG}, 0, ${bgA})`;
+  // Screen blend: lighten near-black letterbox pixels toward page background without
+  // painting over the whole frame (source-over would replace the blurred video).
+  ctx.globalCompositeOperation = 'screen';
+  ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
   ctx.fillRect(0, 0, cw, ch);
+  ctx.globalCompositeOperation = 'source-over';
 }
 
 function resizeCanvas(container) {
@@ -233,6 +271,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getPlayerContainer,
     getVideoElement,
     createBlurCanvas,
+    parseCssColorToRgba,
     drawBlurFrame,
     resizeCanvas,
     startBlurLoop,
