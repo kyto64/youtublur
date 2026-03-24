@@ -2,7 +2,7 @@ const STORAGE_KEY = 'playerBackgroundMode';
 const BLUR_STRENGTH = 40;
 const DRAW_INTERVAL = 2; // 描画を2フレームに1回にして軽量化
 
-let currentMode = 'solid';
+let currentMode = 'blur';
 let blurCanvas = null;
 let blurCtx = null;
 let animationId = null;
@@ -254,7 +254,7 @@ function handleResize() {
 
 function initExtension() {
   if (typeof chrome !== 'undefined' && chrome.storage) {
-    chrome.storage.sync.get({ [STORAGE_KEY]: 'solid' }, (items) => {
+    chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
       currentMode = items[STORAGE_KEY];
       observePlayer();
     });
@@ -294,7 +294,7 @@ if (typeof module !== 'undefined' && module.exports) {
     setMode: (m) => { currentMode = m; },
     getMode: () => currentMode,
     resetState: () => {
-      currentMode = 'solid';
+      currentMode = 'blur';
       blurCanvas = null;
       blurCtx = null;
       cachedBodyBackgroundRgba = null;

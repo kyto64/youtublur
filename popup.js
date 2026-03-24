@@ -2,7 +2,7 @@ const STORAGE_KEY = 'playerBackgroundMode';
 
 function initPopup() {
   document.addEventListener('DOMContentLoaded', () => {
-    chrome.storage.sync.get({ [STORAGE_KEY]: 'solid' }, (items) => {
+    chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
       const mode = items[STORAGE_KEY];
       const radio = document.getElementById(mode === 'blur' ? 'modeBlur' : 'modeSolid');
       if (radio) radio.checked = true;
