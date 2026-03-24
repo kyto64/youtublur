@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.4](https://github.com/kyto64/youtublur/compare/v1.2.3...v1.2.4) (2026-03-24)
+
+
+### Features
+
+* change default background mode to blur ([fcfcc48](https://github.com/kyto64/youtublur/commit/fcfcc48a4f54651f441b1fb2931ca69174664e67))
+
 ## [1.2.3](https://github.com/kyto64/youtublur/compare/v1.2.2...v1.2.3) (2026-03-24)
 
 ## [1.2.2](https://github.com/kyto64/youtublur/compare/v1.2.1...v1.2.2) (2026-03-22)
