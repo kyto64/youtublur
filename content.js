@@ -28,6 +28,9 @@ function createBlurCanvas(container) {
     blurCtx = null;
   }
 
+  const video = getVideoElement(container);
+  if (!video) return null;
+
   blurCanvas = document.createElement('canvas');
   blurCanvas.id = 'yt-light-bg-blur-canvas';
   blurCanvas.style.cssText = `
@@ -39,9 +42,6 @@ function createBlurCanvas(container) {
     z-index: -1;
     pointer-events: none;
   `;
-
-  const video = getVideoElement(container);
-  if (!video) return null;
 
   if (container.style.position !== 'relative' && container.style.position !== 'absolute') {
     container.style.position = 'relative';
@@ -168,19 +168,37 @@ function observePlayer() {
   if (!/^\/watch/.test(location.pathname)) return;
 
   function tryInit() {
+    if (typeof document === 'undefined') return;
     const c = getPlayerContainer();
     if (c) initBlurForPlayer(c);
+  }
+
+  let tryInitCoalesced = false;
+  function scheduleTryInit() {
+    if (tryInitCoalesced) return;
+    tryInitCoalesced = true;
+    queueMicrotask(() => {
+      tryInitCoalesced = false;
+      tryInit();
+    });
   }
 
   tryInit();
 
   const observer = new MutationObserver(() => {
+    if (typeof document === 'undefined') return;
     const c = getPlayerContainer();
     if (!c) return;
     if (blurCanvas && !document.contains(blurCanvas)) {
       blurCanvas = null;
       blurCtx = null;
-      tryInit();
+      scheduleTryInit();
+      return;
+    }
+    // 初回はプレイヤーに video がまだ無く init がスキップされることがある。後から video が挿入されても
+    // blurCanvas が null のままなら従来の observer は再試行しなかった。
+    if (currentMode === 'blur' && !blurCanvas) {
+      scheduleTryInit();
     }
   });
 

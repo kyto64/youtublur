@@ -41,6 +41,43 @@ describe('popup.js', () => {
     });
   });
 
+  test('initializes solid radio when storage is solid', () => {
+    chrome.storage.sync.get = vi.fn((defaults, callback) =>
+      callback({ [STORAGE_KEY]: 'solid' })
+    );
+    initPopup();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+
+    return new Promise((resolve) => {
+      process.nextTick(() => {
+        expect(document.getElementById('modeSolid').checked).toBe(true);
+        expect(document.getElementById('modeBlur').checked).toBe(false);
+        resolve();
+      });
+    });
+  });
+
+  test('does not send message when active tab is not YouTube', () => {
+    chrome.tabs.query = vi.fn((query, callback) =>
+      callback([{ id: 1, url: 'https://example.com/' }])
+    );
+    initPopup();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+
+    const radioBlur = document.getElementById('modeBlur');
+    radioBlur.checked = true;
+    radioBlur.dispatchEvent(new Event('change'));
+
+    return new Promise((resolve) => {
+      process.nextTick(() => {
+        process.nextTick(() => {
+          expect(chrome.tabs.sendMessage).not.toHaveBeenCalled();
+          resolve();
+        });
+      });
+    });
+  });
+
   test('updates storage and sends message on change', () => {
     initPopup();
     const event = new Event('DOMContentLoaded');
