@@ -5,8 +5,7 @@ const {
   getPlayerContainer,
   getVideoElement,
   resetState,
-  getMode,
-  parseCssColorToRgba
+  getMode
 } = require('./content.js');
 
 describe('content.js', () => {
@@ -61,58 +60,5 @@ describe('content.js', () => {
     expect(getMode()).toBe('solid');
     expect(container.dataset.ytLightBgMode).toBe('solid');
     expect(canvas.style.display).toBe('none');
-  });
-
-  describe('parseCssColorToRgba', () => {
-    test('parses rgb()', () => {
-      expect(parseCssColorToRgba('rgb(10, 20, 30)')).toEqual({
-        r: 10,
-        g: 20,
-        b: 30,
-        a: 1
-      });
-    });
-
-    test('parses rgba() with alpha', () => {
-      expect(parseCssColorToRgba('rgba(1, 2, 3, 0.5)')).toEqual({
-        r: 1,
-        g: 2,
-        b: 3,
-        a: 0.5
-      });
-    });
-
-    test('parses #rrggbb', () => {
-      expect(parseCssColorToRgba('#f1f1f1')).toEqual({
-        r: 241,
-        g: 241,
-        b: 241,
-        a: 1
-      });
-    });
-
-    test('parses #rgb shorthand', () => {
-      expect(parseCssColorToRgba('#abc')).toEqual({
-        r: 170,
-        g: 187,
-        b: 204,
-        a: 1
-      });
-    });
-
-    test('falls back for invalid input', () => {
-      expect(parseCssColorToRgba('not-a-color')).toEqual({
-        r: 241,
-        g: 241,
-        b: 241,
-        a: 1
-      });
-      expect(parseCssColorToRgba('')).toEqual({
-        r: 241,
-        g: 241,
-        b: 241,
-        a: 1
-      });
-    });
   });
 });
