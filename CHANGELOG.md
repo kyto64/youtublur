@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.6](https://github.com/kyto64/youtublur/compare/v1.2.5...v1.2.6) (2026-03-25)
+
+
+### Bug Fixes
+
+* apply blur on load when video mounts after player ([34b40b3](https://github.com/kyto64/youtublur/commit/34b40b310a9e767d79a1633b71eaf56d075e271f))
+
 ## [1.2.5](https://github.com/kyto64/youtublur/compare/v1.2.4...v1.2.5) (2026-03-25)
 
 ## [1.2.4](https://github.com/kyto64/youtublur/compare/v1.2.3...v1.2.4) (2026-03-24)
