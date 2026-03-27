@@ -10,6 +10,7 @@ const {
   observePlayer,
   isPlayerPagePath,
   drawBlurFrame,
+  resizeCanvas,
   handleResize,
   setMode
 } = require('./content.js');
@@ -171,36 +172,61 @@ describe('content.js', () => {
     const video = document.createElement('video');
     container.appendChild(video);
     document.body.appendChild(container);
-    vi.spyOn(container, 'getBoundingClientRect').mockReturnValue({
-      width: 640,
-      height: 360,
-      top: 0,
-      left: 0,
-      right: 640,
-      bottom: 360,
-      x: 0,
-      y: 0,
-      toJSON: () => {}
-    });
+    Object.defineProperty(container, 'clientWidth', { value: 640, configurable: true });
+    Object.defineProperty(container, 'clientHeight', { value: 360, configurable: true });
 
     applyMode('blur', container);
     const canvas = container.querySelector('canvas');
     expect(canvas.width).toBe(640);
 
-    vi.spyOn(container, 'getBoundingClientRect').mockReturnValue({
-      width: 1280,
-      height: 720,
-      top: 0,
-      left: 0,
-      right: 1280,
-      bottom: 720,
-      x: 0,
-      y: 0,
-      toJSON: () => {}
-    });
+    Object.defineProperty(container, 'clientWidth', { value: 1280, configurable: true });
+    Object.defineProperty(container, 'clientHeight', { value: 720, configurable: true });
     handleResize();
     expect(canvas.width).toBe(1280);
     expect(canvas.height).toBe(720);
+  });
+
+  test('resizeCanvas ceils fractional client dimensions', () => {
+    const container = document.createElement('div');
+    const video = document.createElement('video');
+    container.appendChild(video);
+    document.body.appendChild(container);
+    Object.defineProperty(container, 'clientWidth', { value: 800.2, configurable: true });
+    Object.defineProperty(container, 'clientHeight', { value: 450.6, configurable: true });
+
+    createBlurCanvas(container);
+    resizeCanvas(container);
+    const canvas = container.querySelector('canvas');
+    expect(canvas.width).toBe(801);
+    expect(canvas.height).toBe(451);
+    expect(canvas.style.width).toBe('801px');
+    expect(canvas.style.height).toBe('451px');
+  });
+
+  test('starts ResizeObserver on container when blur mode applies', () => {
+    const observe = vi.fn();
+    const disconnect = vi.fn();
+    function MockResizeObserver() {
+      this.observe = observe;
+      this.disconnect = disconnect;
+    }
+    vi.stubGlobal('ResizeObserver', MockResizeObserver);
+
+    const container = document.createElement('div');
+    const video = document.createElement('video');
+    container.appendChild(video);
+    document.body.appendChild(container);
+    Object.defineProperty(container, 'clientWidth', { value: 100, configurable: true });
+    Object.defineProperty(container, 'clientHeight', { value: 100, configurable: true });
+
+    applyMode('blur', container);
+
+    expect(observe).toHaveBeenCalledWith(container);
+
+    applyMode('solid', container);
+    expect(disconnect).toHaveBeenCalled();
+
+    vi.unstubAllGlobals();
   });
 
   describe('observePlayer', () => {

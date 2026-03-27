@@ -8,6 +8,7 @@ let blurCtx = null;
 let animationId = null;
 let frameCount = 0;
 let playerDomObserver = null;
+let playerResizeObserver = null;
 let youtubeNavHooksInstalled = false;
 
 function isPlayerPagePath(pathname) {
@@ -41,10 +42,9 @@ function createBlurCanvas(container) {
   blurCanvas.id = 'yt-light-bg-blur-canvas';
   blurCanvas.style.cssText = `
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
+    width: auto;
+    height: auto;
     z-index: -1;
     pointer-events: none;
   `;
@@ -91,11 +91,30 @@ function drawBlurFrame(video, canvas, ctx) {
 
 function resizeCanvas(container) {
   if (!blurCanvas || !container) return;
-  const rect = container.getBoundingClientRect();
-  blurCanvas.width = rect.width;
-  blurCanvas.height = rect.height;
-  blurCanvas.style.width = rect.width + 'px';
-  blurCanvas.style.height = rect.height + 'px';
+  const w = Math.max(1, Math.ceil(container.clientWidth));
+  const h = Math.max(1, Math.ceil(container.clientHeight));
+  blurCanvas.width = w;
+  blurCanvas.height = h;
+  blurCanvas.style.width = `${w}px`;
+  blurCanvas.style.height = `${h}px`;
+}
+
+function detachPlayerResizeObserver() {
+  if (playerResizeObserver) {
+    playerResizeObserver.disconnect();
+    playerResizeObserver = null;
+  }
+}
+
+function attachPlayerResizeObserver(container) {
+  if (typeof ResizeObserver === 'undefined' || !container) return;
+  detachPlayerResizeObserver();
+  playerResizeObserver = new ResizeObserver(() => {
+    if (currentMode !== 'blur' || !blurCanvas) return;
+    const c = getPlayerContainer();
+    if (c) resizeCanvas(c);
+  });
+  playerResizeObserver.observe(container);
 }
 
 function startBlurLoop(container) {
@@ -128,6 +147,7 @@ function showBlurMode(container) {
   if (!blurCanvas) return;
 
   resizeCanvas(container);
+  attachPlayerResizeObserver(container);
   blurCanvas.style.display = '';
   blurCanvas.style.visibility = 'visible';
   container.dataset.ytLightBgMode = 'blur';
@@ -135,6 +155,7 @@ function showBlurMode(container) {
 }
 
 function hideBlurMode(container) {
+  detachPlayerResizeObserver();
   stopBlurLoop();
   if (blurCanvas) {
     blurCanvas.style.display = 'none';
@@ -163,6 +184,7 @@ function initBlurForPlayer(container) {
   createBlurCanvas(container);
   if (blurCanvas) {
     resizeCanvas(container);
+    attachPlayerResizeObserver(container);
     blurCanvas.style.display = '';
     blurCanvas.style.visibility = 'visible';
     container.dataset.ytLightBgMode = 'blur';
@@ -171,6 +193,7 @@ function initBlurForPlayer(container) {
 }
 
 function teardownPlayerPageBlur() {
+  detachPlayerResizeObserver();
   if (playerDomObserver) {
     playerDomObserver.disconnect();
     playerDomObserver = null;
@@ -302,6 +325,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getMode: () => currentMode,
     resetState: () => {
       currentMode = 'blur';
+      detachPlayerResizeObserver();
       if (playerDomObserver) {
         playerDomObserver.disconnect();
         playerDomObserver = null;
