@@ -7,6 +7,12 @@ let blurCanvas = null;
 let blurCtx = null;
 let animationId = null;
 let frameCount = 0;
+let playerDomObserver = null;
+let youtubeNavHooksInstalled = false;
+
+function isPlayerPagePath(pathname) {
+  return /^\/watch(\/|$)/.test(pathname) || /^\/shorts\//.test(pathname);
+}
 
 function getPlayerContainer() {
   return document.querySelector('#movie_player') || document.querySelector('.html5-video-player');
@@ -164,8 +170,22 @@ function initBlurForPlayer(container) {
   }
 }
 
+function teardownPlayerPageBlur() {
+  if (playerDomObserver) {
+    playerDomObserver.disconnect();
+    playerDomObserver = null;
+  }
+  stopBlurLoop();
+  blurCanvas = null;
+  blurCtx = null;
+  frameCount = 0;
+}
+
 function observePlayer() {
-  if (!/^\/watch/.test(location.pathname)) return;
+  if (!isPlayerPagePath(location.pathname)) {
+    teardownPlayerPageBlur();
+    return;
+  }
 
   function tryInit() {
     if (typeof document === 'undefined') return;
@@ -183,27 +203,50 @@ function observePlayer() {
     });
   }
 
+  if (!playerDomObserver) {
+    playerDomObserver = new MutationObserver(() => {
+      if (typeof document === 'undefined') return;
+      const c = getPlayerContainer();
+      if (!c) return;
+      if (blurCanvas && !document.contains(blurCanvas)) {
+        blurCanvas = null;
+        blurCtx = null;
+        scheduleTryInit();
+        return;
+      }
+      // 初回はプレイヤーに video がまだ無く init がスキップされることがある。後から video が挿入されても
+      // blurCanvas が null のままなら従来の observer は再試行しなかった。
+      if (currentMode === 'blur' && !blurCanvas) {
+        scheduleTryInit();
+      }
+    });
+
+    const root = document.querySelector('#content') || document.body;
+    playerDomObserver.observe(root, { childList: true, subtree: true });
+  }
+
   tryInit();
+}
 
-  const observer = new MutationObserver(() => {
-    if (typeof document === 'undefined') return;
-    const c = getPlayerContainer();
-    if (!c) return;
-    if (blurCanvas && !document.contains(blurCanvas)) {
-      blurCanvas = null;
-      blurCtx = null;
-      scheduleTryInit();
-      return;
-    }
-    // 初回はプレイヤーに video がまだ無く init がスキップされることがある。後から video が挿入されても
-    // blurCanvas が null のままなら従来の observer は再試行しなかった。
-    if (currentMode === 'blur' && !blurCanvas) {
-      scheduleTryInit();
-    }
-  });
+function installYoutubeNavigationHooks() {
+  if (youtubeNavHooksInstalled) return;
+  youtubeNavHooksInstalled = true;
 
-  const root = document.querySelector('#content') || document.body;
-  observer.observe(root, { childList: true, subtree: true });
+  const onNav = () => queueMicrotask(() => observePlayer());
+
+  window.addEventListener('popstate', onNav);
+
+  function wrapHistoryMethod(method) {
+    const orig = history[method];
+    history[method] = function patchedHistory(...args) {
+      const ret = orig.apply(this, args);
+      onNav();
+      return ret;
+    };
+  }
+
+  wrapHistoryMethod('pushState');
+  wrapHistoryMethod('replaceState');
 }
 
 function handleResize() {
@@ -215,6 +258,8 @@ function handleResize() {
 
 function initExtension() {
   if (typeof chrome !== 'undefined' && chrome.storage) {
+    installYoutubeNavigationHooks();
+
     chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
       currentMode = items[STORAGE_KEY];
       observePlayer();
@@ -249,12 +294,18 @@ if (typeof module !== 'undefined' && module.exports) {
     applyMode,
     initBlurForPlayer,
     observePlayer,
+    isPlayerPagePath,
+    teardownPlayerPageBlur,
     handleResize,
     initExtension,
     setMode: (m) => { currentMode = m; },
     getMode: () => currentMode,
     resetState: () => {
       currentMode = 'blur';
+      if (playerDomObserver) {
+        playerDomObserver.disconnect();
+        playerDomObserver = null;
+      }
       blurCanvas = null;
       blurCtx = null;
       stopBlurLoop();

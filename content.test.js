@@ -8,6 +8,7 @@ const {
   getMode,
   initBlurForPlayer,
   observePlayer,
+  isPlayerPagePath,
   drawBlurFrame,
   handleResize,
   setMode
@@ -153,6 +154,17 @@ describe('content.js', () => {
     expect(ctx.filter).toBe('none');
   });
 
+  describe('isPlayerPagePath', () => {
+    test('matches watch and shorts routes only', () => {
+      expect(isPlayerPagePath('/watch')).toBe(true);
+      expect(isPlayerPagePath('/watch/extra')).toBe(true);
+      expect(isPlayerPagePath('/shorts/abc123')).toBe(true);
+      expect(isPlayerPagePath('/feed')).toBe(false);
+      expect(isPlayerPagePath('/')).toBe(false);
+      expect(isPlayerPagePath('/shorts')).toBe(false);
+    });
+  });
+
   test('handleResize updates canvas dimensions when blur is active', () => {
     const container = document.createElement('div');
     container.id = 'movie_player';
@@ -193,7 +205,7 @@ describe('content.js', () => {
 
   describe('observePlayer', () => {
     beforeEach(() => {
-      vi.stubGlobal('location', { pathname: '/watch?v=test' });
+      vi.stubGlobal('location', { pathname: '/watch' });
       vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
       vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
     });
@@ -204,11 +216,45 @@ describe('content.js', () => {
       HTMLCanvasElement.prototype.getContext = vi.fn(() => mock2dContext());
     });
 
-    test('returns immediately when not on /watch', () => {
+    test('teardowns when not on a player page', () => {
       vi.unstubAllGlobals();
       vi.stubGlobal('location', { pathname: '/feed' });
 
       expect(() => observePlayer()).not.toThrow();
+    });
+
+    test('initializes blur after SPA-style path change from feed to watch', async () => {
+      const loc = { pathname: '/feed' };
+      vi.stubGlobal('location', loc);
+      document.body.innerHTML = '<div id="movie_player"></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+
+      loc.pathname = '/watch';
+      player.appendChild(document.createElement('video'));
+      observePlayer();
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(player.dataset.ytLightBgMode).toBe('blur');
+    });
+
+    test('initializes observer on shorts path when player and video exist', () => {
+      vi.stubGlobal('location', { pathname: '/shorts/xyz' });
+      const container = document.createElement('div');
+      container.id = 'movie_player';
+      const video = document.createElement('video');
+      container.appendChild(video);
+      document.body.appendChild(container);
+
+      observePlayer();
+
+      expect(container.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(container.dataset.ytLightBgMode).toBe('blur');
     });
 
     test('schedules blur init when video is inserted after player without video', async () => {
