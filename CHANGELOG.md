@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.0](https://github.com/kyto64/youtublur/compare/v1.2.6...v1.3.0) (2026-03-27)
+
+
+### Features
+
+* enhance player page handling with navigation hooks and blur teardown ([c7cf333](https://github.com/kyto64/youtublur/commit/c7cf33335737144d8c6835196d4e5ed2383f29e9))
+* implement resize observer for blur canvas and improve resizing logic ([4b3d6fc](https://github.com/kyto64/youtublur/commit/4b3d6fcc887bc9ca8670d39cf77cd88cce465625))
+
+
+### Bug Fixes
+
+* reorder background mode options in popup.html ([0067f69](https://github.com/kyto64/youtublur/commit/0067f6948229c8df583d05f94bff31161fec1c89))
+
 ## [1.2.6](https://github.com/kyto64/youtublur/compare/v1.2.5...v1.2.6) (2026-03-25)
 
 
