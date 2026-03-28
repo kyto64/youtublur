@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.0](https://github.com/kyto64/youtublur/compare/v1.3.0...v1.4.0) (2026-03-28)
+
+
+### Features
+
+* add Chrome Web Store upload script and update dependencies ([0e04c0f](https://github.com/kyto64/youtublur/commit/0e04c0fda3fc99abd590c795b4d79187be82cd5b))
+
 ## [1.3.0](https://github.com/kyto64/youtublur/compare/v1.2.6...v1.3.0) (2026-03-27)
 
 
