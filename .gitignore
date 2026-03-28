@@ -1,5 +1,8 @@
 # 拡張機能のパッケージ
 node_modules
 
+# ローカルシークレット（Chrome Web Store / GitHub 用）
+.env
+
 # zip
 *.zip
