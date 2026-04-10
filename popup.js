@@ -1,7 +1,20 @@
 const STORAGE_KEY = 'playerBackgroundMode';
 
+function applyLocalizedStrings() {
+  if (typeof chrome === 'undefined' || !chrome.i18n) return;
+  document.documentElement.lang = chrome.i18n.getUILanguage();
+  const heading = document.getElementById('popupHeading');
+  const blur = document.getElementById('labelModeBlur');
+  const solid = document.getElementById('labelModeSolid');
+  if (heading) heading.textContent = chrome.i18n.getMessage('popupHeading');
+  if (blur) blur.textContent = chrome.i18n.getMessage('modeBlur');
+  if (solid) solid.textContent = chrome.i18n.getMessage('modeSolid');
+}
+
 function initPopup() {
   document.addEventListener('DOMContentLoaded', () => {
+    applyLocalizedStrings();
+
     chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
       const mode = items[STORAGE_KEY];
       const radio = document.getElementById(mode === 'blur' ? 'modeBlur' : 'modeSolid');

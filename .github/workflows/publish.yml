@@ -38,6 +38,7 @@ jobs:
             style.css \
             popup.html \
             popup.js \
+            _locales/ \
             icons/
 
       - name: Create GitHub Release

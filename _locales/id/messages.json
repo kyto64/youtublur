@@ -1,0 +1,22 @@
+{
+  "extName": {
+    "message": "youtublur",
+    "description": "Nama ekstensi (merek)."
+  },
+  "extDescription": {
+    "message": "YouTube yang lebih nyaman: blur lembut di belakang video untuk menonton lebih enak.",
+    "description": "Deskripsi singkat untuk Chrome Web Store dan detail."
+  },
+  "popupHeading": {
+    "message": "Latar pemutar",
+    "description": "Judul popup bilah alat."
+  },
+  "modeBlur": {
+    "message": "Buram (video)",
+    "description": "Opsi: video buram sebagai latar belakang."
+  },
+  "modeSolid": {
+    "message": "Warna polos (abu terang)",
+    "description": "Opsi: latar abu terang polos."
+  }
+}

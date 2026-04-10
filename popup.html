@@ -1,14 +1,15 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>youtublur</title>
   <style>
     body {
-      width: 220px;
+      min-width: 220px;
+      max-width: 320px;
       padding: 12px 16px;
-      font-family: "Segoe UI", "Yu Gothic UI", sans-serif;
+      font-family: "Segoe UI", "Yu Gothic UI", "Malgun Gothic", "Microsoft YaHei", "PingFang SC", "PingFang TC", sans-serif;
       font-size: 13px;
       color: #0f0f0f;
       margin: 0;
@@ -39,14 +40,14 @@
   </style>
 </head>
 <body>
-  <h3>プレイヤー背景</h3>
+  <h3 id="popupHeading"></h3>
   <div class="option">
     <input type="radio" name="bgMode" id="modeBlur" value="blur">
-    <label for="modeBlur">ブラー（動画のぼかし）</label>
+    <label for="modeBlur" id="labelModeBlur"></label>
   </div>
   <div class="option">
     <input type="radio" name="bgMode" id="modeSolid" value="solid">
-    <label for="modeSolid">単色（薄いグレー）</label>
+    <label for="modeSolid" id="labelModeSolid"></label>
   </div>
   <script src="popup.js"></script>
 </body>

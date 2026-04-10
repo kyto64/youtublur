@@ -1,0 +1,22 @@
+{
+  "extName": {
+    "message": "youtublur",
+    "description": "Extension name (brand)."
+  },
+  "extDescription": {
+    "message": "A gentler YouTube: soft blur behind the video for easier viewing.",
+    "description": "Short description for the Chrome Web Store and extension details."
+  },
+  "popupHeading": {
+    "message": "Player background",
+    "description": "Heading in the toolbar popup."
+  },
+  "modeBlur": {
+    "message": "Blur (video)",
+    "description": "Radio option: blurred video as background."
+  },
+  "modeSolid": {
+    "message": "Solid (light gray)",
+    "description": "Radio option: flat gray background."
+  }
+}

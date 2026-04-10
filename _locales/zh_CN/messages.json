@@ -1,0 +1,22 @@
+{
+  "extName": {
+    "message": "youtublur",
+    "description": "扩展名称（品牌）。"
+  },
+  "extDescription": {
+    "message": "更柔和的 YouTube：在视频后方呈现柔化模糊，观看更轻松。",
+    "description": "Chrome 网上应用店与详情页的简短说明。"
+  },
+  "popupHeading": {
+    "message": "播放器背景",
+    "description": "工具栏弹出窗口标题。"
+  },
+  "modeBlur": {
+    "message": "模糊（视频）",
+    "description": "单选项：将视频模糊作为背景。"
+  },
+  "modeSolid": {
+    "message": "纯色（浅灰）",
+    "description": "单选项：浅灰色纯色背景。"
+  }
+}

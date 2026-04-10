@@ -1,0 +1,22 @@
+{
+  "extName": {
+    "message": "youtublur",
+    "description": "Nome da extensão (marca)."
+  },
+  "extDescription": {
+    "message": "YouTube mais suave: desfoque atrás do vídeo para uma visualização mais confortável.",
+    "description": "Descrição curta para a Chrome Web Store e detalhes."
+  },
+  "popupHeading": {
+    "message": "Fundo do player",
+    "description": "Título do pop-up da barra de ferramentas."
+  },
+  "modeBlur": {
+    "message": "Desfoque (vídeo)",
+    "description": "Opção: vídeo desfocado como fundo."
+  },
+  "modeSolid": {
+    "message": "Cor sólida (cinza claro)",
+    "description": "Opção: fundo cinza claro uniforme."
+  }
+}

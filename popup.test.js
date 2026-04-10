@@ -8,6 +8,10 @@ describe('popup.js', () => {
       <input type="radio" name="bgMode" id="modeBlur" value="blur">
     `;
     global.chrome = {
+      i18n: {
+        getMessage: vi.fn((key) => key),
+        getUILanguage: vi.fn(() => 'en')
+      },
       storage: {
         sync: {
           get: vi.fn((defaults, callback) => callback({ [STORAGE_KEY]: 'blur' })),
