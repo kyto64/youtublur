@@ -11,6 +11,7 @@ Chrome 拡張（Manifest V3）。YouTube 視聴ページでプレイヤー背景
 | スタイル | `style.css` |
 | マニフェスト | `manifest.json` |
 | 文言（i18n） | `_locales/*/messages.json`（基準は `en`） |
+| 補助スクリプト | `scripts/`（`sync-version.js`, `publish-chrome-webstore.mjs`, `sync-chrome-refresh-token.mjs`） |
 | CI に含める zip の定義 | [.github/workflows/publish.yml](.github/workflows/publish.yml) |
 
 ## 開発コマンド

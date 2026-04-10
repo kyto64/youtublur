@@ -21,7 +21,8 @@ YouTubeを、もっと目に優しく。動画のブラー背景でやわらか�
 
 ```
 youtublur/
-├── .github/workflows/ # CI（テスト・Lint・タグ公開時のCWSアップロード）
+├── .github/workflows/ # CI（master 向けテスト・Lint、v* タグ時の CWS 公開）
+├── _locales/          # 多言語メッセージ（拡張名・説明・UI。基準は en）
 ├── manifest.json      # 拡張機能の設定
 ├── package.json       # プロジェクト設定・スクリプト
 ├── vite.config.ts     # Vite+ (テスト用) 設定
@@ -31,8 +32,11 @@ youtublur/
 ├── popup.html         # モード切替UI
 ├── popup.js           # 設定保存
 ├── popup.test.js      # popup.jsのテスト
+├── scripts/           # バージョン同期・CWS アップロード・トークン同期など
+├── docs/              # リリース手順・ストア用文案など
 ├── icons/             # アイコン画像
-└── README.md          # このファイル
+├── README.md          # このファイル
+└── AGENTS.md          # 開発者・エージェント向けのパス索引
 ```
 
 ## 使い方
