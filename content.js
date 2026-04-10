@@ -11,6 +11,72 @@ let playerDomObserver = null;
 let playerResizeObserver = null;
 let youtubeNavHooksInstalled = false;
 
+const BLUR_INIT_RETRY_INITIAL_MS = 50;
+const BLUR_INIT_RETRY_MAX_MS = 2000;
+const BLUR_INIT_RETRY_MAX_ATTEMPTS = 25;
+let blurInitRetryTimer = null;
+let blurInitRetryAttempt = 0;
+
+function clearBlurInitRetryTimer() {
+  if (blurInitRetryTimer !== null) {
+    clearTimeout(blurInitRetryTimer);
+    blurInitRetryTimer = null;
+  }
+}
+
+function stopBlurInitRetryCompletely() {
+  clearBlurInitRetryTimer();
+  blurInitRetryAttempt = 0;
+}
+
+function scheduleBlurInitRetryIfNeeded() {
+  if (currentMode !== 'blur') {
+    stopBlurInitRetryCompletely();
+    return;
+  }
+  const c = getPlayerContainer();
+  if (!c || blurCanvas) {
+    if (blurCanvas) stopBlurInitRetryCompletely();
+    return;
+  }
+  if (blurInitRetryTimer !== null) return;
+
+  function attemptBlurInit() {
+    blurInitRetryTimer = null;
+    if (currentMode !== 'blur') {
+      stopBlurInitRetryCompletely();
+      return;
+    }
+    const container = getPlayerContainer();
+    if (!container) {
+      stopBlurInitRetryCompletely();
+      return;
+    }
+    initBlurForPlayer(container);
+    if (blurCanvas) {
+      stopBlurInitRetryCompletely();
+      return;
+    }
+    blurInitRetryAttempt += 1;
+    if (blurInitRetryAttempt >= BLUR_INIT_RETRY_MAX_ATTEMPTS) {
+      stopBlurInitRetryCompletely();
+      return;
+    }
+    const delay = Math.min(
+      BLUR_INIT_RETRY_MAX_MS,
+      BLUR_INIT_RETRY_INITIAL_MS * 2 ** (blurInitRetryAttempt - 1)
+    );
+    blurInitRetryTimer = setTimeout(attemptBlurInit, delay);
+  }
+
+  blurInitRetryAttempt = 0;
+  const firstDelay = Math.min(
+    BLUR_INIT_RETRY_MAX_MS,
+    BLUR_INIT_RETRY_INITIAL_MS * 2 ** 0
+  );
+  blurInitRetryTimer = setTimeout(attemptBlurInit, firstDelay);
+}
+
 function isPlayerPagePath(pathname) {
   return /^\/watch(\/|$)/.test(pathname) || /^\/shorts\//.test(pathname);
 }
@@ -26,9 +92,12 @@ function getVideoElement(container) {
 function createBlurCanvas(container) {
   const existing = container?.querySelector('#yt-light-bg-blur-canvas');
   if (existing) {
-    blurCanvas = existing;
-    blurCtx = blurCanvas.getContext('2d');
-    return blurCanvas;
+    blurCtx = existing.getContext('2d');
+    if (blurCtx) {
+      blurCanvas = existing;
+      return blurCanvas;
+    }
+    existing.remove();
   }
   if (blurCanvas && !document.contains(blurCanvas)) {
     blurCanvas = null;
@@ -55,6 +124,11 @@ function createBlurCanvas(container) {
   container.insertBefore(blurCanvas, container.firstChild);
 
   blurCtx = blurCanvas.getContext('2d');
+  if (!blurCtx) {
+    blurCanvas.remove();
+    blurCanvas = null;
+    return null;
+  }
   return blurCanvas;
 }
 
@@ -141,10 +215,16 @@ function stopBlurLoop() {
 
 function showBlurMode(container) {
   const video = getVideoElement(container);
-  if (!video) return;
+  if (!video) {
+    scheduleBlurInitRetryIfNeeded();
+    return;
+  }
 
   createBlurCanvas(container);
-  if (!blurCanvas) return;
+  if (!blurCanvas) {
+    scheduleBlurInitRetryIfNeeded();
+    return;
+  }
 
   resizeCanvas(container);
   attachPlayerResizeObserver(container);
@@ -155,6 +235,7 @@ function showBlurMode(container) {
 }
 
 function hideBlurMode(container) {
+  stopBlurInitRetryCompletely();
   detachPlayerResizeObserver();
   stopBlurLoop();
   if (blurCanvas) {
@@ -183,6 +264,7 @@ function initBlurForPlayer(container) {
 
   createBlurCanvas(container);
   if (blurCanvas) {
+    stopBlurInitRetryCompletely();
     resizeCanvas(container);
     attachPlayerResizeObserver(container);
     blurCanvas.style.display = '';
@@ -193,6 +275,7 @@ function initBlurForPlayer(container) {
 }
 
 function teardownPlayerPageBlur() {
+  stopBlurInitRetryCompletely();
   detachPlayerResizeObserver();
   if (playerDomObserver) {
     playerDomObserver.disconnect();
@@ -214,6 +297,7 @@ function observePlayer() {
     if (typeof document === 'undefined') return;
     const c = getPlayerContainer();
     if (c) initBlurForPlayer(c);
+    scheduleBlurInitRetryIfNeeded();
   }
 
   let tryInitCoalesced = false;
@@ -282,10 +366,15 @@ function handleResize() {
 function initExtension() {
   if (typeof chrome !== 'undefined' && chrome.storage) {
     installYoutubeNavigationHooks();
+    observePlayer();
 
     chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
-      currentMode = items[STORAGE_KEY];
-      observePlayer();
+      const saved = items[STORAGE_KEY];
+      if (saved !== currentMode) {
+        applyMode(saved, getPlayerContainer());
+      } else {
+        observePlayer();
+      }
     });
 
     chrome.runtime.onMessage.addListener((msg) => {
@@ -325,6 +414,7 @@ if (typeof module !== 'undefined' && module.exports) {
     getMode: () => currentMode,
     resetState: () => {
       currentMode = 'blur';
+      stopBlurInitRetryCompletely();
       detachPlayerResizeObserver();
       if (playerDomObserver) {
         playerDomObserver.disconnect();

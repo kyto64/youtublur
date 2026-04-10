@@ -12,7 +12,8 @@ const {
   drawBlurFrame,
   resizeCanvas,
   handleResize,
-  setMode
+  setMode,
+  initExtension
 } = require('./content.js');
 
 function mock2dContext() {
@@ -87,6 +88,18 @@ describe('content.js', () => {
     const second = createBlurCanvas(container);
     expect(second).toBe(first);
     expect(container.querySelectorAll('#yt-light-bg-blur-canvas')).toHaveLength(1);
+  });
+
+  test('createBlurCanvas returns null when getContext returns null', () => {
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => null);
+    const container = document.createElement('div');
+    const video = document.createElement('video');
+    container.appendChild(video);
+    document.body.appendChild(container);
+
+    expect(createBlurCanvas(container)).toBeNull();
+    expect(container.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+    HTMLCanvasElement.prototype.getContext = vi.fn(() => mock2dContext());
   });
 
   test('applyMode updates currentMode and DOM', () => {
@@ -313,6 +326,88 @@ describe('content.js', () => {
       await Promise.resolve();
 
       expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+    });
+
+    test('stops blur init retry after max attempts when video never appears', async () => {
+      vi.useFakeTimers();
+      vi.stubGlobal('location', { pathname: '/watch' });
+      document.body.innerHTML = '<div id="content"><div id="movie_player"></div></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      await vi.runAllTimersAsync();
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+      vi.useRealTimers();
+    });
+
+    test('retry path creates canvas when video appears after first failed init', async () => {
+      vi.useFakeTimers();
+      vi.stubGlobal('location', { pathname: '/watch' });
+      document.body.innerHTML = '<div id="content"><div id="movie_player"></div></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+
+      await vi.advanceTimersByTimeAsync(49);
+      player.appendChild(document.createElement('video'));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(player.dataset.ytLightBgMode).toBe('blur');
+      vi.useRealTimers();
+    });
+  });
+
+  describe('initExtension', () => {
+    beforeEach(() => {
+      resetState();
+      vi.stubGlobal('location', { pathname: '/watch' });
+      document.body.innerHTML = '<div id="content"><div id="movie_player"></div></div>';
+      const player = document.getElementById('movie_player');
+      player.appendChild(document.createElement('video'));
+      vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+      vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+      vi.restoreAllMocks();
+      HTMLCanvasElement.prototype.getContext = vi.fn(() => mock2dContext());
+    });
+
+    test('runs observePlayer before storage callback (eager init)', () => {
+      const get = vi.fn((_defaults, _cb) => {
+        /* intentionally not calling _cb — delayed storage must not block first blur */
+      });
+      vi.stubGlobal('chrome', {
+        storage: { sync: { get } },
+        runtime: { onMessage: { addListener: vi.fn() } }
+      });
+
+      initExtension();
+      const player = document.getElementById('movie_player');
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(get).toHaveBeenCalled();
+    });
+
+    test('applies saved solid mode when storage differs from optimistic blur', () => {
+      const get = vi.fn((_defaults, cb) => {
+        cb({ playerBackgroundMode: 'solid' });
+      });
+      vi.stubGlobal('chrome', {
+        storage: { sync: { get } },
+        runtime: { onMessage: { addListener: vi.fn() } }
+      });
+
+      initExtension();
+      const player = document.getElementById('movie_player');
+      expect(getMode()).toBe('solid');
+      const canvas = player.querySelector('#yt-light-bg-blur-canvas');
+      expect(canvas).not.toBeNull();
+      expect(canvas.style.display).toBe('none');
+      expect(player.dataset.ytLightBgMode).toBe('solid');
     });
   });
 });
