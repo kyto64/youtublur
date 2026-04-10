@@ -24,5 +24,5 @@ Chrome 拡張（Manifest V3）。YouTube 視聴ページでプレイヤー背景
 
 ## Cursor
 
-- スラッシュコマンド: `.cursor/commands/`（例: `/release-app`, `/verify-ci`, `/locale-sync`）
+- スラッシュコマンド: `.cursor/commands/`（例: `/release-app`, `/verify-ci`, `/locale-sync`, `/update-docs`）
 - ルール: `.cursor/rules/*.mdc`
