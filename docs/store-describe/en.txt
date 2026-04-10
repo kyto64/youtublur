@@ -1,0 +1,20 @@
+Make watching YouTube more comfortable and immersive. This extension customizes the area around the video player to create a gentler, more relaxing viewing environment.
+
+✨ Main features — Switch freely between two background modes to match your mood or use case.
+
+1. Blur mode (video blur) The area around the player shows a real-time soft blur that follows the colors of the video you’re watching. It adds a cohesive look across the screen—like watching in a cinema or a room with soft ambient light—for a more immersive feel.
+
+2. Solid mode (light gray) The empty space around the player is filled with a simple, eye-friendly light gray. With less visual noise on screen, it’s easier to focus on the video itself.
+
+💡 How to use — Setup is simple.
+
+After installing the extension, open a YouTube watch page.
+Click the youtublur icon in the Chrome toolbar to open the popup.
+Choose either “Solid (light gray)” or “Blur (video blur)”—that’s it!
+Your choice is saved automatically and carries over the next time you watch.
+
+🎯 Recommended if you want…
+
+A more beautiful, immersive viewing experience
+Something softer than YouTube’s default dark theater look or stark white backgrounds
+A calmer layout with less clutter and a gentler feel for your eyes

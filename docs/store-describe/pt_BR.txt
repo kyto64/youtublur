@@ -1,0 +1,20 @@
+Deixe o YouTube mais confortável e imersivo. Esta extensão personaliza a área ao redor do player para criar um ambiente de visualização mais suave e relaxante.
+
+✨ Principais recursos — Alterne livremente entre dois modos de fundo conforme o humor ou o uso.
+
+1. Modo desfoque (vídeo) A região ao redor do player exibe um desfoque em tempo real que acompanha as cores do vídeo. A tela fica mais harmoniosa — como em um cinema ou em um ambiente com luz indireta — para uma sensação mais imersiva.
+
+2. Modo cor sólida (cinza claro) O espaço vazio ao redor do player é preenchido com um cinza claro simples e confortável para os olhos. Menos ruído visual para focar no conteúdo do vídeo.
+
+💡 Como usar — A configuração é bem simples.
+
+Depois de instalar a extensão, abra uma página de reprodução do YouTube.
+Clique no ícone do youtublur na barra de ferramentas do Chrome para abrir o pop-up.
+Escolha «Cor sólida (cinza claro)» ou «Desfoque (vídeo)». Pronto!
+Sua escolha é salva automaticamente e vale nas próximas vezes.
+
+🎯 Recomendado se você…
+
+Quer uma experiência mais bonita e imersiva
+Acha o modo cinema escuro padrão do YouTube ou fundos muito claros incômodos
+Prefere menos área vazia e um ambiente mais suave para os olhos
