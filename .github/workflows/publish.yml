@@ -40,11 +40,14 @@ jobs:
             popup.js \
             _locales/ \
             icons/
+          cp extension.zip extension-firefox.zip
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: extension.zip
+          files:
+            - extension.zip
+            - extension-firefox.zip
           generate_release_notes: true
 
       - name: Upload & Publish to Chrome Web Store

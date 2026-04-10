@@ -1,6 +1,6 @@
 # Agent 向けメモ（youtublur）
 
-Chrome 拡張（Manifest V3）。YouTube 視聴ページでプレイヤー背景を単色またはブラー表示に切り替える。
+ブラウザ拡張（Manifest V3、Chrome / Firefox）。YouTube 視聴ページでプレイヤー背景を単色またはブラー表示に切り替える。
 
 ## 主要パス
 
@@ -21,7 +21,7 @@ Chrome 拡張（Manifest V3）。YouTube 視聴ページでプレイヤー背景
 
 ## リリース
 
-手順は [docs/release.md](docs/release.md)。要約: 未コミットを残さない → `npm test` → `npm run release` → `git push --follow-tags origin master` → Actions 確認。
+手順は [docs/release.md](docs/release.md)。要約: 未コミットを残さない → `npm test` → `npm run release` → `git push --follow-tags origin master` → Actions 確認（GitHub Release に `extension.zip` / `extension-firefox.zip`、CWS 自動公開。Firefox は AMO を手動。詳細は同ドキュメントの「5. Firefox（AMO）への手動提出」）。
 
 ## Cursor
 

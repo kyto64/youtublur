@@ -1,6 +1,6 @@
 # youtublur
 
-YouTubeを、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を提供するChrome拡張機能です。
+YouTubeを、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を提供するブラウザ拡張機能です（Chrome / Firefox 向け Manifest V3）。
 
 ## 機能
 
@@ -10,18 +10,28 @@ YouTubeを、もっと目に優しく。動画のブラー背景でやわらか�
 
 ## インストール方法
 
+### Chrome
+
 1. このリポジトリをダウンロードまたはクローンする
-2. 依存関係のインストール: `npm ci`
-3. Chromeで `chrome://extensions/` を開く
-4. 右上の「デベロッパーモード」をONにする
+2. 依存関係のインストール: `npm ci`（開発・テスト用）
+3. Chrome で `chrome://extensions/` を開く
+4. 右上の「デベロッパーモード」を ON にする
 5. 「パッケージ化されていない拡張機能を読み込む」をクリック
 6. このプロジェクトのフォルダを選択する
+
+### Firefox（開発時の一時読み込み）
+
+1. 上記と同様にリポジトリを用意する
+2. Firefox のアドレスバーに `about:debugging` と入力して開く
+3. 「この Firefox」→「一時的な拡張機能を読み込む」で、リポジトリ直下の **`manifest.json`** を選ぶ（Firefox は通常、zip ではなくマニフェストファイルを指定する）
+
+ストア経由の配布は、Chrome では Chrome Web Store、Firefox では [AMO](https://addons.mozilla.org/) を利用する（Firefox はリリース zip を手動提出する手順は [docs/release.md](docs/release.md) を参照）。
 
 ## ファイル構成
 
 ```
 youtublur/
-├── .github/workflows/ # CI（master 向けテスト・Lint、v* タグ時の CWS 公開）
+├── .github/workflows/ # CI（master 向けテスト・Lint、v* タグ時の Release zip・CWS 公開）
 ├── _locales/          # 多言語メッセージ（拡張名・説明・UI。基準は en）
 ├── manifest.json      # 拡張機能の設定
 ├── package.json       # プロジェクト設定・スクリプト
@@ -32,7 +42,7 @@ youtublur/
 ├── popup.html         # モード切替UI
 ├── popup.js           # 設定保存
 ├── popup.test.js      # popup.jsのテスト
-├── scripts/           # バージョン同期・CWS アップロード・トークン同期など
+├── scripts/           # バージョン同期（sync-version.js）・CWS 公開用スクリプトなど
 ├── docs/              # リリース手順・ストア用文案など
 ├── icons/             # アイコン画像
 ├── README.md          # このファイル
@@ -41,7 +51,7 @@ youtublur/
 
 ## 使い方
 
-拡張機能アイコンをクリックし、「単色」または「ブラー」を選択してください。設定は自動保存され、複数デバイス間で同期されます。
+拡張機能アイコンをクリックし、「単色」または「ブラー」を選択してください。設定は自動保存され、ブラウザの同期機能（Chrome 同期 / Firefox Sync など）が有効な場合は端末間で同期されます。
 
 ## 開発とテスト
 
@@ -53,7 +63,7 @@ youtublur/
 
 ## GitHub Actions でのストア公開とシークレット
 
-`v*` 形式のタグ（例: `v1.4.0`）を push すると、[Publish to Chrome Web Store](.github/workflows/publish.yml) が実行され、拡張の zip をアップロードして公開します。
+`v*` 形式のタグ（例: `v1.4.0`）を push すると、[Publish to Chrome Web Store](.github/workflows/publish.yml) が実行され、GitHub Release に `extension.zip` と Firefox 手動提出用の `extension-firefox.zip`（同一内容）が添付されたうえで、Chrome Web Store に zip がアップロードされ公開されます。
 
 リポジトリに次の **Actions 用シークレット** を設定してください。
 
@@ -142,4 +152,5 @@ AUTH_CODE='ブラウザのリダイレクトURLからコピーしたcode' node s
 
 ## 対応ブラウザ
 
-- Google Chrome（Manifest V3対応）
+- Google Chrome（Manifest V3）
+- Mozilla Firefox（Manifest V3。`manifest.json` の `browser_specific_settings.gecko` を参照）
