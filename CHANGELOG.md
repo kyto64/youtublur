@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.5.0](https://github.com/kyto64/youtublur/compare/v1.4.0...v1.5.0) (2026-04-10)
+
+
+### Features
+
+* add extension i18n (en, ja, ko, zh_CN, zh_TW, es, pt_BR, id) ([09c9ff3](https://github.com/kyto64/youtublur/commit/09c9ff35a3734ae7126a576328f5bb6d14db138e))
+
+
+### Bug Fixes
+
+* eager blur init and backoff retry for first-load failures ([4ef1947](https://github.com/kyto64/youtublur/commit/4ef19479ef6e029a034f93dfbccf8c06ecd696e8))
+
 ## [1.4.0](https://github.com/kyto64/youtublur/compare/v1.3.0...v1.4.0) (2026-03-28)
 
 
