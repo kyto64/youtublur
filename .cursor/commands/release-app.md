@@ -43,7 +43,7 @@
 
 4. **CI の確認**
 
-   [GitHub Actions](https://github.com/kyto64/youtublur/actions) で `publish.yml` が成功するまで確認する（lint、テスト、`extension.zip` / `extension-firefox.zip`、GitHub Release、Chrome Web Store 公開）。
+   [GitHub Actions](https://github.com/kyto64/youtublur/actions) で `publish.yml` が成功するまで確認する（lint、テスト、`extension.zip` / `extension-firefox.zip`、GitHub Release、Chrome Web Store 公開。リポジトリ変数 `AMO_PUBLISH=true` と AMO 用シークレットを設定している場合は Firefox AMO へのアップロードも含む）。
 
 ## よくあるミス
 

@@ -63,9 +63,9 @@ youtublur/
 
 ## GitHub Actions でのストア公開とシークレット
 
-`v*` 形式のタグ（例: `v1.4.0`）を push すると、[Publish to Chrome Web Store](.github/workflows/publish.yml) が実行され、GitHub Release に `extension.zip` と Firefox 手動提出用の `extension-firefox.zip`（同一内容）が添付されたうえで、Chrome Web Store に zip がアップロードされ公開されます。
+`v*` 形式のタグ（例: `v1.4.0`）を push すると、[Publish extensions](.github/workflows/publish.yml) が実行され、GitHub Release に `extension.zip` と `extension-firefox.zip`（同一内容）が添付されたうえで、Chrome Web Store に zip がアップロードされ公開されます。Firefox（AMO）への自動アップロードは任意（下表の変数と AMO 用シークレット）。
 
-リポジトリに次の **Actions 用シークレット** を設定してください。
+### Chrome Web Store 用シークレット
 
 | シークレット名 | 内容 |
 |----------------|------|
@@ -73,6 +73,17 @@ youtublur/
 | `CHROME_CLIENT_ID` | Google Cloud の OAuth 2.0 クライアント ID |
 | `CHROME_CLIENT_SECRET` | 上記クライアントのクライアントシークレット |
 | `CHROME_REFRESH_TOKEN` | 下記「再発行」手順で取得するリフレッシュトークン |
+
+### Firefox AMO（任意・自動アップロード）
+
+| 種別 | 名前 | 内容 |
+|------|------|------|
+| Variable | `AMO_PUBLISH` | `true` のときだけ、タグ時に AMO（listed）へ `extension-firefox.zip` を送る。 |
+| Secret | `AMO_ADDON_ID` | AMO のアドオン slug・数値 ID、または UUID。[API キー](https://addons.mozilla.org/developers/addon/api/key/)は同じ開発者ハブから取得。 |
+| Secret | `AMO_JWT_ISSUER` | AMO の JWT **issuer**。 |
+| Secret | `AMO_JWT_SECRET` | AMO の JWT **secret**。 |
+
+手動提出のみにする場合は `AMO_PUBLISH` を設定しない（または `true` 以外）。詳細は [docs/release.md](docs/release.md) の「5. Firefox（AMO）」。
 
 ### リフレッシュトークンの再発行
 
@@ -137,7 +148,7 @@ https://accounts.google.com/o/oauth2/v2/auth?client_id=CLIENT_ID&redirect_uri=ht
    - 手順 2 でクライアントを新しくした場合は `CHROME_CLIENT_ID` と `CHROME_CLIENT_SECRET` も **同じクライアントの値**に更新する。
 
 6. **確認**
-   - 新しい `v*` タグを push するか、失敗した **Publish to Chrome Web Store** ワークフローを再実行する。
+   - 新しい `v*` タグを push するか、失敗した **Publish extensions** ワークフローを再実行する。
 
 ### 補助: `.env` と `gh` でリフレッシュトークンを登録
 

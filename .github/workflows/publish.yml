@@ -1,4 +1,4 @@
-name: Publish to Chrome Web Store
+name: Publish extensions (Chrome Web Store & Firefox AMO)
 
 on:
   push:
@@ -59,3 +59,15 @@ jobs:
           CWS_ZIP_PATH: extension.zip
           CWS_PUBLISH: 'true'
         run: node scripts/publish-chrome-webstore.mjs
+
+      - name: Upload to Firefox AMO (listed)
+        if: ${{ vars.AMO_PUBLISH == 'true' }}
+        uses: browser-actions/release-firefox-addon@v0.2.1
+        with:
+          addon-id: ${{ secrets.AMO_ADDON_ID }}
+          addon-path: extension-firefox.zip
+          channel: listed
+          compatibility-firefox-min: '109.0'
+          release-note: 'Release ${{ github.ref_name }}. See GitHub Release for assets and notes.'
+          auth-api-issuer: ${{ secrets.AMO_JWT_ISSUER }}
+          auth-api-secret: ${{ secrets.AMO_JWT_SECRET }}

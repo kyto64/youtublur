@@ -62,17 +62,35 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 4. `extension-firefox.zip` の作成（`extension.zip` と同一内容。AMO 提出用のファイル名として区別しやすくするため）
 5. GitHub Release の作成（上記 2 つの zip を添付）
 6. Chrome Web Store への公開（`extension.zip` のみ使用）
+7. **（任意）** Firefox AMO への **listed** 版として `extension-firefox.zip` をアップロード（下記「AMO 自動アップロード」を有効にした場合のみ）
 
 👉 [GitHub Actions](https://github.com/kyto64/youtublur/actions) でステータスを確認する。
 
 ---
 
-## 5. Firefox（AMO）への手動提出
+## 5. Firefox（AMO）
 
-Chrome Web Store とは別に、[addons.mozilla.org](https://addons.mozilla.org/developers/) から拡張を登録・更新する。
+### 5.1 AMO 自動アップロード（GitHub Actions）
+
+リポジトリの **Settings → Secrets and variables → Actions** で次を設定する。
+
+| 種別 | 名前 | 内容 |
+|------|------|------|
+| Variable | `AMO_PUBLISH` | `true` にするとタグ時ワークフローで AMO へアップロードする。未設定または `true` 以外なら **スキップ**（Chrome のみの運用にできる）。 |
+| Secret | `AMO_ADDON_ID` | AMO 上のアドオン識別子。数値 ID・UUID、または URL の `/addon/<slug>/` の **slug**（例: `youtublur`）が使える。 |
+| Secret | `AMO_JWT_ISSUER` | [AMO API キー](https://addons.mozilla.org/developers/addon/api/key/) の **JWT issuer**（画面の「ユーザー」相当の文字列）。 |
+| Secret | `AMO_JWT_SECRET` | 同ページの **JWT secret**。 |
+
+ワークフローは [browser-actions/release-firefox-addon](https://github.com/browser-actions/release-firefox-addon)（`v0.2.1` 固定）を使う。アップロード後も **Mozilla の審査**は従来どおり行われ、承認までストアには出ない場合がある。
+
+初めて AMO に出す場合は、開発者ハブでアドオンを一度登録し、上記 `AMO_ADDON_ID` が指すアドオンに対して API からバージョンを載せられる状態にしておく。
+
+### 5.2 手動提出（自動化しない場合）
+
+`AMO_PUBLISH` を `true` にしない場合は、従来どおり手動でよい。
 
 1. GitHub Release から **`extension-firefox.zip`**（または **`extension.zip`**。中身は同一）を取得する。
-2. AMO の「新しいバージョンをアップロード」などから zip を提出する。
+2. [addons.mozilla.org/developers](https://addons.mozilla.org/developers/) の「新しいバージョンをアップロード」などから zip を提出する。
 3. 初回登録時、`manifest.json` の `browser_specific_settings.gecko.id`（現在は `youtublur@kyto64.github.io`）が AMO 上のアドオン ID と一致している必要がある。AMO 側で別 ID が割り当てられている場合は、マニフェストの `id` をその値に合わせてから再リリースする。
 
 ### リリース前の Firefox 動作確認（推奨）
