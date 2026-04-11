@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.6.0](https://github.com/kyto64/youtublur/compare/v1.5.0...v1.6.0) (2026-04-11)
+
+
+### Features
+
+* add localized descriptions for YouTube viewing extension in multiple languages ([903ce25](https://github.com/kyto64/youtublur/commit/903ce25a9a2fb8ba4f8a47cbb9d3f77d913ab23b))
+
 ## [1.5.0](https://github.com/kyto64/youtublur/compare/v1.4.0...v1.5.0) (2026-04-10)
 
 
