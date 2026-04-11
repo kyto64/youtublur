@@ -1,6 +1,30 @@
 const STORAGE_KEY = 'playerBackgroundMode';
-const BLUR_STRENGTH = 40;
+/** Blur radius (px); same value on Chrome and Firefox (Gecko uses a two-step draw for correct filter). */
+const BLUR_STRENGTH_PX = 40;
 const DRAW_INTERVAL = 2; // 描画を2フレームに1回にして軽量化
+
+/**
+ * True when the page runs on Gecko (Firefox). UA alone is unreliable:
+ * privacy.resistFingerprinting can spoof navigator.userAgent as Chrome.
+ * @returns {boolean}
+ */
+function isGeckoLayoutEngine() {
+  try {
+    return (
+      typeof CSS !== 'undefined' &&
+      typeof CSS.supports === 'function' &&
+      CSS.supports('-moz-appearance', 'none')
+    );
+  } catch {
+    return false;
+  }
+}
+
+const geckoLayout = isGeckoLayoutEngine();
+
+/** Gecko: ctx.filter + drawImage(video) can drop the frame; blur a raster copy instead. */
+let geckoVideoSnapCanvas = null;
+let geckoVideoSnapCtx = null;
 
 let currentMode = 'blur';
 let blurCanvas = null;
@@ -94,6 +118,26 @@ function getVideoElement(container) {
   return container?.querySelector('video');
 }
 
+function ensureGeckoVideoSnapCanvas(w, h) {
+  if (typeof document === 'undefined') return null;
+  if (!geckoVideoSnapCanvas) {
+    geckoVideoSnapCanvas = document.createElement('canvas');
+    geckoVideoSnapCanvas.id = 'yt-light-bg-blur-gecko-snap';
+    geckoVideoSnapCtx = geckoVideoSnapCanvas.getContext('2d');
+    if (!geckoVideoSnapCtx) return null;
+  }
+  if (geckoVideoSnapCanvas.width !== w || geckoVideoSnapCanvas.height !== h) {
+    geckoVideoSnapCanvas.width = w;
+    geckoVideoSnapCanvas.height = h;
+  }
+  return geckoVideoSnapCtx;
+}
+
+function releaseGeckoVideoSnapCanvas() {
+  geckoVideoSnapCanvas = null;
+  geckoVideoSnapCtx = null;
+}
+
 function createBlurCanvas(container) {
   const existing = container?.querySelector('#yt-light-bg-blur-canvas');
   if (existing) {
@@ -163,7 +207,29 @@ function drawBlurFrame(video, canvas, ctx) {
     sy = (vh - sh) / 2;
   }
 
-  ctx.filter = `blur(${BLUR_STRENGTH}px)`;
+  if (geckoLayout) {
+    const snapCtx = ensureGeckoVideoSnapCanvas(cw, ch);
+    if (snapCtx) {
+      snapCtx.filter = 'none';
+      try {
+        snapCtx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+      } catch {
+        /* same-origin / decode issues as main path */
+        return;
+      }
+      ctx.filter = `blur(${BLUR_STRENGTH_PX}px)`;
+      try {
+        ctx.drawImage(geckoVideoSnapCanvas, 0, 0);
+      } catch {
+        /* skip frame */
+      } finally {
+        ctx.filter = 'none';
+      }
+      return;
+    }
+  }
+
+  ctx.filter = `blur(${BLUR_STRENGTH_PX}px)`;
   try {
     ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
   } catch {
@@ -300,6 +366,7 @@ function teardownPlayerPageBlur() {
   blurCanvas = null;
   blurCtx = null;
   frameCount = 0;
+  releaseGeckoVideoSnapCanvas();
 }
 
 function observePlayer() {
@@ -429,6 +496,8 @@ initExtension();
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    BLUR_STRENGTH_PX,
+    isGeckoLayoutEngine,
     getPlayerContainer,
     getVideoElement,
     createBlurCanvas,
@@ -460,6 +529,7 @@ if (typeof module !== 'undefined' && module.exports) {
       blurCtx = null;
       stopBlurLoop();
       frameCount = 0;
+      releaseGeckoVideoSnapCanvas();
     }
   };
 }

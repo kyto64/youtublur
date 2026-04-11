@@ -1,5 +1,7 @@
 import { vi } from 'vitest';
 const {
+  BLUR_STRENGTH_PX,
+  isGeckoLayoutEngine,
   createBlurCanvas,
   applyMode,
   getPlayerContainer,
@@ -143,6 +145,14 @@ describe('content.js', () => {
 
     initBlurForPlayer(container);
     expect(container.querySelector('canvas')).toBeNull();
+  });
+
+  test('blur strength is single value aligned with Chrome', () => {
+    expect(BLUR_STRENGTH_PX).toBe(40);
+  });
+
+  test('isGeckoLayoutEngine returns boolean', () => {
+    expect(typeof isGeckoLayoutEngine()).toBe('boolean');
   });
 
   test('drawBlurFrame skips when readyState is low', () => {
