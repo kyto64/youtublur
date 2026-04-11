@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.6.1](https://github.com/kyto64/youtublur/compare/v1.6.0...v1.6.1) (2026-04-11)
+
+
+### Bug Fixes
+
+* **ci:** use scalar files input for action-gh-release ([c31e5a9](https://github.com/kyto64/youtublur/commit/c31e5a9aa3e36d8682c105f60c49ecd5279ab316))
+
 ## [1.6.0](https://github.com/kyto64/youtublur/compare/v1.5.0...v1.6.0) (2026-04-11)
 
 
