@@ -13,7 +13,9 @@ const {
   resizeCanvas,
   handleResize,
   setMode,
-  initExtension
+  initExtension,
+  startBlurLoop,
+  normalizeMode
 } = require('./content.js');
 
 function mock2dContext() {
@@ -166,6 +168,50 @@ describe('content.js', () => {
     drawBlurFrame(video, canvas, ctx);
     expect(ctx.drawImage).toHaveBeenCalledTimes(1);
     expect(ctx.filter).toBe('none');
+  });
+
+  test('drawBlurFrame resets filter when drawImage throws', () => {
+    const ctx = mock2dContext();
+    ctx.drawImage = vi.fn(() => {
+      throw new Error('draw failed');
+    });
+    const video = document.createElement('video');
+    Object.defineProperty(video, 'readyState', { value: 4, configurable: true });
+    Object.defineProperty(video, 'videoWidth', { value: 1920, configurable: true });
+    Object.defineProperty(video, 'videoHeight', { value: 1080, configurable: true });
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 450;
+
+    expect(() => drawBlurFrame(video, canvas, ctx)).not.toThrow();
+    expect(ctx.filter).toBe('none');
+  });
+
+  test('normalizeMode maps only solid; otherwise blur', () => {
+    expect(normalizeMode('solid')).toBe('solid');
+    expect(normalizeMode('blur')).toBe('blur');
+    expect(normalizeMode(undefined)).toBe('blur');
+    expect(normalizeMode('')).toBe('blur');
+    expect(normalizeMode('other')).toBe('blur');
+  });
+
+  test('startBlurLoop cancels previous animation frame when restarted', () => {
+    const cancel = vi.spyOn(window, 'cancelAnimationFrame');
+    vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(99);
+    try {
+      const container = document.createElement('div');
+      const video = document.createElement('video');
+      container.appendChild(video);
+      document.body.appendChild(container);
+
+      applyMode('blur', container);
+      cancel.mockClear();
+
+      startBlurLoop(container);
+      expect(cancel).toHaveBeenCalled();
+    } finally {
+      vi.restoreAllMocks();
+    }
   });
 
   describe('isPlayerPagePath', () => {
@@ -408,6 +454,23 @@ describe('content.js', () => {
       expect(canvas).not.toBeNull();
       expect(canvas.style.display).toBe('none');
       expect(player.dataset.ytLightBgMode).toBe('solid');
+    });
+
+    test('treats invalid storage mode as blur', () => {
+      setMode('solid');
+      const get = vi.fn((_defaults, cb) => {
+        cb({ playerBackgroundMode: 'not-a-mode' });
+      });
+      vi.stubGlobal('chrome', {
+        storage: { sync: { get } },
+        runtime: { onMessage: { addListener: vi.fn() } }
+      });
+
+      initExtension();
+      const player = document.getElementById('movie_player');
+      expect(getMode()).toBe('blur');
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(player.dataset.ytLightBgMode).toBe('blur');
     });
   });
 });

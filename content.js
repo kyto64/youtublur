@@ -10,6 +10,7 @@ let frameCount = 0;
 let playerDomObserver = null;
 let playerResizeObserver = null;
 let youtubeNavHooksInstalled = false;
+let documentLifecycleHooksInstalled = false;
 
 const BLUR_INIT_RETRY_INITIAL_MS = 50;
 const BLUR_INIT_RETRY_MAX_MS = 2000;
@@ -75,6 +76,10 @@ function scheduleBlurInitRetryIfNeeded() {
     BLUR_INIT_RETRY_INITIAL_MS * 2 ** 0
   );
   blurInitRetryTimer = setTimeout(attemptBlurInit, firstDelay);
+}
+
+function normalizeMode(mode) {
+  return mode === 'solid' ? 'solid' : 'blur';
 }
 
 function isPlayerPagePath(pathname) {
@@ -159,8 +164,13 @@ function drawBlurFrame(video, canvas, ctx) {
   }
 
   ctx.filter = `blur(${BLUR_STRENGTH}px)`;
-  ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
-  ctx.filter = 'none';
+  try {
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
+  } catch {
+    /* drawImage can throw (e.g. SecurityError); skip frame */
+  } finally {
+    ctx.filter = 'none';
+  }
 }
 
 function resizeCanvas(container) {
@@ -192,13 +202,17 @@ function attachPlayerResizeObserver(container) {
 }
 
 function startBlurLoop(container) {
-  const video = getVideoElement(container);
-  if (!video || !blurCanvas || !blurCtx) return;
+  stopBlurLoop();
+  if (!blurCanvas || !blurCtx) return;
+  const initialContainer = container || getPlayerContainer();
+  if (!initialContainer || !getVideoElement(initialContainer)) return;
 
   function loop() {
     if (currentMode !== 'blur' || !blurCanvas) return;
+    const c = getPlayerContainer();
+    const video = c ? getVideoElement(c) : null;
     frameCount++;
-    if (frameCount % DRAW_INTERVAL === 0) {
+    if (video && frameCount % DRAW_INTERVAL === 0) {
       drawBlurFrame(video, blurCanvas, blurCtx);
     }
     animationId = requestAnimationFrame(loop);
@@ -246,11 +260,12 @@ function hideBlurMode(container) {
 }
 
 function applyMode(mode, container) {
-  currentMode = mode;
+  const normalized = normalizeMode(mode);
+  currentMode = normalized;
   const c = container || getPlayerContainer();
   if (!c) return;
 
-  if (mode === 'blur') {
+  if (normalized === 'blur') {
     showBlurMode(c);
   } else {
     hideBlurMode(c);
@@ -335,6 +350,26 @@ function observePlayer() {
   tryInit();
 }
 
+function installDocumentLifecycleHooks() {
+  if (documentLifecycleHooksInstalled) return;
+  if (typeof document === 'undefined' || typeof document.addEventListener !== 'function') return;
+  documentLifecycleHooksInstalled = true;
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      queueMicrotask(() => observePlayer());
+    }
+  });
+
+  if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    window.addEventListener('pageshow', (ev) => {
+      if (ev.persisted) {
+        queueMicrotask(() => observePlayer());
+      }
+    });
+  }
+}
+
 function installYoutubeNavigationHooks() {
   if (youtubeNavHooksInstalled) return;
   youtubeNavHooksInstalled = true;
@@ -369,7 +404,7 @@ function initExtension() {
     observePlayer();
 
     chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
-      const saved = items[STORAGE_KEY];
+      const saved = normalizeMode(items[STORAGE_KEY]);
       if (saved !== currentMode) {
         applyMode(saved, getPlayerContainer());
       } else {
@@ -379,7 +414,6 @@ function initExtension() {
 
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'BG_MODE_CHANGED') {
-        currentMode = msg.mode;
         applyMode(msg.mode, getPlayerContainer());
       }
     });
@@ -388,6 +422,7 @@ function initExtension() {
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('resize', handleResize);
   }
+  installDocumentLifecycleHooks();
 }
 
 initExtension();
@@ -410,6 +445,7 @@ if (typeof module !== 'undefined' && module.exports) {
     teardownPlayerPageBlur,
     handleResize,
     initExtension,
+    normalizeMode,
     setMode: (m) => { currentMode = m; },
     getMode: () => currentMode,
     resetState: () => {
