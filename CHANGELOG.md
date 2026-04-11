@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.7.0](https://github.com/kyto64/youtublur/compare/v1.6.1...v1.7.0) (2026-04-11)
+
+
+### Features
+
+* enhance blur functionality for Gecko layout engine ([55deca1](https://github.com/kyto64/youtublur/commit/55deca129fada81fe6dda5ad27bc34c8a7dafd8a))
+
 ## [1.6.1](https://github.com/kyto64/youtublur/compare/v1.6.0...v1.6.1) (2026-04-11)
 
 
