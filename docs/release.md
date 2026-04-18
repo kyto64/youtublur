@@ -7,6 +7,21 @@
 
 ---
 
+## Dependabot（自動マージ・自動パッチリリース）
+
+設定は [.github/dependabot.yml](.github/dependabot.yml)。依存関係の更新が **semver major** の PR にはラベル `semver-major` が付き、`kyto64` にレビュー依頼とコメント通知される（自動マージしない）。**patch / minor** は CI 合格後に [.github/workflows/dependabot-auto-merge.yml](.github/workflows/dependabot-auto-merge.yml) がラベル `dependabot-auto-release` を付与し、承認して自動マージ（squash）する。マージ完了後、同ラベル付き PR についてのみ [.github/workflows/dependabot-patch-release.yml](.github/workflows/dependabot-patch-release.yml) が `npm run release -- --release-as patch` でパッチバージョン・CHANGELOG・タグまで `master` に push する。**major PR を手動マージしたあとは自動パッチリリースは走らない**ので、バージョンとタグは従来どおりローカルで `npm run release` して push する。
+
+### GitHub 側の確認（初回）
+
+| 確認項目 | 場所 | メモ |
+|----------|------|------|
+| Workflow を書き込み可能にする | **Settings → Actions → General → Workflow permissions** | **Read and write** を選ぶ |
+| Actions による PR 承認 | **Settings → Actions → General** | **Allow GitHub Actions to create and approve pull requests** をオン（自動承認・自動マージに必要） |
+| 必須チェック | Branch protection / Rulesets | `lint` と `test` を必須にしている場合、その名前が緑になるまで自動マージは待つ |
+| `master` への push | Branch protection / Rulesets | `GITHUB_TOKEN` が push を拒否する場合は Rules で GitHub Actions の push を許可するか、書き込み可能な PAT を Secrets に用意する |
+
+---
+
 ## 1. テストを実行する
 
 ```bash
@@ -77,7 +92,7 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 | 種別 | 名前 | 内容 |
 |------|------|------|
 | Variable | `AMO_PUBLISH` | `true` にするとタグ時ワークフローで AMO へアップロードする。未設定または `true` 以外なら **スキップ**（Chrome のみの運用にできる）。 |
-| Secret | `AMO_ADDON_ID` | AMO 上のアドオン識別子。数値 ID・UUID、または URL の `/addon/<slug>/` の **slug**（例: `youtublur`）が使える。 |
+| Secret | `AMO_ADDON_ID` | **このリポジトリでは AMO の slug を `youtublur` とする。** GitHub の Secret にはそのまま `youtublur` を設定する（`manifest.json` の `gecko.id` メール形式とは別物。数値 ID・UUIDでも可だが slug が分かっているなら `youtublur` でよい）。 |
 | Secret | `AMO_JWT_ISSUER` | [AMO API キー](https://addons.mozilla.org/developers/addon/api/key/) の **JWT issuer**（画面の「ユーザー」相当の文字列）。 |
 | Secret | `AMO_JWT_SECRET` | 同ページの **JWT secret**。 |
 
