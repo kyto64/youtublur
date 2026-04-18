@@ -25,7 +25,8 @@ jobs:
         with:
           ref: master
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # Optional: PAT so tag push triggers publish.yml (GITHUB_TOKEN pushes do not start other workflows).
+          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
 
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
