@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.7.3](https://github.com/kyto64/youtublur/compare/v1.7.2...v1.7.3) (2026-04-18)
+
+
+### Features
+
+* **ci:** add Dependabot and automated patch releases ([f88c011](https://github.com/kyto64/youtublur/commit/f88c01159644a5401caf9bce54d7eaf2cf793801))
+
 ## [1.7.2](https://github.com/kyto64/youtublur/compare/v1.7.1...v1.7.2) (2026-04-18)
 
 
