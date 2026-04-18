@@ -17,7 +17,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout master
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: master
           fetch-depth: 0
@@ -47,7 +47,7 @@ jobs:
 
       - name: Setup Vite+
         if: steps.need.outputs.need_release == 'true'
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@237a7eda494c3466dcb53e9f067142b9218d64a1 # v1
         with:
           node-version: '22'
           cache: true

@@ -13,10 +13,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1
+        uses: voidzero-dev/setup-vp@237a7eda494c3466dcb53e9f067142b9218d64a1 # v1
         with:
           node-version: '22'
           cache: true
@@ -43,7 +43,7 @@ jobs:
           cp extension.zip extension-firefox.zip
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v3
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3
         with:
           files: |
             extension.zip
@@ -62,7 +62,7 @@ jobs:
 
       - name: Upload to Firefox AMO (listed)
         if: ${{ vars.AMO_PUBLISH == 'true' }}
-        uses: browser-actions/release-firefox-addon@v0.2.1
+        uses: browser-actions/release-firefox-addon@a2b87fa58496f1209bbc13b0eb94c98695d8fd1c # v0.2.1
         with:
           addon-id: ${{ secrets.AMO_ADDON_ID }}
           addon-path: extension-firefox.zip
