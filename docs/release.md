@@ -9,9 +9,14 @@
 
 ## Dependabot（自動マージ・自動パッチリリース）
 
-設定は [.github/dependabot.yml](.github/dependabot.yml)。依存関係の更新が **semver major** の PR にはラベル `semver-major` が付き、`kyto64` にレビュー依頼とコメント通知される（自動マージしない）。**patch / minor** は CI 合格後に [.github/workflows/dependabot-auto-merge.yml](.github/workflows/dependabot-auto-merge.yml) がラベル `dependabot-auto-release` を付与し、承認して自動マージ（squash）する。マージ完了後、同ラベル付き PR についてのみ [.github/workflows/dependabot-patch-release.yml](.github/workflows/dependabot-patch-release.yml) が `npm run release -- --release-as patch` でパッチバージョン・CHANGELOG・タグまで `master` に push する。**major PR を手動マージしたあとは自動パッチリリースは走らない**ので、バージョンとタグは従来どおりローカルで `npm run release` して push する。
+設定は [.github/dependabot.yml](.github/dependabot.yml)。
 
-GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグで [`publish.yml`](.github/workflows/publish.yml) が走らない。Chrome / AMO まで自動で繋げる場合は、リポジトリ Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、[dependabot-patch-release.yml](.github/workflows/dependabot-patch-release.yml) が checkout／push に使うようにする。未設定のときは `github.token` のみでコミットとタグの push は行われるが、公開は **手動でタグを再 push する**など別途トリガーが必要。
+- **semver major** の PR にはラベル `semver-major` が付き、`kyto64` にレビュー依頼とコメント通知される（自動マージしない）。
+- **patch / minor** は CI 合格後に [.github/workflows/dependabot-auto-merge.yml](.github/workflows/dependabot-auto-merge.yml) が承認して自動マージ（squash）する。
+- **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降に `package.json` / `package-lock.json` の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。同日に Dependabot が複数マージしても、その日の自動実行は高々 1 回の `npm run release -- --release-as patch` にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
+- **major PR を手動マージしたあと**のバージョンとタグは従来どおりローカルで `npm run release` して push する。
+
+GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグで [`publish.yml`](.github/workflows/publish.yml) が走らない。Chrome / AMO まで自動で繋げる場合は、リポジトリ Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が checkout／push に使うようにする。未設定のときは `github.token` のみでコミットとタグの push は行われるが、公開は **手動でタグを再 push する**など別途トリガーが必要。
 
 ### GitHub 側の確認（初回）
 
@@ -22,6 +27,7 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 | 必須チェック | Branch protection / Rulesets | `lint` と `test` を必須にしている場合、その名前が緑になるまで自動マージは待つ |
 | `master` への push | Branch protection / Rulesets | `GITHUB_TOKEN` が push を拒否する場合は Rules で GitHub Actions の push を許可する |
 | タグ後の `publish.yml` まで自動化 | **Settings → Secrets and variables → Actions** | 任意で Secret `RELEASE_PUSH_TOKEN`。未設定ならタグは付くが `publish.yml` は自動起動しない（上記の通り） |
+| 日次 cron の時刻 | [dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) の `cron` | GitHub は **UTC**。変更する場合はこの行を編集する |
 
 ---
 
