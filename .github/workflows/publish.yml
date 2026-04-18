@@ -13,7 +13,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@v1
@@ -43,7 +43,7 @@ jobs:
           cp extension.zip extension-firefox.zip
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           files: |
             extension.zip
