@@ -65,15 +65,6 @@ jobs:
       contents: write
       pull-requests: write
     steps:
-      - name: Label patch/minor PRs for post-merge release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh label create dependabot-auto-release --color 0E8A16 --description 'Post-merge patch release eligible' --repo "${{ github.repository }}" || true
-          gh pr edit "${{ github.event.pull_request.number }}" \
-            --add-label dependabot-auto-release \
-            --repo "${{ github.repository }}"
-
       - name: Approve and enable auto-merge (squash)
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

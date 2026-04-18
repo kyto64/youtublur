@@ -1,0 +1,71 @@
+name: Dependabot daily patch release
+
+on:
+  schedule:
+    # Once per day (UTC). Automatic patch release runs at most once per calendar day via this cron.
+    - cron: '0 15 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: daily-patch-release-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  patch-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          fetch-depth: 0
+          fetch-tags: true
+          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
+
+      - name: Fetch tags from origin
+        run: git fetch origin --tags
+
+      - name: Decide if patch release is needed
+        id: need
+        run: |
+          set -euo pipefail
+          TAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+          if [ -z "${TAG}" ]; then
+            echo "need_release=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::No matching v* tag on master; skipping automated patch release."
+            exit 0
+          fi
+          echo "Latest semver tag: ${TAG}"
+          if git diff --quiet "${TAG}"..HEAD -- package.json package-lock.json; then
+            echo "need_release=false" >> "$GITHUB_OUTPUT"
+            echo "No dependency manifest changes since ${TAG}; skipping release."
+          else
+            echo "need_release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup Vite+
+        if: steps.need.outputs.need_release == 'true'
+        uses: voidzero-dev/setup-vp@v1
+        with:
+          node-version: '22'
+          cache: true
+
+      - name: Install dependencies
+        if: steps.need.outputs.need_release == 'true'
+        run: npm ci
+
+      - name: Configure git committer
+        if: steps.need.outputs.need_release == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Bump patch version, changelog, manifest, and tag
+        if: steps.need.outputs.need_release == 'true'
+        run: npm run release -- --release-as patch
+
+      - name: Push release commit and tags
+        if: steps.need.outputs.need_release == 'true'
+        run: git push origin master --follow-tags
