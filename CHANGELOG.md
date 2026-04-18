@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.7.2](https://github.com/kyto64/youtublur/compare/v1.7.1...v1.7.2) (2026-04-18)
+
+
+### Bug Fixes
+
+* **security:** resolve Dependabot vite alert (CVE-2026-39364) ([de6d89f](https://github.com/kyto64/youtublur/commit/de6d89f7ca1b3e10058327917e5986344e6ad207))
+
 ## [1.7.1](https://github.com/kyto64/youtublur/compare/v1.7.0...v1.7.1) (2026-04-18)
 
 
