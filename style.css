@@ -2,13 +2,12 @@
    youtublur - プレイヤー背景スタイル
 ========================================================= */
 
-/* 単色モード時：薄いグレーで落ち着いた背景に */
-.html5-video-player,
-.html5-video-player video,
-#player-full-bleed-container,
-#player-container,
-ytd-player,
-.html5-video-player.fullscreen {
+/* 単色モード時のみ薄いグレーで塗る（属性が明示された場合だけ適用） */
+.html5-video-player[data-yt-light-bg-mode="solid"],
+.html5-video-player[data-yt-light-bg-mode="solid"] video,
+#player-full-bleed-container:has([data-yt-light-bg-mode="solid"]),
+#player-container:has([data-yt-light-bg-mode="solid"]),
+ytd-player:has([data-yt-light-bg-mode="solid"]) {
     background-color: #f1f1f1 !important;
 }
 

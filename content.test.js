@@ -353,7 +353,6 @@ describe('content.js', () => {
     });
 
     test('schedules blur init when video is inserted after player without video', async () => {
-      // #content が無い場合は document.body を監視する（本番と同じ分岐）。JSDOM では body 監視の方が MO が安定する。
       document.body.innerHTML = '<div id="movie_player"></div>';
       const player = document.getElementById('movie_player');
 
@@ -413,6 +412,43 @@ describe('content.js', () => {
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
       expect(player.dataset.ytLightBgMode).toBe('blur');
       vi.useRealTimers();
+    });
+
+    test('retry continues polling when player container does not exist yet', async () => {
+      vi.useFakeTimers();
+      vi.stubGlobal('location', { pathname: '/watch' });
+      document.body.innerHTML = '';
+
+      observePlayer();
+
+      // container も video も存在しない状態でタイマーが動いていること
+      await vi.advanceTimersByTimeAsync(49);
+      expect(document.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+
+      // container + video を後から挿入
+      const player = document.createElement('div');
+      player.id = 'movie_player';
+      player.appendChild(document.createElement('video'));
+      document.body.appendChild(player);
+
+      await vi.advanceTimersByTimeAsync(51);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(player.dataset.ytLightBgMode).toBe('blur');
+      vi.useRealTimers();
+    });
+
+    test('sets blur attribute early on container before canvas is ready', () => {
+      document.body.innerHTML = '<div id="movie_player"></div>';
+      const player = document.getElementById('movie_player');
+
+      // video が無い状態 (canvas 未生成) でも属性が先行付与される
+      observePlayer();
+
+      expect(player.dataset.ytLightBgMode).toBe('blur');
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
     });
   });
 

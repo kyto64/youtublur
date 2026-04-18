@@ -59,9 +59,8 @@ function scheduleBlurInitRetryIfNeeded() {
     stopBlurInitRetryCompletely();
     return;
   }
-  const c = getPlayerContainer();
-  if (!c || blurCanvas) {
-    if (blurCanvas) stopBlurInitRetryCompletely();
+  if (blurCanvas) {
+    stopBlurInitRetryCompletely();
     return;
   }
   if (blurInitRetryTimer !== null) return;
@@ -73,14 +72,12 @@ function scheduleBlurInitRetryIfNeeded() {
       return;
     }
     const container = getPlayerContainer();
-    if (!container) {
-      stopBlurInitRetryCompletely();
-      return;
-    }
-    initBlurForPlayer(container);
-    if (blurCanvas) {
-      stopBlurInitRetryCompletely();
-      return;
+    if (container) {
+      initBlurForPlayer(container);
+      if (blurCanvas) {
+        stopBlurInitRetryCompletely();
+        return;
+      }
     }
     blurInitRetryAttempt += 1;
     if (blurInitRetryAttempt >= BLUR_INIT_RETRY_MAX_ATTEMPTS) {
@@ -375,6 +372,13 @@ function observePlayer() {
     return;
   }
 
+  if (currentMode === 'blur') {
+    const earlyContainer = getPlayerContainer();
+    if (earlyContainer && !earlyContainer.dataset.ytLightBgMode) {
+      earlyContainer.dataset.ytLightBgMode = 'blur';
+    }
+  }
+
   function tryInit() {
     if (typeof document === 'undefined') return;
     const c = getPlayerContainer();
@@ -410,8 +414,7 @@ function observePlayer() {
       }
     });
 
-    const root = document.querySelector('#content') || document.body;
-    playerDomObserver.observe(root, { childList: true, subtree: true });
+    playerDomObserver.observe(document.documentElement, { childList: true, subtree: true });
   }
 
   tryInit();
