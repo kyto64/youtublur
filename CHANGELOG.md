@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.7.1](https://github.com/kyto64/youtublur/compare/v1.7.0...v1.7.1) (2026-04-18)
+
+
+### Bug Fixes
+
+* improve blur init and scope solid-mode background styles ([5a67b0a](https://github.com/kyto64/youtublur/commit/5a67b0a2e0a9f6ce677044444db1a96f627def3c))
+
 ## [1.7.0](https://github.com/kyto64/youtublur/compare/v1.6.1...v1.7.0) (2026-04-11)
 
 
