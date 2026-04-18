@@ -21,7 +21,7 @@
 
 ## リリース
 
-手順は [docs/release.md](docs/release.md)。要約: 未コミットを残さない → `npm test` → `npm run release` → `git push --follow-tags origin master` → Actions 確認（GitHub Release に `extension.zip` / `extension-firefox.zip`、CWS 自動公開。Firefox AMO は変数 `AMO_PUBLISH=true` とシークレット設定時に同ワークフローで自動アップロード、未設定なら手動。詳細は同ドキュメントの「5. Firefox（AMO）」）。
+手順は [docs/release.md](docs/release.md)。要約: 未コミットを残さない → `npm test` → `npm run release` → `git push --follow-tags origin master` → Actions 確認（GitHub Release に `extension.zip` / `extension-firefox.zip`、CWS 自動公開。Firefox AMO は変数 `AMO_PUBLISH=true` とシークレット設定時に同ワークフローで自動アップロード、未設定なら手動。詳細は同ドキュメントの「5. Firefox（AMO）」）。Dependabot の patch/minor のみ、マージ後に Actions がパッチリリースまで実行する（同ドキュメントの「Dependabot」節）。
 
 ## Cursor
 
