@@ -37,6 +37,11 @@
       cursor: pointer;
       flex: 1;
     }
+    .separator {
+      border: 0;
+      border-top: 1px solid #eee;
+      margin: 12px 0;
+    }
     #reloadButton {
       justify-content: center;
       font-weight: 500;
@@ -54,7 +59,7 @@
     <input type="radio" name="bgMode" id="modeSolid" value="solid">
     <label for="modeSolid" id="labelModeSolid"></label>
   </div>
-  <hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;">
+  <hr class="separator">
   <div id="reloadButton" class="option">
     <span id="labelReload"></span>
   </div>
