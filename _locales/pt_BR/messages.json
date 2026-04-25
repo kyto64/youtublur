@@ -4,19 +4,23 @@
     "description": "Nome da extensão (marca)."
   },
   "extDescription": {
-    "message": "YouTube mais suave: desfoque atrás do vídeo para uma visualização mais confortável.",
-    "description": "Descrição curta para a Chrome Web Store e detalhes."
+    "message": "Um YouTube mais suave: fundo desfocado suave atrás do vídeo para uma visualização mais fácil.",
+    "description": "Descrição curta para a Chrome Web Store e detalhes da extensão."
   },
   "popupHeading": {
     "message": "Fundo do player",
-    "description": "Título do pop-up da barra de ferramentas."
+    "description": "Título no pop-up da barra de ferramentas."
   },
   "modeBlur": {
-    "message": "Desfoque (vídeo)",
-    "description": "Opção: vídeo desfocado como fundo."
+    "message": "Desfocado (vídeo)",
+    "description": "Opção de rádio: vídeo desfocado como fundo."
   },
   "modeSolid": {
-    "message": "Cor sólida (cinza claro)",
-    "description": "Opção: fundo cinza claro uniforme."
+    "message": "Sólido (cinza claro)",
+    "description": "Opção de rádio: fundo cinza plano."
+  },
+  "reloadButton": {
+    "message": "Recarregar",
+    "description": "Botão para recarregar o efeito desfocado na página atual."
   }
 }

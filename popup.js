@@ -34,6 +34,15 @@ function initPopup() {
         });
       });
     });
+
+    document.getElementById('reloadButton').addEventListener('click', () => {
+      chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const tab = tabs[0];
+        if (tab?.id && tab.url?.includes('youtube.com')) {
+          chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
+        }
+      });
+    });
   });
 }
 

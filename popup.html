@@ -37,6 +37,11 @@
       cursor: pointer;
       flex: 1;
     }
+    #reloadButton {
+      justify-content: center;
+      font-weight: 500;
+      padding: 8px 0;
+    }
   </style>
 </head>
 <body>
@@ -48,6 +53,10 @@
   <div class="option">
     <input type="radio" name="bgMode" id="modeSolid" value="solid">
     <label for="modeSolid" id="labelModeSolid"></label>
+  </div>
+  <hr style="border: 0; border-top: 1px solid #eee; margin: 12px 0;">
+  <div id="reloadButton" class="option">
+    <span id="labelReload"></span>
   </div>
   <script src="popup.js"></script>
 </body>

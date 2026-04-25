@@ -4,19 +4,23 @@
     "description": "扩展名称（品牌）。"
   },
   "extDescription": {
-    "message": "更柔和的 YouTube：在视频后方呈现柔化模糊，观看更轻松。",
-    "description": "Chrome 网上应用店与详情页的简短说明。"
+    "message": "更温和的 YouTube：视频后方的柔和模糊背景，让观看更轻松。",
+    "description": "Chrome Web Store 和扩展详情中的简短描述。"
   },
   "popupHeading": {
     "message": "播放器背景",
-    "description": "工具栏弹出窗口标题。"
+    "description": "工具栏弹出窗口中的标题。"
   },
   "modeBlur": {
     "message": "模糊（视频）",
-    "description": "单选项：将视频模糊作为背景。"
+    "description": "单选选项：将视频模糊后作为背景显示。"
   },
   "modeSolid": {
-    "message": "纯色（浅灰）",
-    "description": "单选项：浅灰色纯色背景。"
+    "message": "纯色（浅灰色）",
+    "description": "单选选项：纯灰色背景。"
+  },
+  "reloadButton": {
+    "message": "重新加载",
+    "description": "在当前页面上重新应用模糊效果的按钮。"
   }
 }

@@ -1,22 +1,26 @@
 {
   "extName": {
     "message": "youtublur",
-    "description": "확장 프로그램 이름(브랜드)."
+    "description": "확장 프로그램 이름 (브랜드)."
   },
   "extDescription": {
-    "message": "YouTube를 더 편안하게. 동영상 블러 배경으로 부드러운 시청 경험을.",
-    "description": "스토어·상세용 짧은 설명."
+    "message": "더 부드러운 유튜브: 영상 뒤의 부드러운 블러 배경으로 더 편안한 시청 경험.",
+    "description": "크롬 웹 스토어 및 확장 프로그램 세부 정보에 대한 짧은 설명."
   },
   "popupHeading": {
     "message": "플레이어 배경",
-    "description": "팝업 제목."
+    "description": "도구 모음 팝업의 제목."
   },
   "modeBlur": {
-    "message": "블러(동영상)",
-    "description": "라디오: 동영상을 흐리게 배경으로 표시."
+    "message": "블러 (영상)",
+    "description": "라디오 옵션: 영상을 흐리게하여 배경으로 표시."
   },
   "modeSolid": {
-    "message": "단색(밝은 회색)",
-    "description": "라디오: 밝은 회색 단색 배경."
+    "message": "단색 (연한 회색)",
+    "description": "라디오 옵션: 평평한 회색 배경."
+  },
+  "reloadButton": {
+    "message": "재로딩",
+    "description": "현재 페이지의 블러 효과를 다시 적용하기 위한 버튼."
   }
 }

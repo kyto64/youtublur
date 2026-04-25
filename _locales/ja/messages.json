@@ -4,7 +4,7 @@
     "description": "拡張機能名（ブランド）。"
   },
   "extDescription": {
-    "message": "YouTubeを、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を。",
+    "message": "YouTube を、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を。",
     "description": "ストア・詳細用の短い説明。"
   },
   "popupHeading": {
@@ -13,10 +13,14 @@
   },
   "modeBlur": {
     "message": "ブラー（動画のぼかし）",
-    "description": "ラジオ: 動画をぼかして背景に表示。"
+    "description": "ラジオ：動画をぼかして背景に表示。"
   },
   "modeSolid": {
     "message": "単色（薄いグレー）",
-    "description": "ラジオ: 薄いグレーの単色背景。"
+    "description": "ラジオ：薄いグレーの単色背景。"
+  },
+  "reloadButton": {
+    "message": "リロード",
+    "description": "現在のページのブラー効果を再適用するためのボタン。"
   }
 }
