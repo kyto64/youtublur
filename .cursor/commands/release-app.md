@@ -5,7 +5,7 @@
 ## 前提の確認
 
 - ブランチは `master` であること。
-- **機能変更・バグ修正など、リリースに含めたい変更はすべてコミット済み**であること（未コミットのまま `npm run release` を実行しない）。
+- **機能変更・バグ修正など、リリースに含めたい変更はすべてコミット済み**であること（未コミットのまま `pnpm run release` を実行しない）。
 
 ## 手順
 
@@ -28,10 +28,10 @@
    バージョンを明示する場合:
 
    ```bash
-   npm run release -- --release-as 1.2.4
+   pnpm run release -- --release-as 1.2.4
    ```
 
-   `npm run release`（commit-and-tag-version）は、バージョン更新にあわせて `package.json` の `version` スクリプトを実行し、[scripts/sync-version.js](scripts/sync-version.js) 経由で `manifest.json` のバージョンも揃える。CHANGELOG の更新・コミット・`v{version}` タグ作成まで行う。
+   `pnpm run release`（commit-and-tag-version）は、バージョン更新にあわせて `package.json` の `version` スクリプトを実行し、[scripts/sync-version.js](scripts/sync-version.js) 経由で `manifest.json` のバージョンも揃える。CHANGELOG の更新・コミット・`v{version}` タグ作成まで行う。
 
 3. **GitHub へ push**
 
@@ -47,5 +47,5 @@
 
 ## よくあるミス
 
-- 未コミットの変更が残ったまま `npm run release` を実行する → 先にコミットする。
+- 未コミットの変更が残ったまま `pnpm run release` を実行する → 先にコミットする。
 - タグを push しない → `git push --follow-tags` を使う。

@@ -13,7 +13,7 @@
 
 - **semver major** の PR にはラベル `semver-major` が付き、`kyto64` にレビュー依頼とコメント通知される（自動マージしない）。
 - **patch / minor** は CI 合格後に [.github/workflows/dependabot-auto-merge.yml](.github/workflows/dependabot-auto-merge.yml) が承認して自動マージ（squash）する。
-- **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降に `package.json` / `package-lock.json` の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。同日に Dependabot が複数マージしても、その日の自動実行は高々 1 回の `npm run release -- --release-as patch` にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
+- **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降に `package.json` / `pnpm-lock.yaml` の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。同日に Dependabot が複数マージしても、その日の自動実行は高々 1 回の `pnpm run release -- --release-as patch` にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
 - **major PR を手動マージしたあと**のバージョンとタグは従来どおりローカルで `pnpm run release` して push する。
 
 GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグで [`publish.yml`](.github/workflows/publish.yml) が走らない。Chrome / AMO まで自動で繋げる場合は、リポジトリ Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が checkout／push に使うようにする。未設定のときは `github.token` のみでコミットとタグの push は行われるが、公開は **手動でタグを再 push する**など別途トリガーが必要。
