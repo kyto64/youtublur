@@ -5,6 +5,7 @@
   "main": "content.js",
   "scripts": {
     "test": "vp test",
+    "test:e2e": "playwright test",
     "version": "node scripts/sync-version.js && git add manifest.json",
     "release": "commit-and-tag-version"
   },
@@ -20,6 +21,7 @@
   },
   "homepage": "https://github.com/kyto64/youtublur#readme",
   "devDependencies": {
+    "@playwright/test": "1.59.1",
     "@voidzero-dev/vite-plus-core": "0.1.18",
     "@voidzero-dev/vite-plus-test": "0.1.18",
     "chrome-webstore-upload": "4.0.3",
