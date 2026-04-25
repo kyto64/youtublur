@@ -1,10 +1,12 @@
 const { test: base, chromium, firefox } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
-const os = require('os');
 
 const extensionPath = path.join(__dirname, '..');
 const GECKO_ID = 'youtublur@kyto64.github.io';
+
+// Read once at module level to avoid repeated disk I/O per test context.
+const contentJsSrc = fs.readFileSync(path.join(extensionPath, 'content.js'), 'utf8');
 
 const CONSENT_COOKIE = {
   name: 'CONSENT',
@@ -16,15 +18,13 @@ const CONSENT_COOKIE = {
 const test = base.extend({
   context: async ({ browserName }, use) => {
     let context;
-    let firefoxProfileDir;
 
     if (browserName === 'firefox') {
       // Playwright's bundled Firefox does not support loading user extensions.
       // Instead, inject a minimal chrome API mock and the content script directly
       // into YouTube pages so we can test the content script behavior in Firefox.
-      firefoxProfileDir = fs.mkdtempSync(path.join(os.tmpdir(), 'pw-ff-profile-'));
-
-      context = await firefox.launchPersistentContext(firefoxProfileDir, {
+      // Passing '' lets launchPersistentContext manage the temp directory automatically.
+      context = await firefox.launchPersistentContext('', {
         headless: !!process.env.CI,
         firefoxUserPrefs: {
           'media.volume_scale': '0.0',
@@ -34,7 +34,6 @@ const test = base.extend({
       // Playwright's bundled Firefox does not expose document.documentElement at
       // addInitScript time, causing MutationObserver.observe() to throw. Instead,
       // inject a loader that defers content.js execution until the document is ready.
-      const contentJsSrc = fs.readFileSync(path.join(extensionPath, 'content.js'), 'utf8');
       await context.addInitScript(`
         (function () {
           if (!location.hostname.endsWith('youtube.com')) return;
@@ -44,7 +43,7 @@ const test = base.extend({
           window.chrome = {
             storage: {
               sync: {
-                get: function (_keys, callback) { callback({ youtublur_mode: 'blur' }); },
+                get: function (_keys, callback) { callback({ playerBackgroundMode: 'blur' }); },
                 set: function () {},
               },
             },
@@ -80,10 +79,6 @@ const test = base.extend({
     await context.addCookies([CONSENT_COOKIE]);
     await use(context);
     await context.close();
-
-    if (firefoxProfileDir) {
-      fs.rmSync(firefoxProfileDir, { recursive: true, force: true });
-    }
   },
 
   extensionId: async ({ browserName, context }, use) => {
