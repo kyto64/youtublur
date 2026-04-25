@@ -1,6 +1,7 @@
 const { test, expect } = require('./fixtures');
 
 test('should handle SPA navigation between video pages', async ({ page }) => {
+  test.setTimeout(90000);
   // 1. Navigate to a YouTube video
   await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 
