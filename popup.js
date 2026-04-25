@@ -39,13 +39,20 @@ function initPopup() {
 
     const reloadButton = document.getElementById('reloadButton');
     if (reloadButton) {
-      reloadButton.addEventListener('click', () => {
+      const triggerReload = () => {
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           const tab = tabs[0];
           if (tab?.id && tab.url?.includes('youtube.com')) {
             chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
           }
         });
+      };
+      reloadButton.addEventListener('click', triggerReload);
+      reloadButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          triggerReload();
+        }
       });
     }
   });
