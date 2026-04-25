@@ -11,6 +11,7 @@ const test = base.extend({
         `--headless=new`,
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
+        `--mute-audio`,
       ],
     });
     await use(context);
