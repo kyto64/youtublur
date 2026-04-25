@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.8.0](https://github.com/kyto64/youtublur/compare/v1.7.4...v1.8.0) (2026-04-25)
+
+
+### Features
+
+* Introduce Playwright E2E testing ([#20](https://github.com/kyto64/youtublur/issues/20)) ([174415f](https://github.com/kyto64/youtublur/commit/174415f89e653dd576dfc1c375c1b92261b014b2)), closes [#19](https://github.com/kyto64/youtublur/issues/19)
+
+
+### Bug Fixes
+
+* pnpm integrity hash を 16 進数形式で指定 (CI での比較エラー回避) ([3d1f815](https://github.com/kyto64/youtublur/commit/3d1f81595583cfd256c73a5786971a7b9728d53c))
+
 ## [1.7.4](https://github.com/kyto64/youtublur/compare/v1.7.3...v1.7.4) (2026-04-23)
 
 ## [1.7.3](https://github.com/kyto64/youtublur/compare/v1.7.2...v1.7.3) (2026-04-18)
