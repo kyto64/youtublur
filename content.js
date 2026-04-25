@@ -486,12 +486,11 @@ function initExtension() {
       if (msg.type === 'BG_MODE_CHANGED') {
         applyMode(msg.mode, getPlayerContainer());
       } else if (msg.type === 'RELOAD_BLUR') {
-        const container = getPlayerContainer();
-        container?.querySelector('#yt-light-bg-blur-canvas')?.remove();
         teardownPlayerPageBlur();
+        document.getElementById('yt-light-bg-blur-canvas')?.remove();
         chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
           const saved = normalizeMode(items[STORAGE_KEY]);
-          applyMode(saved, container);
+          applyMode(saved);
           observePlayer();
         });
       }
