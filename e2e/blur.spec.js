@@ -1,20 +1,19 @@
 const { test, expect } = require('./fixtures');
 
 test('should load extension and apply blur on YouTube', async ({ page, extensionId, context }) => {
+  // Set consent cookie to bypass locale-dependent GDPR banner
+  await context.addCookies([{
+    name: 'CONSENT',
+    value: 'PENDING+999',
+    domain: '.youtube.com',
+    path: '/'
+  }]);
+
   // 1. Navigate to a YouTube video
   await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ'); // Rick roll as a stable test video
 
   // Wait for the video player to load to ensure content script ran
   await page.waitForSelector('#ytd-player', { state: 'attached' });
-  
-  // Accept cookies if prompted (YouTube in Europe might prompt)
-  try {
-    const acceptButton = page.locator('button[aria-label="Accept all"]');
-    await acceptButton.waitFor({ state: 'visible', timeout: 3000 });
-    await acceptButton.click();
-  } catch (e) {
-    // Ignore if not prompted
-  }
 
   // 2. Check if the youtublur canvas is injected
   const youtublurCanvas = page.locator('#yt-light-bg-blur-canvas');
@@ -38,6 +37,8 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
   // Since we opened the popup in a new tab, the message won't reach the YouTube tab.
   // However, the popup also saves the setting to chrome.storage.sync.
   // We can verify the integration by reloading the YouTube page and checking if it starts in solid mode.
+  // Wait a little bit for the async chrome.storage.sync.set to finish before reloading.
+  await popupPage.waitForTimeout(500);
   await page.bringToFront();
   await page.reload();
   

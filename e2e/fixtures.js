@@ -8,7 +8,7 @@ const test = base.extend({
     const context = await chromium.launchPersistentContext('', {
       headless: false, // extensions require headless: false or new headless mode
       args: [
-        `--headless=new`,
+        ...(process.env.CI ? ['--headless=new'] : []),
         `--disable-extensions-except=${extensionPath}`,
         `--load-extension=${extensionPath}`,
         `--mute-audio`,
