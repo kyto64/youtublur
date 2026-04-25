@@ -14,7 +14,9 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
 
   // Firefox uses a chrome API mock instead of a real extension, so the popup
   // and storage-based mode switching cannot be tested there.
-  if (browserName === 'firefox') return;
+  if (browserName === 'firefox') {
+    test.skip(true, 'Firefox uses a chrome API mock instead of a real extension, so the popup and storage-based mode switching cannot be tested there.');
+  }
 
   // 3. Open the extension popup
   const popupPage = await context.newPage();

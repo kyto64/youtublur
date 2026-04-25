@@ -28,3 +28,6 @@ jobs:
 
     - name: Run tests
       run: vp test
+
+    - name: Audit dependencies
+      run: pnpm audit --audit-level=moderate

@@ -43,7 +43,11 @@ const test = base.extend({
           window.chrome = {
             storage: {
               sync: {
-                get: function (_keys, callback) { callback({ playerBackgroundMode: 'blur' }); },
+                get: function (keys, callback) {
+                  const store = { playerBackgroundMode: 'blur' };
+                  const defaults = (keys !== null && typeof keys === 'object' && !Array.isArray(keys)) ? keys : {};
+                  callback({ ...defaults, ...store });
+                },
                 set: function () {},
               },
             },
