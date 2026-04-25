@@ -23,6 +23,9 @@
     "message": "リロード",
     "description": "現在のページのブラー効果を再適用するためのボタン。"
   },
+  "modeBlurSub": { "message": "やわらかなアンビエントグロー" },
+  "modeSolidSub": { "message": "フラットなニュートラル背景" },
+  "previewLabel": { "message": "プレビュー" },
   "popupPhrase0": { "message": "目にやさしい YouTube を" },
   "popupPhrase1": { "message": "まぶしさを、やわらかく" },
   "popupPhrase2": { "message": "ノイズをぼかして、楽しさはそのまま" },

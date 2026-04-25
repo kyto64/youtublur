@@ -23,6 +23,9 @@
     "message": "Recarregar",
     "description": "Botão para recarregar o efeito desfocado na página atual."
   },
+  "modeBlurSub": { "message": "Brilho ambiente gelado" },
+  "modeSolidSub": { "message": "Superfície neutra plana" },
+  "previewLabel": { "message": "Pré-visualização" },
   "popupPhrase0": { "message": "Tornando o YouTube mais suave para os olhos" },
   "popupPhrase1": { "message": "Menos brilho, mais tranquilidade" },
   "popupPhrase2": { "message": "Desfoque o ruído, mantenha a alegria" },

@@ -23,6 +23,9 @@
     "message": "Muat ulang",
     "description": "Tombol untuk memuat ulang efek blur pada halaman saat ini."
   },
+  "modeBlurSub": { "message": "Cahaya ambien beku" },
+  "modeSolidSub": { "message": "Permukaan netral datar" },
+  "previewLabel": { "message": "Pratinjau" },
   "popupPhrase0": { "message": "Membuat YouTube lebih nyaman di mata" },
   "popupPhrase1": { "message": "Kurangi silau, tambah ketenangan" },
   "popupPhrase2": { "message": "Kaburkan kebisingan, jaga kesenangan" },

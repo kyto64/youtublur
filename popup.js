@@ -18,7 +18,13 @@ function applyLocalizedStrings() {
   }
   if (blur) blur.textContent = chrome.i18n.getMessage('modeBlur');
   if (solid) solid.textContent = chrome.i18n.getMessage('modeSolid');
+  const blurSub = document.getElementById('labelModeBlurSub');
+  const solidSub = document.getElementById('labelModeSolidSub');
+  const preview = document.getElementById('labelPreview');
   const reload = document.getElementById('labelReload');
+  if (blurSub) blurSub.textContent = chrome.i18n.getMessage('modeBlurSub');
+  if (solidSub) solidSub.textContent = chrome.i18n.getMessage('modeSolidSub');
+  if (preview) preview.textContent = chrome.i18n.getMessage('previewLabel');
   if (reload) reload.textContent = chrome.i18n.getMessage('reloadButton');
 }
 

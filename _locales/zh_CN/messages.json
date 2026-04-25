@@ -23,6 +23,9 @@
     "message": "重新加载",
     "description": "在当前页面上重新应用模糊效果的按钮。"
   },
+  "modeBlurSub": { "message": "磨砂氛围光晕" },
+  "modeSolidSub": { "message": "平整中性背景" },
+  "previewLabel": { "message": "预览" },
   "popupPhrase0": { "message": "让 YouTube 更护眼" },
   "popupPhrase1": { "message": "减少眩光，多一份从容" },
   "popupPhrase2": { "message": "模糊噪点，留住愉悦" },

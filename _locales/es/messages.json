@@ -23,6 +23,9 @@
     "message": "Recargar",
     "description": "Botón para recargar el efecto borroso en la página actual."
   },
+  "modeBlurSub": { "message": "Resplandor ambiental helado" },
+  "modeSolidSub": { "message": "Superficie neutra plana" },
+  "previewLabel": { "message": "Vista previa" },
   "popupPhrase0": { "message": "Haciendo YouTube más suave para los ojos" },
   "popupPhrase1": { "message": "Menos brillo, más calma" },
   "popupPhrase2": { "message": "Difumina el ruido, conserva la alegría" },

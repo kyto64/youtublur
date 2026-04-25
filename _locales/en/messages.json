@@ -23,6 +23,9 @@
     "message": "Reload",
     "description": "Button to reload the blur effect on the current page."
   },
+  "modeBlurSub": { "message": "Frosted ambient glow" },
+  "modeSolidSub": { "message": "Flat neutral surface" },
+  "previewLabel": { "message": "Preview" },
   "popupPhrase0": { "message": "Making YouTube easier on the eyes" },
   "popupPhrase1": { "message": "Less glare, more chill" },
   "popupPhrase2": { "message": "Blur the noise, keep the joy" },
