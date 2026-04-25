@@ -22,5 +22,13 @@
   "reloadButton": {
     "message": "重新加载",
     "description": "在当前页面上重新应用模糊效果的按钮。"
-  }
+  },
+  "popupPhrase0": { "message": "让 YouTube 更护眼" },
+  "popupPhrase1": { "message": "减少眩光，多一份从容" },
+  "popupPhrase2": { "message": "模糊噪点，留住愉悦" },
+  "popupPhrase3": { "message": "柔和边界，清晰专注" },
+  "popupPhrase4": { "message": "让 YouTube 更温馨" },
+  "popupPhrase5": { "message": "氛围感背景，随时享用" },
+  "popupPhrase6": { "message": "背景，更美好" },
+  "popupPhrase7": { "message": "视觉舒适，全面升级" }
 }

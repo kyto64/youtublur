@@ -22,5 +22,13 @@
   "reloadButton": {
     "message": "Recargar",
     "description": "Botón para recargar el efecto borroso en la página actual."
-  }
+  },
+  "popupPhrase0": { "message": "Haciendo YouTube más suave para los ojos" },
+  "popupPhrase1": { "message": "Menos brillo, más calma" },
+  "popupPhrase2": { "message": "Difumina el ruido, conserva la alegría" },
+  "popupPhrase3": { "message": "Bordes suaves, mente clara" },
+  "popupPhrase4": { "message": "YouTube, pero más acogedor" },
+  "popupPhrase5": { "message": "Ambientes vibrantes, a demanda" },
+  "popupPhrase6": { "message": "Fondo, embellecido" },
+  "popupPhrase7": { "message": "Tu comodidad visual, mejorada" }
 }

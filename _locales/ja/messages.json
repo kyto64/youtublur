@@ -22,5 +22,13 @@
   "reloadButton": {
     "message": "リロード",
     "description": "現在のページのブラー効果を再適用するためのボタン。"
-  }
+  },
+  "popupPhrase0": { "message": "目にやさしい YouTube を" },
+  "popupPhrase1": { "message": "まぶしさを、やわらかく" },
+  "popupPhrase2": { "message": "ノイズをぼかして、楽しさはそのまま" },
+  "popupPhrase3": { "message": "なめらかな視界、クリアな集中" },
+  "popupPhrase4": { "message": "居心地のよい YouTube へ" },
+  "popupPhrase5": { "message": "アンビエントな雰囲気を、手元に" },
+  "popupPhrase6": { "message": "背景を、もっと美しく" },
+  "popupPhrase7": { "message": "視覚的な快適さを、あなたに" }
 }

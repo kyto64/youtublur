@@ -22,5 +22,13 @@
   "reloadButton": {
     "message": "Recarregar",
     "description": "Botão para recarregar o efeito desfocado na página atual."
-  }
+  },
+  "popupPhrase0": { "message": "Tornando o YouTube mais suave para os olhos" },
+  "popupPhrase1": { "message": "Menos brilho, mais tranquilidade" },
+  "popupPhrase2": { "message": "Desfoque o ruído, mantenha a alegria" },
+  "popupPhrase3": { "message": "Bordas suaves, mente afiada" },
+  "popupPhrase4": { "message": "YouTube, mas aconchegante" },
+  "popupPhrase5": { "message": "Vibrações ambientes, sob demanda" },
+  "popupPhrase6": { "message": "Fundo, embelezado" },
+  "popupPhrase7": { "message": "Seu conforto visual, aprimorado" }
 }

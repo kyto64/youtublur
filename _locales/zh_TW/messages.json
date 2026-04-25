@@ -22,5 +22,13 @@
   "reloadButton": {
     "message": "重新載入",
     "description": "在當前頁面上重新套用模糊效果的按鈕。"
-  }
+  },
+  "popupPhrase0": { "message": "讓 YouTube 更護眼" },
+  "popupPhrase1": { "message": "減少眩光，多一份從容" },
+  "popupPhrase2": { "message": "模糊雜訊，留住愉悅" },
+  "popupPhrase3": { "message": "柔和邊界，清晰專注" },
+  "popupPhrase4": { "message": "讓 YouTube 更溫馨" },
+  "popupPhrase5": { "message": "氛圍感背景，隨時享用" },
+  "popupPhrase6": { "message": "背景，更美好" },
+  "popupPhrase7": { "message": "視覺舒適，全面升級" }
 }

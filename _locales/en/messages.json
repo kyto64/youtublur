@@ -22,5 +22,13 @@
   "reloadButton": {
     "message": "Reload",
     "description": "Button to reload the blur effect on the current page."
-  }
+  },
+  "popupPhrase0": { "message": "Making YouTube easier on the eyes" },
+  "popupPhrase1": { "message": "Less glare, more chill" },
+  "popupPhrase2": { "message": "Blur the noise, keep the joy" },
+  "popupPhrase3": { "message": "Soft edges, sharp mind" },
+  "popupPhrase4": { "message": "YouTube, but make it cozy" },
+  "popupPhrase5": { "message": "Ambient vibes, on demand" },
+  "popupPhrase6": { "message": "Background, beautified" },
+  "popupPhrase7": { "message": "Your visual comfort, upgraded" }
 }

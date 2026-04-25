@@ -6,7 +6,16 @@ function applyLocalizedStrings() {
   const heading = document.getElementById('popupHeading');
   const blur = document.getElementById('labelModeBlur');
   const solid = document.getElementById('labelModeSolid');
-  if (heading) heading.textContent = chrome.i18n.getMessage('popupHeading');
+  if (heading) {
+    const phrases = [];
+    for (let i = 0; i < 8; i++) {
+      const msg = chrome.i18n.getMessage(`popupPhrase${i}`);
+      if (msg) phrases.push(msg);
+    }
+    if (phrases.length > 0) {
+      heading.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+    }
+  }
   if (blur) blur.textContent = chrome.i18n.getMessage('modeBlur');
   if (solid) solid.textContent = chrome.i18n.getMessage('modeSolid');
   const reload = document.getElementById('labelReload');

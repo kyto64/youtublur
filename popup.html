@@ -5,64 +5,331 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>youtublur</title>
   <style>
+    :root {
+      --surface: #1c1c1c;
+      --surface-hover: #272727;
+      --divider: rgba(255,255,255,0.06);
+      --text: #f1f1f1;
+      --text-sub: #aaaaaa;
+      --accent: #FF0033;
+      --accent-soft: rgba(255,0,51,0.12);
+      --btn-bg: #2f2f2f;
+      --btn-hover: #3a3a3a;
+      --icon-bg: rgba(255,255,255,0.04);
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --surface: #ffffff;
+        --surface-hover: #f4f4f4;
+        --divider: rgba(0,0,0,0.07);
+        --text: #0f0f0f;
+        --text-sub: #606060;
+        --accent-soft: rgba(255,0,51,0.10);
+        --btn-bg: #f1f1f1;
+        --btn-hover: #e8e8e8;
+        --icon-bg: rgba(0,0,0,0.03);
+      }
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      min-width: 220px;
-      max-width: 320px;
-      padding: 12px 16px;
-      font-family: "Segoe UI", "Yu Gothic UI", "Malgun Gothic", "Microsoft YaHei", "PingFang SC", "PingFang TC", sans-serif;
+      width: 296px;
+      background: var(--surface);
+      color: var(--text);
+      font-family: "Roboto", "Segoe UI", "Yu Gothic UI", "Malgun Gothic", "Microsoft YaHei", system-ui, sans-serif;
       font-size: 13px;
-      color: #0f0f0f;
-      margin: 0;
+      -webkit-font-smoothing: antialiased;
     }
-    h3 {
-      margin: 0 0 12px 0;
-      font-size: 14px;
-      font-weight: 600;
+
+    /* Inputs must be first in body so CSS ~ reaches all siblings */
+    input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
     }
-    .option {
+
+    /* === Header === */
+    .header {
+      padding: 14px 16px 10px;
       display: flex;
       align-items: center;
-      padding: 8px 0;
-      cursor: pointer;
-      border-radius: 4px;
+      gap: 10px;
     }
-    .option:hover {
-      background-color: #f1f1f1;
+    .logo {
+      width: 22px;
+      height: 22px;
+      border-radius: 6px;
+      background: linear-gradient(135deg, #FF0033, rgba(255,0,51,0.67));
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 10px -3px rgba(255,0,51,0.5);
     }
-    .option input {
-      margin: 0 10px 0 0;
-      cursor: pointer;
+    .brand { line-height: 1.1; }
+    .brand-name {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.1px;
+      color: var(--text);
     }
-    .option label {
+    #popupHeading {
+      display: block;
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--text-sub);
+      margin-top: 2px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--divider);
+      margin: 0 16px;
+    }
+
+    /* === Radio rows === */
+    .radio-rows {
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .radio-rows label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      border-radius: 10px;
       cursor: pointer;
+      background: transparent;
+      transition: background 140ms ease;
+    }
+    .radio-rows label:hover {
+      background: var(--surface-hover);
+    }
+
+    #modeBlur:checked ~ .radio-rows label[for="modeBlur"],
+    #modeSolid:checked ~ .radio-rows label[for="modeSolid"] {
+      background: var(--accent-soft);
+    }
+
+    .mode-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: grid;
+      place-items: center;
+      background: var(--icon-bg);
+      flex-shrink: 0;
+      color: var(--text-sub);
+      transition: color 140ms ease;
+    }
+    #modeBlur:checked ~ .radio-rows label[for="modeBlur"] .mode-icon,
+    #modeSolid:checked ~ .radio-rows label[for="modeSolid"] .mode-icon {
+      color: var(--accent);
+    }
+
+    .mode-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
       flex: 1;
+      min-width: 0;
     }
-    .separator {
-      border: 0;
-      border-top: 1px solid #eee;
-      margin: 12px 0;
+    .mode-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .mode-sub {
+      font-size: 12px;
+      color: var(--text-sub);
+      line-height: 1.2;
+    }
+
+    .radio-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1.5px solid var(--text-sub);
+      background: transparent;
+      display: grid;
+      place-items: center;
+      flex-shrink: 0;
+      transition: background 140ms ease, border-color 140ms ease;
+    }
+    #modeBlur:checked ~ .radio-rows label[for="modeBlur"] .radio-dot,
+    #modeSolid:checked ~ .radio-rows label[for="modeSolid"] .radio-dot {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .radio-dot svg { display: none; }
+    #modeBlur:checked ~ .radio-rows label[for="modeBlur"] .radio-dot svg,
+    #modeSolid:checked ~ .radio-rows label[for="modeSolid"] .radio-dot svg {
+      display: block;
+    }
+
+    /* === Preview swatch === */
+    .preview-wrap {
+      padding: 4px 16px 10px;
+    }
+    .preview-swatch {
+      height: 52px;
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+      background: linear-gradient(120deg, #4a1f2e 0%, #5a2a1c 40%, #2a3a5a 100%);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+      transition: background 220ms ease;
+    }
+    .preview-blur-overlay {
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      background: rgba(0,0,0,0.15);
+    }
+    .preview-label {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.55);
+      color: rgba(255,255,255,0.9);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+    #modeSolid:checked ~ .preview-wrap .preview-swatch {
+      background: #e0e0e0;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+    }
+    #modeSolid:checked ~ .preview-wrap .preview-swatch .preview-blur-overlay {
+      display: none;
+    }
+    #modeSolid:checked ~ .preview-wrap .preview-swatch .preview-label {
+      background: rgba(0,0,0,0.12);
+      color: rgba(0,0,0,0.55);
+    }
+
+    /* === Reload button === */
+    .reload-wrap {
+      padding: 8px 16px 14px;
     }
     #reloadButton {
+      width: 100%;
+      display: flex;
+      align-items: center;
       justify-content: center;
+      gap: 8px;
+      height: 40px;
+      border-radius: 999px;
+      cursor: pointer;
+      background: var(--btn-bg);
+      color: var(--text);
+      font-size: 13px;
       font-weight: 500;
-      padding: 8px 0;
+      transition: background 160ms ease, color 160ms ease;
+      user-select: none;
+    }
+    #reloadButton:hover { background: var(--btn-hover); }
+    #reloadButton:active {
+      background: var(--accent);
+      color: #fff;
     }
   </style>
 </head>
 <body>
-  <h3 id="popupHeading"></h3>
-  <div class="option">
-    <input type="radio" name="bgMode" id="modeBlur" value="blur">
-    <label for="modeBlur" id="labelModeBlur"></label>
+  <!-- Inputs first: CSS ~ sibling selectors reach all subsequent elements -->
+  <input type="radio" name="bgMode" id="modeBlur" value="blur">
+  <input type="radio" name="bgMode" id="modeSolid" value="solid">
+
+  <div class="header">
+    <div class="logo">
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+        <path d="M3 2.5v7l6-3.5-6-3.5z" fill="#fff"/>
+      </svg>
+    </div>
+    <div class="brand">
+      <span class="brand-name">youtublur</span>
+      <h3 id="popupHeading"></h3>
+    </div>
   </div>
-  <div class="option">
-    <input type="radio" name="bgMode" id="modeSolid" value="solid">
-    <label for="modeSolid" id="labelModeSolid"></label>
+
+  <div class="divider"></div>
+
+  <div class="radio-rows">
+    <label for="modeBlur">
+      <div class="mode-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.6" opacity="0.5"/>
+          <circle cx="8.5" cy="8.5" r="1.1" fill="currentColor" opacity="0.35"/>
+          <circle cx="12" cy="8.5" r="1.1" fill="currentColor" opacity="0.55"/>
+          <circle cx="15.5" cy="8.5" r="1.1" fill="currentColor" opacity="0.75"/>
+          <circle cx="8.5" cy="12" r="1.1" fill="currentColor" opacity="0.55"/>
+          <circle cx="12" cy="12" r="1.1" fill="currentColor" opacity="0.85"/>
+          <circle cx="15.5" cy="12" r="1.1" fill="currentColor" opacity="0.55"/>
+          <circle cx="8.5" cy="15.5" r="1.1" fill="currentColor" opacity="0.75"/>
+          <circle cx="12" cy="15.5" r="1.1" fill="currentColor" opacity="0.55"/>
+          <circle cx="15.5" cy="15.5" r="1.1" fill="currentColor" opacity="0.35"/>
+        </svg>
+      </div>
+      <div class="mode-text">
+        <span class="mode-label" id="labelModeBlur"></span>
+        <span class="mode-sub">Frosted ambient glow</span>
+      </div>
+      <div class="radio-dot">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2.5 6.2l2.4 2.4L9.5 3.6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </label>
+
+    <label for="modeSolid">
+      <div class="mode-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="4" stroke="currentColor" stroke-width="1.6" opacity="0.5"/>
+          <rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" opacity="0.85"/>
+        </svg>
+      </div>
+      <div class="mode-text">
+        <span class="mode-label" id="labelModeSolid"></span>
+        <span class="mode-sub">Flat neutral surface</span>
+      </div>
+      <div class="radio-dot">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2.5 6.2l2.4 2.4L9.5 3.6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </label>
   </div>
-  <hr class="separator">
-  <div id="reloadButton" class="option" role="button" tabindex="0">
-    <span id="labelReload"></span>
+
+  <div class="preview-wrap">
+    <div class="preview-swatch">
+      <div class="preview-blur-overlay"></div>
+      <span class="preview-label">Preview</span>
+    </div>
   </div>
+
+  <div class="divider"></div>
+
+  <div class="reload-wrap">
+    <div id="reloadButton" role="button" tabindex="0">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M20 12a8 8 0 1 1-2.34-5.66" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M20 4v4h-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span id="labelReload"></span>
+    </div>
+  </div>
+
   <script src="popup.js"></script>
 </body>
 </html>
