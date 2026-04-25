@@ -27,3 +27,7 @@
 
 - スラッシュコマンド: `.cursor/commands/`（例: `/release-app`, `/verify-ci`, `/locale-sync`, `/update-docs`）
 - ルール: `.cursor/rules/*.mdc`
+
+## Access to Github
+
+Use gh cli to access to github instead of rest api or personal token or opening the browser.
