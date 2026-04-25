@@ -10,4 +10,4 @@ alwaysApply: false
 - **Content scripts**: YouTube 向けマッチ（`*://*.youtube.com/*`）を維持する。不要な広いマッチを追加しない。
 - **Storage**: ユーザー設定は `chrome.storage`（同期の有無は既存の popup 実装に合わせる）。
 - **リリース zip と一致**: GitHub Actions の zip に含まれるファイルは [.github/workflows/publish.yml](.github/workflows/publish.yml) の一覧と一致させる。新しいアセットやスクリプトを追加したら、同ワークフローの `zip` コマンドも更新する。
-- **バージョン**: `manifest.json` の `version` は手でずらさず、`npm run release` フロー（`package.json` の `version` スクリプトと [scripts/sync-version.js](scripts/sync-version.js)）に任せる。
+- **バージョン**: `manifest.json` の `version` は手でずらさず、`pnpm run release` フロー（`package.json` の `version` スクリプトと [scripts/sync-version.js](scripts/sync-version.js)）に任せる。

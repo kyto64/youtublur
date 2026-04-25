@@ -38,12 +38,15 @@ jobs:
             exit 0
           fi
           echo "Latest semver tag: ${TAG}"
-          if git diff --quiet "${TAG}"..HEAD -- package.json package-lock.json; then
+          if git diff --quiet "${TAG}"..HEAD -- package.json pnpm-lock.yaml; then
             echo "need_release=false" >> "$GITHUB_OUTPUT"
             echo "No dependency manifest changes since ${TAG}; skipping release."
           else
             echo "need_release=true" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
 
       - name: Setup Vite+
         if: steps.need.outputs.need_release == 'true'
@@ -54,7 +57,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.need.outputs.need_release == 'true'
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Configure git committer
         if: steps.need.outputs.need_release == 'true'
@@ -64,7 +67,7 @@ jobs:
 
       - name: Bump patch version, changelog, manifest, and tag
         if: steps.need.outputs.need_release == 'true'
-        run: npm run release -- --release-as patch
+        run: pnpm run release -- --release-as patch
 
       - name: Push release commit and tags
         if: steps.need.outputs.need_release == 'true'

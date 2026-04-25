@@ -9,7 +9,7 @@
 | ユーザー向け概要・インストール・ファイル構成・開発コマンド | [README.md](README.md) |
 | エージェント／開発者向けのパス一覧・コマンド索引 | [AGENTS.md](AGENTS.md) |
 | リリース手順（バージョン・タグ・push・Actions） | [docs/release.md](docs/release.md) |
-| バージョン履歴（通常は `npm run release` が更新） | [CHANGELOG.md](CHANGELOG.md) |
+| バージョン履歴（通常は `pnpm run release` が更新） | [CHANGELOG.md](CHANGELOG.md) |
 
 ## 変更種別ごとの確認
 
@@ -23,7 +23,7 @@
 1. 今回の変更が「上表のどれに当たるか」を決める。
 2. 該当ファイルを開き、見出し構成（README のツリー等）は既存スタイルに合わせて追記・修正する。
 3. 重複する説明（README と AGENTS の要約など）が食い違わないようにする。
-4. リリースノートを手で書く必要がある場合のみ `CHANGELOG.md` を確認する（通常のリリースは `npm run release` に任せる）。
+4. リリースノートを手で書く必要がある場合のみ `CHANGELOG.md` を確認する（通常のリリースは `pnpm run release` に任せる）。
 
 ## 関連コマンド
 
