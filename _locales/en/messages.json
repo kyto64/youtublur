@@ -18,5 +18,9 @@
   "modeSolid": {
     "message": "Solid (light gray)",
     "description": "Radio option: flat gray background."
+  },
+  "reloadButton": {
+    "message": "Reload",
+    "description": "Button to reload the blur effect on the current page."
   }
 }

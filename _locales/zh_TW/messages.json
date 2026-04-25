@@ -1,22 +1,26 @@
 {
   "extName": {
     "message": "youtublur",
-    "description": "擴充功能名稱（品牌）。"
+    "description": "擴充套件名稱（品牌）。"
   },
   "extDescription": {
-    "message": "更柔和的 YouTube：在影片後方呈現柔化模糊，觀看更輕鬆。",
-    "description": "Chrome 線上應用程式商店與詳細資料的簡短說明。"
+    "message": "更溫和的 YouTube：影片後方的柔和模糊背景，讓觀看更輕鬆。",
+    "description": "Chrome Web Store 和擴充套件詳情中的簡短描述。"
   },
   "popupHeading": {
     "message": "播放器背景",
-    "description": "工具列彈出式視窗標題。"
+    "description": "工具列彈出視窗中的標題。"
   },
   "modeBlur": {
     "message": "模糊（影片）",
-    "description": "選項：將影片模糊作為背景。"
+    "description": "單選選項：將影片模糊後作為背景顯示。"
   },
   "modeSolid": {
-    "message": "單色（淺灰）",
-    "description": "選項：淺灰色純色背景。"
+    "message": "純色（淺灰色）",
+    "description": "單選選項：純灰色背景。"
+  },
+  "reloadButton": {
+    "message": "重新載入",
+    "description": "在當前頁面上重新套用模糊效果的按鈕。"
   }
 }

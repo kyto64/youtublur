@@ -4,19 +4,23 @@
     "description": "Nombre de la extensión (marca)."
   },
   "extDescription": {
-    "message": "Un YouTube más suave: desenfoque detrás del vídeo para ver con más comodidad.",
-    "description": "Descripción breve para Chrome Web Store y detalles."
+    "message": "Un YouTube más amable: fondo borroso suave detrás del video para una visualización más fácil.",
+    "description": "Descripción corta para Chrome Web Store y detalles de la extensión."
   },
   "popupHeading": {
     "message": "Fondo del reproductor",
-    "description": "Título del menú emergente de la barra de herramientas."
+    "description": "Encabezado en el pop-up de la barra de herramientas."
   },
   "modeBlur": {
-    "message": "Desenfoque (vídeo)",
-    "description": "Opción: vídeo desenfocado como fondo."
+    "message": "Borroso (video)",
+    "description": "Opción de radio: video borroso como fondo."
   },
   "modeSolid": {
-    "message": "Color sólido (gris claro)",
-    "description": "Opción: fondo gris claro uniforme."
+    "message": "Sólido (gris claro)",
+    "description": "Opción de radio: fondo gris plano."
+  },
+  "reloadButton": {
+    "message": "Recargar",
+    "description": "Botón para recargar el efecto borroso en la página actual."
   }
 }

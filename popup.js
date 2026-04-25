@@ -9,6 +9,8 @@ function applyLocalizedStrings() {
   if (heading) heading.textContent = chrome.i18n.getMessage('popupHeading');
   if (blur) blur.textContent = chrome.i18n.getMessage('modeBlur');
   if (solid) solid.textContent = chrome.i18n.getMessage('modeSolid');
+  const reload = document.getElementById('labelReload');
+  if (reload) reload.textContent = chrome.i18n.getMessage('reloadButton');
 }
 
 function initPopup() {
@@ -34,6 +36,25 @@ function initPopup() {
         });
       });
     });
+
+    const reloadButton = document.getElementById('reloadButton');
+    if (reloadButton) {
+      const triggerReload = () => {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          const tab = tabs[0];
+          if (tab?.id && tab.url?.includes('youtube.com')) {
+            chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
+          }
+        });
+      };
+      reloadButton.addEventListener('click', triggerReload);
+      reloadButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          triggerReload();
+        }
+      });
+    }
   });
 }
 
