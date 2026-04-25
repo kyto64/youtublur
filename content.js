@@ -360,6 +360,9 @@ function teardownPlayerPageBlur() {
     playerDomObserver = null;
   }
   stopBlurLoop();
+  if (blurCanvas) {
+    blurCanvas.remove();
+  }
   blurCanvas = null;
   blurCtx = null;
   frameCount = 0;
@@ -487,7 +490,6 @@ function initExtension() {
         applyMode(msg.mode, getPlayerContainer());
       } else if (msg.type === 'RELOAD_BLUR') {
         teardownPlayerPageBlur();
-        document.getElementById('yt-light-bg-blur-canvas')?.remove();
         chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
           const saved = normalizeMode(items[STORAGE_KEY]);
           applyMode(saved);

@@ -20,7 +20,7 @@
     "description": "라디오 옵션: 평평한 회색 배경."
   },
   "reloadButton": {
-    "message": "재로딩",
+    "message": "새로고침",
     "description": "현재 페이지의 블러 효과를 다시 적용하기 위한 버튼."
   }
 }

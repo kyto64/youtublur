@@ -518,5 +518,68 @@ describe('content.js', () => {
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
       expect(player.dataset.ytLightBgMode).toBe('blur');
     });
+
+    test('RELOAD_BLUR tears down and re-initializes blur', () => {
+      let messageListener;
+      const get = vi.fn((_defaults, cb) => {
+        cb({ playerBackgroundMode: 'blur' });
+      });
+      vi.stubGlobal('chrome', {
+        storage: { sync: { get } },
+        runtime: {
+          onMessage: {
+            addListener: vi.fn((listener) => { messageListener = listener; })
+          }
+        }
+      });
+
+      initExtension();
+      const player = document.getElementById('movie_player');
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+
+      // Send RELOAD_BLUR message
+      messageListener({ type: 'RELOAD_BLUR' });
+
+      // storage.sync.get should have been called again for the reload
+      expect(get).toHaveBeenCalledTimes(2);
+
+      // Canvas should be re-created after reload
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(player.dataset.ytLightBgMode).toBe('blur');
+    });
+
+    test('RELOAD_BLUR removes canvas from DOM via teardown', () => {
+      let messageListener;
+      const get = vi.fn((_defaults, cb) => {
+        cb({ playerBackgroundMode: 'blur' });
+      });
+      vi.stubGlobal('chrome', {
+        storage: { sync: { get } },
+        runtime: {
+          onMessage: {
+            addListener: vi.fn((listener) => { messageListener = listener; })
+          }
+        }
+      });
+
+      initExtension();
+      const player = document.getElementById('movie_player');
+      const originalCanvas = player.querySelector('#yt-light-bg-blur-canvas');
+      expect(originalCanvas).not.toBeNull();
+
+      // Delay the storage callback to inspect state between teardown and re-init
+      get.mockImplementation((_defaults, cb) => {
+        // At this point teardown has already run, canvas should be removed
+        expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+        cb({ playerBackgroundMode: 'blur' });
+      });
+
+      messageListener({ type: 'RELOAD_BLUR' });
+
+      // After re-init, new canvas should exist
+      const newCanvas = player.querySelector('#yt-light-bg-blur-canvas');
+      expect(newCanvas).not.toBeNull();
+      expect(newCanvas).not.toBe(originalCanvas);
+    });
   });
 });
