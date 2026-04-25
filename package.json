@@ -29,9 +29,11 @@
     "jsdom": "29.0.2",
     "vite-plus": "0.1.19"
   },
-  "overrides": {
-    "vite": "8.0.5",
-    "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.18"
+  "pnpm": {
+    "overrides": {
+      "vite": "8.0.5",
+      "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.18"
+    }
   },
-  "packageManager": "npm@11.12.1"
+  "packageManager": "pnpm@10.0.0"
 }

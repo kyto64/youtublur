@@ -14,7 +14,7 @@
 - **semver major** の PR にはラベル `semver-major` が付き、`kyto64` にレビュー依頼とコメント通知される（自動マージしない）。
 - **patch / minor** は CI 合格後に [.github/workflows/dependabot-auto-merge.yml](.github/workflows/dependabot-auto-merge.yml) が承認して自動マージ（squash）する。
 - **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降に `package.json` / `package-lock.json` の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。同日に Dependabot が複数マージしても、その日の自動実行は高々 1 回の `npm run release -- --release-as patch` にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
-- **major PR を手動マージしたあと**のバージョンとタグは従来どおりローカルで `npm run release` して push する。
+- **major PR を手動マージしたあと**のバージョンとタグは従来どおりローカルで `pnpm run release` して push する。
 
 GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグで [`publish.yml`](.github/workflows/publish.yml) が走らない。Chrome / AMO まで自動で繋げる場合は、リポジトリ Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が checkout／push に使うようにする。未設定のときは `github.token` のみでコミットとタグの push は行われるが、公開は **手動でタグを再 push する**など別途トリガーが必要。
 
@@ -34,7 +34,7 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 ## 1. テストを実行する
 
 ```bash
-npm test
+pnpm test
 ```
 
 🔴 失敗した場合はリリースを中止し、問題を修正してから再実行する。
@@ -46,20 +46,20 @@ npm test
 通常リリース（Conventional Commits に基づく自動バンプ）:
 
 ```bash
-npm run release
+pnpm run release
 ```
 
 バージョンを手動指定する場合:
 
 ```bash
-npm run release -- --release-as 1.2.4
+pnpm run release -- --release-as 1.2.4
 ```
 
 このコマンドで以下が自動実行される:
 
 | 処理 | 対象ファイル |
 |---|---|
-| バージョンバンプ | `package.json`, `package-lock.json`, `manifest.json` |
+| バージョンバンプ | `package.json`, `pnpm-lock.yaml`, `manifest.json` |
 | CHANGELOG 更新 | `CHANGELOG.md` |
 | git commit | 上記すべて |
 | git tag | `v{version}` |
@@ -129,8 +129,8 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 
 ## ⚠️ よくあるミス
 
-- **ソースコードをコミットする前に `npm run release` を実行しない**  
-  → 変更ファイルをすべてコミットしてから `npm run release` を実行すること
+- **ソースコードをコミットする前に `pnpm run release` を実行しない**  
+  → 変更ファイルをすべてコミットしてから `pnpm run release` を実行すること
 
 - **タグの push を忘れない**  
   → `git push origin master` だけでなく `--follow-tags` を必ずつける

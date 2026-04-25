@@ -13,13 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Use Node.js
-        uses: actions/setup-node@v6
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@237a7eda494c3466dcb53e9f067142b9218d64a1 # v1
         with:
-          node-version: 22
+          node-version: '22'
+          cache: true
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
       - name: Install Playwright Browsers
         run: npx playwright install --with-deps chromium

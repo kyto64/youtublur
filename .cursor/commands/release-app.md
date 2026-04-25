@@ -12,7 +12,7 @@
 1. **テスト**
 
    ```bash
-   npm test
+   pnpm test
    ```
 
    失敗したらリリースを中止し、修正してからやり直す。
@@ -22,7 +22,7 @@
    通常（Conventional Commits に基づく自動バンプ）:
 
    ```bash
-   npm run release
+   pnpm run release
    ```
 
    バージョンを明示する場合:
