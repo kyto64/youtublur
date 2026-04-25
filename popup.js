@@ -54,12 +54,26 @@ function initPopup() {
 
     const reloadButton = document.getElementById('reloadButton');
     if (reloadButton) {
+      let isReloading = false;
+
       const triggerReload = () => {
+        // リロード中なら中断しない
+        if (isReloading) return;
+
+        isReloading = true;
+        reloadButton.classList.add('loading');
+
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           const tab = tabs[0];
           if (tab?.id && tab.url?.includes('youtube.com')) {
             chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
           }
+
+          // リロード完了後、クラスを削除して元の状態に戻す
+          setTimeout(() => {
+            isReloading = false;
+            reloadButton.classList.remove('loading');
+          }, 500);
         });
       };
       reloadButton.addEventListener('click', triggerReload);

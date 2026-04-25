@@ -244,6 +244,13 @@
       background: var(--accent);
       color: #fff;
     }
+
+    /* リロード処理中：赤色背景を維持 */
+    #reloadButton.is-loading,
+    #reloadButton.loading {
+      background: var(--accent) !important;
+      color: #fff !important;
+    }
   </style>
 </head>
 <body>
