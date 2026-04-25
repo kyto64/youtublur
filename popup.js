@@ -9,6 +9,8 @@ function applyLocalizedStrings() {
   if (heading) heading.textContent = chrome.i18n.getMessage('popupHeading');
   if (blur) blur.textContent = chrome.i18n.getMessage('modeBlur');
   if (solid) solid.textContent = chrome.i18n.getMessage('modeSolid');
+  const reload = document.getElementById('labelReload');
+  if (reload) reload.textContent = chrome.i18n.getMessage('reloadButton');
 }
 
 function initPopup() {
