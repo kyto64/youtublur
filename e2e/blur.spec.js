@@ -1,6 +1,6 @@
 const { test, expect } = require('./fixtures');
 
-test('should load extension and apply blur on YouTube', async ({ page, extensionId, context }) => {
+test('should load extension and apply blur on YouTube', async ({ page, extensionId, context, browserName }) => {
 
   // 1. Navigate to a YouTube video
   await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ'); // Rick roll as a stable test video
@@ -11,6 +11,10 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
   // 2. Check if the youtublur canvas is injected
   const youtublurCanvas = page.locator('#yt-light-bg-blur-canvas');
   await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
+
+  // Firefox uses a chrome API mock instead of a real extension, so the popup
+  // and storage-based mode switching cannot be tested there.
+  if (browserName === 'firefox') return;
 
   // 3. Open the extension popup
   const popupPage = await context.newPage();
@@ -34,11 +38,11 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
   await popupPage.waitForTimeout(500);
   await page.bringToFront();
   await page.reload();
-  
+
   // Wait for the video player to load
   await page.waitForSelector('#ytd-player', { state: 'attached' });
-  
-  // The content script should have applied the 'solid' mode on init. 
+
+  // The content script should have applied the 'solid' mode on init.
   // It should NOT attach the canvas or it should be hidden.
   // Since it creates the canvas lazily or hides it, we check if it's hidden or detached.
   const reloadedCanvas = page.locator('#yt-light-bg-blur-canvas');
