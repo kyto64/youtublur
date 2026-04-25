@@ -14,6 +14,15 @@ const test = base.extend({
         `--mute-audio`,
       ],
     });
+    
+    // Set consent cookie to bypass locale-dependent GDPR banner on YouTube
+    await context.addCookies([{
+      name: 'CONSENT',
+      value: 'PENDING+999',
+      domain: '.youtube.com',
+      path: '/'
+    }]);
+
     await use(context);
     await context.close();
   },

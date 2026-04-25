@@ -1,13 +1,6 @@
 const { test, expect } = require('./fixtures');
 
 test('should load extension and apply blur on YouTube', async ({ page, extensionId, context }) => {
-  // Set consent cookie to bypass locale-dependent GDPR banner
-  await context.addCookies([{
-    name: 'CONSENT',
-    value: 'PENDING+999',
-    domain: '.youtube.com',
-    path: '/'
-  }]);
 
   // 1. Navigate to a YouTube video
   await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ'); // Rick roll as a stable test video
