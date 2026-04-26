@@ -23,6 +23,10 @@
     "message": "Recarregar",
     "description": "Botão para recarregar o efeito desfocado na página atual."
   },
+  "reloadingButton": {
+    "message": "Recarregando...",
+    "description": "Texto do botão enquanto recarrega."
+  },
   "modeBlurSub": { "message": "Brilho ambiente gelado" },
   "modeSolidSub": { "message": "Superfície neutra plana" },
   "previewLabel": { "message": "Pré-visualização" },

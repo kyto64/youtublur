@@ -23,6 +23,10 @@
     "message": "Recargar",
     "description": "Botón para recargar el efecto borroso en la página actual."
   },
+  "reloadingButton": {
+    "message": "Recargando...",
+    "description": "Texto del botón mientras se recarga."
+  },
   "modeBlurSub": { "message": "Resplandor ambiental helado" },
   "modeSolidSub": { "message": "Superficie neutra plana" },
   "previewLabel": { "message": "Vista previa" },

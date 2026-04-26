@@ -23,6 +23,10 @@
     "message": "Reload",
     "description": "Button to reload the blur effect on the current page."
   },
+  "reloadingButton": {
+    "message": "Reloading...",
+    "description": "Reload button text while the reload is in progress."
+  },
   "modeBlurSub": { "message": "Frosted ambient glow" },
   "modeSolidSub": { "message": "Flat neutral surface" },
   "previewLabel": { "message": "Preview" },

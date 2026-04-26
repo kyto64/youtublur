@@ -56,12 +56,15 @@ function initPopup() {
     if (reloadButton) {
       let isReloading = false;
 
+      const labelReload = document.getElementById('labelReload');
+
       const triggerReload = () => {
         // リロード中なら中断しない
         if (isReloading) return;
 
         isReloading = true;
         reloadButton.classList.add('loading');
+        if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadingButton');
 
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           const tab = tabs[0];
@@ -73,6 +76,7 @@ function initPopup() {
           setTimeout(() => {
             isReloading = false;
             reloadButton.classList.remove('loading');
+            if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadButton');
           }, 500);
         });
       };

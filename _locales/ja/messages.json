@@ -23,6 +23,10 @@
     "message": "リロード",
     "description": "現在のページのブラー効果を再適用するためのボタン。"
   },
+  "reloadingButton": {
+    "message": "リロード中...",
+    "description": "リロード処理中のボタンテキスト。"
+  },
   "modeBlurSub": { "message": "やわらかなアンビエントグロー" },
   "modeSolidSub": { "message": "フラットなニュートラル背景" },
   "previewLabel": { "message": "プレビュー" },

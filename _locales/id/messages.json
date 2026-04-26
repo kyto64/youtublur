@@ -23,6 +23,10 @@
     "message": "Muat ulang",
     "description": "Tombol untuk memuat ulang efek blur pada halaman saat ini."
   },
+  "reloadingButton": {
+    "message": "Memuat ulang...",
+    "description": "Teks tombol saat sedang memuat ulang."
+  },
   "modeBlurSub": { "message": "Cahaya ambien beku" },
   "modeSolidSub": { "message": "Permukaan netral datar" },
   "previewLabel": { "message": "Pratinjau" },

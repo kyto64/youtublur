@@ -23,6 +23,10 @@
     "message": "새로고침",
     "description": "현재 페이지의 블러 효과를 다시 적용하기 위한 버튼."
   },
+  "reloadingButton": {
+    "message": "새로고침 중...",
+    "description": "새로고침 진행 중인 버튼 텍스트."
+  },
   "modeBlurSub": { "message": "부드러운 앰비언트 글로우" },
   "modeSolidSub": { "message": "플랫 뉴트럴 배경" },
   "previewLabel": { "message": "미리보기" },
