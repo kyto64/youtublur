@@ -1,6 +1,91 @@
 const STORAGE_KEY = 'playerBackgroundMode';
 /** Blur radius (px); same value on Chrome and Firefox (Gecko uses a two-step draw for correct filter). */
 const BLUR_STRENGTH_PX = 40;
+
+/**
+ * Storage key for tracking sync timestamp to determine the latest value
+ */
+const STORAGE_TIMESTAMP_KEY = 'playerBackgroundModeTimestamp';
+
+/**
+ * Save mode to storage with fallback from sync to local
+ * @param {string} mode - 'blur' or 'solid'
+ * @returns {Promise<boolean>} - true if saved to sync, false if saved to local
+ */
+function saveModeToStorage(mode) {
+  const timestamp = Date.now();
+  const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
+
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.sync.set(data, () => {
+        const lastError = chrome.runtime && chrome.runtime.lastError;
+        if (lastError) {
+          console.warn('Sync storage failed, falling back to local storage:', lastError);
+          chrome.storage.local.set(data, () => resolve(false));
+        } else {
+          resolve(true);
+        }
+      });
+    } catch (error) {
+      console.warn('Sync storage failed, falling back to local storage:', error);
+      chrome.storage.local.set(data, () => resolve(false));
+    }
+  });
+}
+
+/**
+ * Load mode from storage with fallback and latest value determination
+ * @returns {Promise<string>} - 'blur' or 'solid'
+ */
+function loadModeFromStorage() {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.sync.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (syncResult) => {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          syncResult = {};
+        }
+        chrome.storage.local.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (localResult) => {
+          if (chrome.runtime && chrome.runtime.lastError) {
+            localResult = {};
+          }
+
+          const syncMode = syncResult[STORAGE_KEY];
+          const localMode = localResult[STORAGE_KEY];
+          const syncTimestamp = syncResult[STORAGE_TIMESTAMP_KEY] || 0;
+          const localTimestamp = localResult[STORAGE_TIMESTAMP_KEY] || 0;
+
+          if (syncMode !== undefined && localMode !== undefined) {
+            if (syncTimestamp >= localTimestamp) {
+              resolve(syncMode);
+            } else {
+              // Local is newer, sync it back to sync storage
+              chrome.storage.sync.set({
+                [STORAGE_KEY]: localMode,
+                [STORAGE_TIMESTAMP_KEY]: localTimestamp
+              }, () => {
+                if (chrome.runtime && chrome.runtime.lastError) {
+                  console.warn('Failed to sync local value back to sync storage:', chrome.runtime.lastError);
+                }
+                resolve(localMode);
+              });
+            }
+          } else if (syncMode !== undefined) {
+            resolve(syncMode);
+          } else if (localMode !== undefined) {
+            resolve(localMode);
+          } else {
+            resolve('blur');
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Failed to load mode from storage:', error);
+      resolve('blur');
+    }
+  });
+}
+
 const DRAW_INTERVAL = 2; // 描画を2フレームに1回にして軽量化
 
 /**
@@ -104,7 +189,7 @@ function normalizeMode(mode) {
 }
 
 function isPlayerPagePath(pathname) {
-  return /^\/watch(\/|$)/.test(pathname) || /^\/shorts\//.test(pathname);
+  return pathname.startsWith('/watch') || pathname.startsWith('/shorts/');
 }
 
 function getPlayerContainer() {
@@ -476,10 +561,11 @@ function initExtension() {
     installYoutubeNavigationHooks();
     observePlayer();
 
-    chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
-      const saved = normalizeMode(items[STORAGE_KEY]);
-      if (saved !== currentMode) {
-        applyMode(saved, getPlayerContainer());
+    // Load mode from storage with fallback support
+    loadModeFromStorage().then((saved) => {
+      const normalized = normalizeMode(saved);
+      if (normalized !== currentMode) {
+        applyMode(normalized, getPlayerContainer());
       } else {
         observePlayer();
       }
@@ -490,9 +576,9 @@ function initExtension() {
         applyMode(msg.mode, getPlayerContainer());
       } else if (msg.type === 'RELOAD_BLUR') {
         teardownPlayerPageBlur();
-        chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
-          const saved = normalizeMode(items[STORAGE_KEY]);
-          applyMode(saved);
+        loadModeFromStorage().then((saved) => {
+          const normalized = normalizeMode(saved);
+          applyMode(normalized);
           observePlayer();
         });
       }
@@ -543,6 +629,8 @@ if (typeof module !== 'undefined' && module.exports) {
       stopBlurLoop();
       frameCount = 0;
       releaseGeckoVideoSnapCanvas();
-    }
+    },
+    saveModeToStorage,
+    loadModeFromStorage
   };
 }
