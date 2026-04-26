@@ -19,7 +19,17 @@ const {
   startBlurLoop,
   normalizeMode,
   saveModeToStorage,
-  loadModeFromStorage
+  loadModeFromStorage,
+  // 新增：动态绘制间隔相关函数
+  detectDevicePerformance,
+  updateFPS,
+  getAverageFPS,
+  adjustDrawInterval,
+  getCurrentDrawInterval,
+  setCurrentDrawInterval,
+  getFrameTimes,
+  getAdjustmentCooldown,
+  setAdjustmentCooldown
 } = require('./content.js');
 
 function mock2dContext() {
@@ -734,6 +744,135 @@ describe('content.js', () => {
 
       const mode = await loadModeFromStorage();
       expect(mode).toBe('blur');
+    });
+
+    describe('动态绘制间隔功能', () => {
+      beforeEach(() => {
+        resetState();
+      });
+
+      test('detectDevicePerformance returns valid performance level', () => {
+        // Mock navigator properties for consistent testing
+        const originalHardwareConcurrency = navigator.hardwareConcurrency;
+        const originalDeviceMemory = navigator.deviceMemory;
+
+        // Test low performance
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 2, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true });
+        expect(detectDevicePerformance()).toBe('low');
+
+        // Test medium performance
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 4, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 4, configurable: true });
+        expect(detectDevicePerformance()).toBe('medium');
+
+        // Test high performance
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 8, configurable: true });
+        expect(detectDevicePerformance()).toBe('high');
+
+        // Restore original values
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalHardwareConcurrency, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: originalDeviceMemory, configurable: true });
+      });
+
+      test('updateFPS and getAverageFPS calculate FPS correctly', () => {
+        const timestamp1 = 1000;
+        const timestamp2 = 1033; // ~30 FPS
+        const timestamp3 = 1066; // ~30 FPS
+
+        updateFPS(timestamp1);
+        updateFPS(timestamp2);
+        updateFPS(timestamp3);
+
+        expect(getAverageFPS()).toBeCloseTo(30, 0);
+      });
+
+      test('adjustDrawInterval increases interval when FPS is low', () => {
+        setCurrentDrawInterval(2);
+        setAdjustmentCooldown(0);
+
+        // Simulate low FPS by adding high frame times
+        const lowFpsFrameTimes = [50, 50, 50, 50, 50]; // ~20 FPS
+        getFrameTimes().push(...lowFpsFrameTimes);
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(3);
+      });
+
+      test('adjustDrawInterval decreases interval when FPS is high', () => {
+        setCurrentDrawInterval(3);
+        setAdjustmentCooldown(0);
+
+        // Simulate high FPS by adding low frame times
+        const highFpsFrameTimes = [16, 16, 16, 16, 16]; // ~60 FPS
+        getFrameTimes().push(...highFpsFrameTimes);
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(2);
+      });
+
+      test('adjustDrawInterval respects cooldown period', () => {
+        setCurrentDrawInterval(2);
+        setAdjustmentCooldown(100); // Not yet at cooldown threshold
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(2); // Should not change
+      });
+
+      test('adjustDrawInterval respects min/max bounds', () => {
+        // Test min bound: currentDrawInterval is 1, FPS high, should not go below 1
+        setCurrentDrawInterval(1);
+        setAdjustmentCooldown(0);
+
+        // Simulate high FPS by adding low frame times
+        const highFpsFrameTimes = [16, 16, 16, 16, 16]; // ~60 FPS
+        getFrameTimes().push(...highFpsFrameTimes);
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(1); // Should not go below min
+
+        // Test max bound: currentDrawInterval is 4, FPS low, should not go above 4
+        setCurrentDrawInterval(4);
+        setAdjustmentCooldown(0);
+        const lowFpsFrameTimes = [50, 50, 50, 50, 50]; // ~20 FPS
+        getFrameTimes().push(...lowFpsFrameTimes);
+        adjustDrawInterval();
+        expect(getCurrentDrawInterval()).toBe(4); // Should not go above max
+      });
+
+      test('getCurrentDrawInterval and setCurrentDrawInterval work correctly', () => {
+        expect(getCurrentDrawInterval()).toBe(2);
+
+        setCurrentDrawInterval(4);
+        expect(getCurrentDrawInterval()).toBe(4);
+
+        setCurrentDrawInterval(1);
+        expect(getCurrentDrawInterval()).toBe(1);
+      });
+
+      test('frameTimes and adjustmentCooldown state management', () => {
+        expect(getFrameTimes()).toEqual([]);
+        expect(getAdjustmentCooldown()).toBe(0);
+
+        setAdjustmentCooldown(50);
+        expect(getAdjustmentCooldown()).toBe(50);
+      });
+
+      test('resetState resets dynamic drawing interval state', () => {
+        setCurrentDrawInterval(4);
+        setAdjustmentCooldown(100);
+
+        resetState();
+
+        expect(getCurrentDrawInterval()).toBe(2);
+        expect(getAdjustmentCooldown()).toBe(0);
+        expect(getFrameTimes()).toEqual([]);
+      });
     });
   });
 });
