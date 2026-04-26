@@ -17,7 +17,9 @@ const {
   setMode,
   initExtension,
   startBlurLoop,
-  normalizeMode
+  normalizeMode,
+  saveModeToStorage,
+  loadModeFromStorage
 } = require('./content.js');
 
 function mock2dContext() {
@@ -469,31 +471,45 @@ describe('content.js', () => {
       HTMLCanvasElement.prototype.getContext = vi.fn(() => mock2dContext());
     });
 
-    test('runs observePlayer before storage callback (eager init)', () => {
-      const get = vi.fn((_defaults, _cb) => {
-        /* intentionally not calling _cb — delayed storage must not block first blur */
+    test('runs observePlayer before storage callback (eager init)', async () => {
+      const syncGet = vi.fn((_keys) => {
+        /* intentionally not calling cb — delayed storage must not block first blur */
       });
+      const localGet = vi.fn();
       vi.stubGlobal('chrome', {
-        storage: { sync: { get } },
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        },
         runtime: { onMessage: { addListener: vi.fn() } }
       });
 
       initExtension();
+      await Promise.resolve(); // Allow async loadModeFromStorage to complete
       const player = document.getElementById('movie_player');
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
-      expect(get).toHaveBeenCalled();
+      expect(syncGet).toHaveBeenCalled();
     });
 
-    test('applies saved solid mode when storage differs from optimistic blur', () => {
-      const get = vi.fn((_defaults, cb) => {
-        cb({ playerBackgroundMode: 'solid' });
+    test('applies saved solid mode when storage differs from optimistic blur', async () => {
+      const timestamp = Date.now();
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'solid', playerBackgroundModeTimestamp: timestamp });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({});  // local storage is empty
       });
       vi.stubGlobal('chrome', {
-        storage: { sync: { get } },
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        },
         runtime: { onMessage: { addListener: vi.fn() } }
       });
 
       initExtension();
+      await Promise.resolve();
+      await Promise.resolve();
       const player = document.getElementById('movie_player');
       expect(getMode()).toBe('solid');
       const canvas = player.querySelector('#yt-light-bg-blur-canvas');
@@ -502,30 +518,46 @@ describe('content.js', () => {
       expect(player.dataset.ytLightBgMode).toBe('solid');
     });
 
-    test('treats invalid storage mode as blur', () => {
+    test('treats invalid storage mode as blur', async () => {
       setMode('solid');
-      const get = vi.fn((_defaults, cb) => {
-        cb({ playerBackgroundMode: 'not-a-mode' });
+      const timestamp = Date.now();
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'not-a-mode', playerBackgroundModeTimestamp: timestamp });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({});  // local storage is empty
       });
       vi.stubGlobal('chrome', {
-        storage: { sync: { get } },
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        },
         runtime: { onMessage: { addListener: vi.fn() } }
       });
 
       initExtension();
+      await Promise.resolve();
+      await Promise.resolve();
       const player = document.getElementById('movie_player');
       expect(getMode()).toBe('blur');
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
       expect(player.dataset.ytLightBgMode).toBe('blur');
     });
 
-    test('RELOAD_BLUR tears down and re-initializes blur', () => {
+    test('RELOAD_BLUR tears down and re-initializes blur', async () => {
       let messageListener;
-      const get = vi.fn((_defaults, cb) => {
-        cb({ playerBackgroundMode: 'blur' });
+      const timestamp = Date.now();
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: timestamp });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({});  // local storage is empty
       });
       vi.stubGlobal('chrome', {
-        storage: { sync: { get } },
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        },
         runtime: {
           onMessage: {
             addListener: vi.fn((listener) => { messageListener = listener; })
@@ -534,27 +566,37 @@ describe('content.js', () => {
       });
 
       initExtension();
+      await Promise.resolve();
       const player = document.getElementById('movie_player');
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
 
       // Send RELOAD_BLUR message
       messageListener({ type: 'RELOAD_BLUR' });
+      await Promise.resolve();
+      await Promise.resolve();
 
       // storage.sync.get should have been called again for the reload
-      expect(get).toHaveBeenCalledTimes(2);
+      expect(syncGet).toHaveBeenCalledTimes(2);
 
       // Canvas should be re-created after reload
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
       expect(player.dataset.ytLightBgMode).toBe('blur');
     });
 
-    test('RELOAD_BLUR removes canvas from DOM via teardown', () => {
+    test('RELOAD_BLUR removes canvas from DOM via teardown', async () => {
       let messageListener;
-      const get = vi.fn((_defaults, cb) => {
-        cb({ playerBackgroundMode: 'blur' });
+      const timestamp = Date.now();
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: timestamp });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({});  // local storage is empty
       });
       vi.stubGlobal('chrome', {
-        storage: { sync: { get } },
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        },
         runtime: {
           onMessage: {
             addListener: vi.fn((listener) => { messageListener = listener; })
@@ -563,23 +605,135 @@ describe('content.js', () => {
       });
 
       initExtension();
+      await Promise.resolve();
       const player = document.getElementById('movie_player');
       const originalCanvas = player.querySelector('#yt-light-bg-blur-canvas');
       expect(originalCanvas).not.toBeNull();
 
       // Delay the storage callback to inspect state between teardown and re-init
-      get.mockImplementation((_defaults, cb) => {
+      syncGet.mockImplementation((_keys, cb) => {
         // At this point teardown has already run, canvas should be removed
         expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
-        cb({ playerBackgroundMode: 'blur' });
+        cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: timestamp });
       });
 
       messageListener({ type: 'RELOAD_BLUR' });
+      await Promise.resolve();
+      await Promise.resolve();
 
       // After re-init, new canvas should exist
       const newCanvas = player.querySelector('#yt-light-bg-blur-canvas');
       expect(newCanvas).not.toBeNull();
       expect(newCanvas).not.toBe(originalCanvas);
+    });
+  });
+
+  describe('storage functions', () => {
+    beforeEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    test('saveModeToStorage saves to sync storage and returns true', async () => {
+      const syncSet = vi.fn((_data, cb) => { if (cb) cb(); });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: vi.fn(), set: syncSet },
+          local: { get: vi.fn(), set: vi.fn() }
+        }
+      });
+
+      const result = await saveModeToStorage('blur');
+      expect(result).toBe(true);
+      expect(syncSet).toHaveBeenCalledWith(
+        expect.objectContaining({ playerBackgroundMode: 'blur' }),
+        expect.any(Function)
+      );
+    });
+
+    test('saveModeToStorage falls back to local storage on sync failure', async () => {
+      const syncSet = vi.fn(() => { throw new Error('sync failed'); });
+      const localSet = vi.fn((_data, cb) => { if (cb) cb(); });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: vi.fn(), set: syncSet },
+          local: { get: vi.fn(), set: localSet }
+        }
+      });
+
+      const result = await saveModeToStorage('solid');
+      expect(result).toBe(false);
+      // local.set is called twice: once at start (no callback), once in catch block (with callback)
+      expect(localSet).toHaveBeenCalled();
+      // Check that localSet was called with the correct data (at least once)
+      const calls = localSet.mock.calls;
+      const hasCorrectDataCall = calls.some(call =>
+        call[0] && call[0].playerBackgroundMode === 'solid'
+      );
+      expect(hasCorrectDataCall).toBe(true);
+    });
+
+    test('loadModeFromStorage returns sync value when both storages have data and sync is newer', async () => {
+      const syncTimestamp = Date.now();
+      const localTimestamp = syncTimestamp - 1000;
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: syncTimestamp });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'solid', playerBackgroundModeTimestamp: localTimestamp });
+      });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        }
+      });
+
+      const mode = await loadModeFromStorage();
+      expect(mode).toBe('blur');
+    });
+
+    test('loadModeFromStorage returns local value when local is newer', async () => {
+      const syncTimestamp = Date.now() - 1000;
+      const localTimestamp = Date.now();
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: syncTimestamp });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'solid', playerBackgroundModeTimestamp: localTimestamp });
+      });
+      const syncSet = vi.fn((_data, cb) => { if (cb) cb(); });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: syncSet },
+          local: { get: localGet, set: vi.fn() }
+        }
+      });
+
+      const mode = await loadModeFromStorage();
+      expect(mode).toBe('solid');
+      // Should sync the newer local value back to sync storage
+      expect(syncSet).toHaveBeenCalledWith(
+        expect.objectContaining({ playerBackgroundMode: 'solid' }),
+        expect.any(Function)
+      );
+    });
+
+    test('loadModeFromStorage returns default blur when no data exists', async () => {
+      const syncGet = vi.fn((_keys, cb) => { cb({}); });
+      const localGet = vi.fn((_keys, cb) => { cb({}); });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        }
+      });
+
+      const mode = await loadModeFromStorage();
+      expect(mode).toBe('blur');
     });
   });
 });

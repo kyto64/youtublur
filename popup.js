@@ -1,4 +1,106 @@
 const STORAGE_KEY = 'playerBackgroundMode';
+const STORAGE_TIMESTAMP_KEY = 'playerBackgroundModeTimestamp';
+
+/**
+ * Save mode to storage with fallback from sync to local
+ * @param {string} mode - 'blur' or 'solid'
+ * @returns {Promise<boolean>} - true if saved to sync, false if saved to local
+ */
+function saveModeToStorage(mode) {
+  const timestamp = Date.now();
+  const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
+
+  // Always update local storage to ensure a reliable fallback is available
+  chrome.storage.local.set(data);
+
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.sync.set(data, () => {
+        const lastError = chrome.runtime && chrome.runtime.lastError;
+        if (lastError) {
+          console.warn('Sync storage failed:', lastError);
+          resolve(false);
+        } else {
+          resolve(true);
+        }
+      });
+    } catch (error) {
+      console.warn('Sync storage failed:', error);
+      resolve(false);
+    }
+  });
+}
+
+/**
+ * Load mode from storage with fallback and latest value determination
+ * @returns {Promise<string>} - 'blur' or 'solid'
+ */
+function loadModeFromStorage() {
+  return new Promise((resolve) => {
+    try {
+      chrome.storage.sync.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (syncResult) => {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          syncResult = {};
+        }
+        chrome.storage.local.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (localResult) => {
+          if (chrome.runtime && chrome.runtime.lastError) {
+            localResult = {};
+          }
+
+          const syncMode = syncResult[STORAGE_KEY];
+          const localMode = localResult[STORAGE_KEY];
+          const syncTimestamp = syncResult[STORAGE_TIMESTAMP_KEY] || 0;
+          const localTimestamp = localResult[STORAGE_TIMESTAMP_KEY] || 0;
+
+          if (syncMode !== undefined && localMode !== undefined) {
+            if (syncTimestamp >= localTimestamp) {
+              resolve(syncMode);
+              // Sync local in background
+              chrome.storage.local.set({
+                [STORAGE_KEY]: syncMode,
+                [STORAGE_TIMESTAMP_KEY]: syncTimestamp
+              });
+            } else {
+              // Local is newer, resolve immediately and sync back to sync storage in background
+              resolve(localMode);
+              chrome.storage.sync.set({
+                [STORAGE_KEY]: localMode,
+                [STORAGE_TIMESTAMP_KEY]: localTimestamp
+              }, () => {
+                if (chrome.runtime && chrome.runtime.lastError) {
+                  console.warn('Failed to sync local value back to sync storage:', chrome.runtime.lastError);
+                }
+              });
+            }
+          } else if (syncMode !== undefined) {
+            resolve(syncMode);
+            // Sync to local in background
+            chrome.storage.local.set({
+              [STORAGE_KEY]: syncMode,
+              [STORAGE_TIMESTAMP_KEY]: syncTimestamp
+            });
+          } else if (localMode !== undefined) {
+            resolve(localMode);
+            // Sync to sync in background
+            chrome.storage.sync.set({
+              [STORAGE_KEY]: localMode,
+              [STORAGE_TIMESTAMP_KEY]: localTimestamp
+            }, () => {
+              if (chrome.runtime && chrome.runtime.lastError) {
+                console.warn('Failed to sync local value to sync storage:', chrome.runtime.lastError);
+              }
+            });
+          } else {
+            resolve('blur');
+          }
+        });
+      });
+    } catch (error) {
+      console.error('Failed to load mode from storage:', error);
+      resolve('blur');
+    }
+  });
+}
 
 function applyLocalizedStrings() {
   if (typeof chrome === 'undefined' || !chrome.i18n) return;
@@ -33,8 +135,7 @@ function initPopup() {
   document.addEventListener('DOMContentLoaded', () => {
     applyLocalizedStrings();
 
-    chrome.storage.sync.get({ [STORAGE_KEY]: 'blur' }, (items) => {
-      const mode = items[STORAGE_KEY];
+    loadModeFromStorage().then((mode) => {
       const radio = document.getElementById(mode === 'blur' ? 'modeBlur' : 'modeSolid');
       if (radio) radio.checked = true;
     });
@@ -42,7 +143,7 @@ function initPopup() {
     document.querySelectorAll('input[name="bgMode"]').forEach((radio) => {
       radio.addEventListener('change', (e) => {
         const mode = e.target.value;
-        chrome.storage.sync.set({ [STORAGE_KEY]: mode }, () => {
+        saveModeToStorage(mode).then(() => {
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];
             if (tab?.id && tab.url?.includes('youtube.com')) {
@@ -100,5 +201,5 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { initPopup, STORAGE_KEY };
+  module.exports = { initPopup, STORAGE_KEY, saveModeToStorage, loadModeFromStorage };
 }
