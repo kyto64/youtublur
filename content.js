@@ -731,8 +731,15 @@ if (typeof module !== 'undefined' && module.exports) {
       stopBlurLoop();
       frameCount = 0;
       releaseGeckoVideoSnapCanvas();
-      // 重置动态绘制间隔相关状态
-      currentDrawInterval = 2;
+      // 重置动态绘制间隔相关状态 - 重新检测设备性能
+      const devicePerformance = detectDevicePerformance();
+      if (devicePerformance === 'low') {
+        currentDrawInterval = 3;
+      } else if (devicePerformance === 'high') {
+        currentDrawInterval = 1;
+      } else {
+        currentDrawInterval = 2;
+      }
       lastFrameTime = 0;
       frameTimes = [];
       adjustmentCooldown = 0;
