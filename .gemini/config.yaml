@@ -1,0 +1,16 @@
+version: 1
+enabled_features:
+  auto_review: true
+  post_review_summary: true
+  inline_suggestions: true
+  review_pull_request: true
+
+code_review:
+  # 重要度の低い（LOW）コメントを抑制し、重要な指摘に集中させる
+  comment_severity_threshold: MEDIUM
+  # コメントが多すぎると矛盾が生じやすいため上限を設定（必要に応じて調整）
+  max_review_comments: 10
+
+pull_request_opened:
+  summary: true
+  code_review: true
