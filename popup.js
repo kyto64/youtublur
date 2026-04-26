@@ -8,9 +8,9 @@ function applyLocalizedStrings() {
   const solid = document.getElementById('labelModeSolid');
   if (heading) {
     const phrases = [];
-    for (let i = 0; i < 8; i++) {
-      const msg = chrome.i18n.getMessage(`popupPhrase${i}`);
-      if (msg) phrases.push(msg);
+    let i = 0, msg;
+    while ((msg = chrome.i18n.getMessage('popupPhrase' + (i++)))) {
+      phrases.push(msg);
     }
     if (phrases.length > 0) {
       heading.textContent = phrases[Math.floor(Math.random() * phrases.length)];
@@ -63,21 +63,24 @@ function initPopup() {
         if (isReloading) return;
 
         isReloading = true;
-        reloadButton.classList.add('loading');
-        if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadingButton');
 
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           const tab = tabs[0];
           if (tab?.id && tab.url?.includes('youtube.com')) {
-            chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
-          }
+            reloadButton.classList.add('loading');
+            if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadingButton');
 
-          // リロード完了後、クラスを削除して元の状態に戻す
-          setTimeout(() => {
+            chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
+
+            // リロード完了後、クラスを削除して元の状態に戻す
+            setTimeout(() => {
+              isReloading = false;
+              reloadButton.classList.remove('loading');
+              if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadButton');
+            }, 500);
+          } else {
             isReloading = false;
-            reloadButton.classList.remove('loading');
-            if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadButton');
-          }, 500);
+          }
         });
       };
       reloadButton.addEventListener('click', triggerReload);
