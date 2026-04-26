@@ -216,19 +216,31 @@ function detectYouTubeTheme() {
       const style = getComputedStyle(htmlElement);
       const bgColor = style.getPropertyValue('--yt-spec-base-background').trim();
       if (bgColor) {
-        // RGB値から明るさを判定
-        const rgbMatch = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        // RGB値から明るさを判定（より堅牢なパターン）
+        const rgbMatch = bgColor.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
         if (rgbMatch) {
           const r = parseInt(rgbMatch[1], 10);
           const g = parseInt(rgbMatch[2], 10);
           const b = parseInt(rgbMatch[3], 10);
-          // 明るさを計算（0-255）
-          const brightness = (r * 299 + g * 587 + b * 114) / 1000;
-          if (brightness < 128) {
-            return 'dark';
-          } else {
-            return 'light';
+          // 値の範囲チェック
+          if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255) {
+            // 明るさを計算（0-255）
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            if (brightness < 128) {
+              return 'dark';
+            } else {
+              return 'light';
+            }
           }
+        }
+        // RGB以外の形式（hex, hsl, 名前付き色など）の場合はフォールバック
+        // ここでは明るい色と暗い色の一般的な値で判定
+        const lowerBgColor = bgColor.toLowerCase();
+        if (lowerBgColor.includes('black') || lowerBgColor.includes('dark') || lowerBgColor.includes('#000') || lowerBgColor.includes('#111')) {
+          return 'dark';
+        }
+        if (lowerBgColor.includes('white') || lowerBgColor.includes('light') || lowerBgColor.includes('#fff') || lowerBgColor.includes('#f')) {
+          return 'light';
         }
       }
     }
@@ -277,6 +289,7 @@ let playerDomObserver = null;
 let playerResizeObserver = null;
 let youtubeNavHooksInstalled = false;
 let documentLifecycleHooksInstalled = false;
+let themeObserver = null;
 
 const BLUR_INIT_RETRY_INITIAL_MS = 50;
 const BLUR_INIT_RETRY_MAX_MS = 2000;
@@ -573,9 +586,8 @@ function hideBlurMode(container) {
   }
   if (container) {
     container.dataset.ytLightBgMode = 'solid';
-    // テーマに応じた背景色を動的に設定
-    const bgColor = getSolidModeBackgroundColor();
-    container.style.backgroundColor = bgColor;
+    // !importantを指定してCSSの優先度を確保
+    container.style.setProperty('background-color', getSolidModeBackgroundColor(), 'important');
   }
 }
 
@@ -758,13 +770,13 @@ function initExtension() {
   }
 
   // テーマ変更を監視して単色モードの背景色を動的に更新
-  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
-    const themeObserver = new MutationObserver(() => {
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined' && !themeObserver) {
+    themeObserver = new MutationObserver(() => {
       if (currentMode === 'solid') {
         const container = getPlayerContainer();
         if (container) {
           const bgColor = getSolidModeBackgroundColor();
-          container.style.backgroundColor = bgColor;
+          container.style.setProperty('background-color', bgColor, 'important');
         }
       }
     });
