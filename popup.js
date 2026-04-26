@@ -6,10 +6,26 @@ function applyLocalizedStrings() {
   const heading = document.getElementById('popupHeading');
   const blur = document.getElementById('labelModeBlur');
   const solid = document.getElementById('labelModeSolid');
-  if (heading) heading.textContent = chrome.i18n.getMessage('popupHeading');
+  if (heading) {
+    const phrases = [];
+    for (let i = 0; i < 20; i++) {
+      const msg = chrome.i18n.getMessage('popupPhrase' + i);
+      if (!msg) break;
+      phrases.push(msg);
+    }
+    if (phrases.length > 0) {
+      heading.textContent = phrases[Math.floor(Math.random() * phrases.length)];
+    }
+  }
   if (blur) blur.textContent = chrome.i18n.getMessage('modeBlur');
   if (solid) solid.textContent = chrome.i18n.getMessage('modeSolid');
+  const blurSub = document.getElementById('labelModeBlurSub');
+  const solidSub = document.getElementById('labelModeSolidSub');
+  const preview = document.getElementById('labelPreview');
   const reload = document.getElementById('labelReload');
+  if (blurSub) blurSub.textContent = chrome.i18n.getMessage('modeBlurSub');
+  if (solidSub) solidSub.textContent = chrome.i18n.getMessage('modeSolidSub');
+  if (preview) preview.textContent = chrome.i18n.getMessage('previewLabel');
   if (reload) reload.textContent = chrome.i18n.getMessage('reloadButton');
 }
 
@@ -39,11 +55,32 @@ function initPopup() {
 
     const reloadButton = document.getElementById('reloadButton');
     if (reloadButton) {
+      let isReloading = false;
+
+      const labelReload = document.getElementById('labelReload');
+
       const triggerReload = () => {
+        // リロード中なら中断しない
+        if (isReloading) return;
+
+        isReloading = true;
+
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           const tab = tabs[0];
           if (tab?.id && tab.url?.includes('youtube.com')) {
+            reloadButton.classList.add('loading');
+            if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadingButton');
+
             chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
+
+            // リロード完了後、クラスを削除して元の状態に戻す
+            setTimeout(() => {
+              isReloading = false;
+              reloadButton.classList.remove('loading');
+              if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadButton');
+            }, 500);
+          } else {
+            isReloading = false;
           }
         });
       };

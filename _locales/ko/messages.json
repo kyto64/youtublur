@@ -22,5 +22,20 @@
   "reloadButton": {
     "message": "새로고침",
     "description": "현재 페이지의 블러 효과를 다시 적용하기 위한 버튼."
-  }
+  },
+  "reloadingButton": {
+    "message": "새로고침 중...",
+    "description": "새로고침 진행 중인 버튼 텍스트."
+  },
+  "modeBlurSub": { "message": "부드러운 앰비언트 글로우" },
+  "modeSolidSub": { "message": "플랫 뉴트럴 배경" },
+  "previewLabel": { "message": "미리보기" },
+  "popupPhrase0": { "message": "눈이 편안한 YouTube" },
+  "popupPhrase1": { "message": "눈부심은 줄이고, 여유는 늘리고" },
+  "popupPhrase2": { "message": "노이즈를 블러로, 즐거움은 그대로" },
+  "popupPhrase3": { "message": "부드러운 경계, 선명한 집중" },
+  "popupPhrase4": { "message": "아늑한 YouTube 만들기" },
+  "popupPhrase5": { "message": "앰비언트 바이브, 원하는 대로" },
+  "popupPhrase6": { "message": "배경을 아름답게" },
+  "popupPhrase7": { "message": "시각적 편안함, 업그레이드" }
 }

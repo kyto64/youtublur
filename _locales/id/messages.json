@@ -22,5 +22,20 @@
   "reloadButton": {
     "message": "Muat ulang",
     "description": "Tombol untuk memuat ulang efek blur pada halaman saat ini."
-  }
+  },
+  "reloadingButton": {
+    "message": "Memuat ulang...",
+    "description": "Teks tombol saat sedang memuat ulang."
+  },
+  "modeBlurSub": { "message": "Cahaya ambien beku" },
+  "modeSolidSub": { "message": "Permukaan netral datar" },
+  "previewLabel": { "message": "Pratinjau" },
+  "popupPhrase0": { "message": "Membuat YouTube lebih nyaman di mata" },
+  "popupPhrase1": { "message": "Kurangi silau, tambah ketenangan" },
+  "popupPhrase2": { "message": "Kaburkan kebisingan, jaga kesenangan" },
+  "popupPhrase3": { "message": "Tepi lembut, pikiran jernih" },
+  "popupPhrase4": { "message": "YouTube, tapi lebih nyaman" },
+  "popupPhrase5": { "message": "Suasana ambien, sesuai keinginan" },
+  "popupPhrase6": { "message": "Latar belakang, diperindah" },
+  "popupPhrase7": { "message": "Kenyamanan visual Anda, ditingkatkan" }
 }
