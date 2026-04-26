@@ -16,20 +16,23 @@ function saveModeToStorage(mode) {
   const timestamp = Date.now();
   const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
 
+  // Always update local storage to ensure a reliable fallback is available
+  chrome.storage.local.set(data);
+
   return new Promise((resolve) => {
     try {
       chrome.storage.sync.set(data, () => {
         const lastError = chrome.runtime && chrome.runtime.lastError;
         if (lastError) {
-          console.warn('Sync storage failed, falling back to local storage:', lastError);
-          chrome.storage.local.set(data, () => resolve(false));
+          console.warn('Sync storage failed:', lastError);
+          resolve(false);
         } else {
           resolve(true);
         }
       });
     } catch (error) {
-      console.warn('Sync storage failed, falling back to local storage:', error);
-      chrome.storage.local.set(data, () => resolve(false));
+      console.warn('Sync storage failed:', error);
+      resolve(false);
     }
   });
 }
@@ -58,8 +61,14 @@ function loadModeFromStorage() {
           if (syncMode !== undefined && localMode !== undefined) {
             if (syncTimestamp >= localTimestamp) {
               resolve(syncMode);
+              // Sync local in background
+              chrome.storage.local.set({
+                [STORAGE_KEY]: syncMode,
+                [STORAGE_TIMESTAMP_KEY]: syncTimestamp
+              });
             } else {
-              // Local is newer, sync it back to sync storage
+              // Local is newer, resolve immediately and sync back to sync storage in background
+              resolve(localMode);
               chrome.storage.sync.set({
                 [STORAGE_KEY]: localMode,
                 [STORAGE_TIMESTAMP_KEY]: localTimestamp
@@ -67,13 +76,26 @@ function loadModeFromStorage() {
                 if (chrome.runtime && chrome.runtime.lastError) {
                   console.warn('Failed to sync local value back to sync storage:', chrome.runtime.lastError);
                 }
-                resolve(localMode);
               });
             }
           } else if (syncMode !== undefined) {
             resolve(syncMode);
+            // Sync to local in background
+            chrome.storage.local.set({
+              [STORAGE_KEY]: syncMode,
+              [STORAGE_TIMESTAMP_KEY]: syncTimestamp
+            });
           } else if (localMode !== undefined) {
             resolve(localMode);
+            // Sync to sync in background
+            chrome.storage.sync.set({
+              [STORAGE_KEY]: localMode,
+              [STORAGE_TIMESTAMP_KEY]: localTimestamp
+            }, () => {
+              if (chrome.runtime && chrome.runtime.lastError) {
+                console.warn('Failed to sync local value to sync storage:', chrome.runtime.lastError);
+              }
+            });
           } else {
             resolve('blur');
           }
@@ -189,7 +211,7 @@ function normalizeMode(mode) {
 }
 
 function isPlayerPagePath(pathname) {
-  return pathname.startsWith('/watch') || pathname.startsWith('/shorts/');
+  return /^\/watch(\/|$)/.test(pathname) || pathname.startsWith('/shorts/');
 }
 
 function getPlayerContainer() {
@@ -567,7 +589,7 @@ function initExtension() {
       if (normalized !== currentMode) {
         applyMode(normalized, getPlayerContainer());
       } else {
-        observePlayer();
+        // observePlayer is already called above; no need to call again
       }
     });
 

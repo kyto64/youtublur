@@ -10,20 +10,23 @@ function saveModeToStorage(mode) {
   const timestamp = Date.now();
   const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
 
+  // Always update local storage to ensure a reliable fallback is available
+  chrome.storage.local.set(data);
+
   return new Promise((resolve) => {
     try {
       chrome.storage.sync.set(data, () => {
         const lastError = chrome.runtime && chrome.runtime.lastError;
         if (lastError) {
-          console.warn('Sync storage failed, falling back to local storage:', lastError);
-          chrome.storage.local.set(data, () => resolve(false));
+          console.warn('Sync storage failed:', lastError);
+          resolve(false);
         } else {
           resolve(true);
         }
       });
     } catch (error) {
-      console.warn('Sync storage failed, falling back to local storage:', error);
-      chrome.storage.local.set(data, () => resolve(false));
+      console.warn('Sync storage failed:', error);
+      resolve(false);
     }
   });
 }
@@ -36,13 +39,11 @@ function loadModeFromStorage() {
   return new Promise((resolve) => {
     try {
       chrome.storage.sync.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (syncResult) => {
-        const lastError1 = chrome.runtime && chrome.runtime.lastError;
-        if (lastError1) {
+        if (chrome.runtime && chrome.runtime.lastError) {
           syncResult = {};
         }
         chrome.storage.local.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (localResult) => {
-          const lastError2 = chrome.runtime && chrome.runtime.lastError;
-          if (lastError2) {
+          if (chrome.runtime && chrome.runtime.lastError) {
             localResult = {};
           }
 
@@ -54,23 +55,41 @@ function loadModeFromStorage() {
           if (syncMode !== undefined && localMode !== undefined) {
             if (syncTimestamp >= localTimestamp) {
               resolve(syncMode);
+              // Sync local in background
+              chrome.storage.local.set({
+                [STORAGE_KEY]: syncMode,
+                [STORAGE_TIMESTAMP_KEY]: syncTimestamp
+              });
             } else {
-              // Local is newer, sync it back to sync storage
+              // Local is newer, resolve immediately and sync back to sync storage in background
+              resolve(localMode);
               chrome.storage.sync.set({
                 [STORAGE_KEY]: localMode,
                 [STORAGE_TIMESTAMP_KEY]: localTimestamp
               }, () => {
-                const lastError3 = chrome.runtime && chrome.runtime.lastError;
-                if (lastError3) {
-                  console.warn('Failed to sync local value back to sync storage:', lastError3);
+                if (chrome.runtime && chrome.runtime.lastError) {
+                  console.warn('Failed to sync local value back to sync storage:', chrome.runtime.lastError);
                 }
-                resolve(localMode);
               });
             }
           } else if (syncMode !== undefined) {
             resolve(syncMode);
+            // Sync to local in background
+            chrome.storage.local.set({
+              [STORAGE_KEY]: syncMode,
+              [STORAGE_TIMESTAMP_KEY]: syncTimestamp
+            });
           } else if (localMode !== undefined) {
             resolve(localMode);
+            // Sync to sync in background
+            chrome.storage.sync.set({
+              [STORAGE_KEY]: localMode,
+              [STORAGE_TIMESTAMP_KEY]: localTimestamp
+            }, () => {
+              if (chrome.runtime && chrome.runtime.lastError) {
+                console.warn('Failed to sync local value to sync storage:', chrome.runtime.lastError);
+              }
+            });
           } else {
             resolve('blur');
           }
