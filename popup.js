@@ -8,8 +8,9 @@ function applyLocalizedStrings() {
   const solid = document.getElementById('labelModeSolid');
   if (heading) {
     const phrases = [];
-    let i = 0, msg;
-    while ((msg = chrome.i18n.getMessage('popupPhrase' + (i++)))) {
+    for (let i = 0; i < 20; i++) {
+      const msg = chrome.i18n.getMessage('popupPhrase' + i);
+      if (!msg) break;
       phrases.push(msg);
     }
     if (phrases.length > 0) {
@@ -84,12 +85,6 @@ function initPopup() {
         });
       };
       reloadButton.addEventListener('click', triggerReload);
-      reloadButton.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          triggerReload();
-        }
-      });
     }
   });
 }
