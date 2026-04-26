@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.9.0](https://github.com/kyto64/youtublur/compare/v1.8.0...v1.9.0) (2026-04-26)
+
+
+### Features
+
+* E2E テストに Firefox を追加 ([#33](https://github.com/kyto64/youtublur/issues/33)) ([8a3dd9a](https://github.com/kyto64/youtublur/commit/8a3dd9a794743c8d3f5315cc19b24990b39357fc))
+* Redesign popup UI with localized reload state ([#35](https://github.com/kyto64/youtublur/issues/35)) ([f5c3171](https://github.com/kyto64/youtublur/commit/f5c3171f9c5a04c2510d2c164394f8bdf8d1158a))
+* 脆弱性スキャンの CI/CD を整備 ([#34](https://github.com/kyto64/youtublur/issues/34)) ([34ddb4c](https://github.com/kyto64/youtublur/commit/34ddb4ccde93e166acbe2c6c6b8fe309e869426e)), closes [#16](https://github.com/kyto64/youtublur/issues/16)
+
 ## [1.8.0](https://github.com/kyto64/youtublur/compare/v1.7.4...v1.8.0) (2026-04-25)
 
 
