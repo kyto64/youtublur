@@ -85,6 +85,12 @@ function initPopup() {
         });
       };
       reloadButton.addEventListener('click', triggerReload);
+      reloadButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          triggerReload();
+        }
+      });
     }
   });
 }
