@@ -19,7 +19,17 @@ const {
   startBlurLoop,
   normalizeMode,
   saveModeToStorage,
-  loadModeFromStorage
+  loadModeFromStorage,
+  // 新增：动态绘制间隔相关函数
+  detectDevicePerformance,
+  updateFPS,
+  getAverageFPS,
+  adjustDrawInterval,
+  getCurrentDrawInterval,
+  setCurrentDrawInterval,
+  getFrameTimes,
+  getAdjustmentCooldown,
+  setAdjustmentCooldown
 } = require('./content.js');
 
 function mock2dContext() {
@@ -734,6 +744,164 @@ describe('content.js', () => {
 
       const mode = await loadModeFromStorage();
       expect(mode).toBe('blur');
+    });
+
+    describe('动态绘制间隔功能', () => {
+      beforeEach(() => {
+        resetState();
+      });
+
+      test('detectDevicePerformance returns valid performance level', () => {
+        // Mock navigator properties for consistent testing
+        const originalHardwareConcurrency = navigator.hardwareConcurrency;
+        const originalDeviceMemory = navigator.deviceMemory;
+
+        // Test low performance
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 2, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 2, configurable: true });
+        expect(detectDevicePerformance()).toBe('low');
+
+        // Test medium performance
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 4, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 4, configurable: true });
+        expect(detectDevicePerformance()).toBe('medium');
+
+        // Test high performance
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 8, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 8, configurable: true });
+        expect(detectDevicePerformance()).toBe('high');
+
+        // Restore original values
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalHardwareConcurrency, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: originalDeviceMemory, configurable: true });
+      });
+
+      test('updateFPS and getAverageFPS calculate FPS correctly', () => {
+        const timestamp1 = 1000;
+        const timestamp2 = 1033; // ~30 FPS
+        const timestamp3 = 1066; // ~30 FPS
+
+        updateFPS(timestamp1);
+        updateFPS(timestamp2);
+        updateFPS(timestamp3);
+
+        expect(getAverageFPS()).toBeCloseTo(30, 0);
+      });
+
+      test('adjustDrawInterval increases interval when FPS is low', () => {
+        setCurrentDrawInterval(2);
+        setAdjustmentCooldown(0);
+
+        // 低FPSをシミュレート（高いフレーム時間を追加）
+        const lowFpsFrameTimes = [50, 50, 50, 50, 50]; // ~20 FPS
+        getFrameTimes().push(...lowFpsFrameTimes);
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(3);
+      });
+
+      test('adjustDrawInterval decreases interval when FPS is high', () => {
+        setCurrentDrawInterval(3);
+        setAdjustmentCooldown(0);
+
+        // 高FPSをシミュレート（低いフレーム時間を追加）
+        const highFpsFrameTimes = [16, 16, 16, 16, 16]; // ~60 FPS
+        getFrameTimes().push(...highFpsFrameTimes);
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(2);
+      });
+
+      test('adjustDrawInterval respects cooldown period', () => {
+        setCurrentDrawInterval(2);
+        setAdjustmentCooldown(100); // まだクールダウン閾値に達していない
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(2); // 変更されないはず
+      });
+
+      test('adjustDrawInterval respects min/max bounds', () => {
+        // 最小値のテスト: currentDrawIntervalが1の場合、FPSが高くても1以下にはならない
+        setCurrentDrawInterval(1);
+        setAdjustmentCooldown(0);
+
+        // 高FPSをシミュレート（低いフレーム時間を追加）
+        const highFpsFrameTimes = [16, 16, 16, 16, 16]; // ~60 FPS
+        getFrameTimes().push(...highFpsFrameTimes);
+
+        adjustDrawInterval();
+
+        expect(getCurrentDrawInterval()).toBe(1); // 最小値を下回らないはず
+
+        // 最大値のテスト: currentDrawIntervalが4の場合、FPSが低くても4以上にはならない
+        setCurrentDrawInterval(4);
+        setAdjustmentCooldown(0);
+        const lowFpsFrameTimes = [50, 50, 50, 50, 50]; // ~20 FPS
+        getFrameTimes().push(...lowFpsFrameTimes);
+        adjustDrawInterval();
+        expect(getCurrentDrawInterval()).toBe(4); // 最大値を上回らないはず
+      });
+
+      test('getCurrentDrawInterval and setCurrentDrawInterval work correctly', () => {
+        // 一貫性を保つため、デバイス性能を中（デフォルト）にモック
+        const originalHardwareConcurrency = navigator.hardwareConcurrency;
+        const originalDeviceMemory = navigator.deviceMemory;
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 4, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 4, configurable: true });
+
+        try {
+          // モジュールを再初期化して正しい初期値を取得する必要があるが、
+          // 再requireできないため、手動で初期値を設定する
+          setCurrentDrawInterval(2); // 中性能のデフォルト値に設定
+
+          expect(getCurrentDrawInterval()).toBe(2);
+
+          setCurrentDrawInterval(4);
+          expect(getCurrentDrawInterval()).toBe(4);
+
+          setCurrentDrawInterval(1);
+          expect(getCurrentDrawInterval()).toBe(1);
+        } finally {
+          // 元の値を復元
+          Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalHardwareConcurrency, configurable: true });
+          Object.defineProperty(navigator, 'deviceMemory', { value: originalDeviceMemory, configurable: true });
+        }
+      });
+
+      test('frameTimes and adjustmentCooldown state management', () => {
+        // フレーム時間と調整クールダウン状態の管理
+        expect(getFrameTimes()).toEqual([]);
+        expect(getAdjustmentCooldown()).toBe(0);
+
+        setAdjustmentCooldown(50);
+        expect(getAdjustmentCooldown()).toBe(50);
+      });
+
+      test('resetState resets dynamic drawing interval state', () => {
+        // 一貫性を保つため、デバイス性能を中（デフォルト）にモック
+        const originalHardwareConcurrency = navigator.hardwareConcurrency;
+        const originalDeviceMemory = navigator.deviceMemory;
+        Object.defineProperty(navigator, 'hardwareConcurrency', { value: 4, configurable: true });
+        Object.defineProperty(navigator, 'deviceMemory', { value: 4, configurable: true });
+
+        try {
+          setCurrentDrawInterval(4);
+          setAdjustmentCooldown(100);
+
+          resetState();
+
+          expect(getCurrentDrawInterval()).toBe(2);
+          expect(getAdjustmentCooldown()).toBe(0);
+          expect(getFrameTimes()).toEqual([]);
+        } finally {
+          // 元の値を復元
+          Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalHardwareConcurrency, configurable: true });
+          Object.defineProperty(navigator, 'deviceMemory', { value: originalDeviceMemory, configurable: true });
+        }
+      });
     });
   });
 });

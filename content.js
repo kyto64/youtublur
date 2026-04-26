@@ -108,11 +108,82 @@ function loadModeFromStorage() {
   });
 }
 
-const DRAW_INTERVAL = 2; // 描画を2フレームに1回にして軽量化
+// デバイス性能検出と動的な描画間隔の設定
+function detectDevicePerformance() {
+  const cores = navigator.hardwareConcurrency || 4;
+  const memory = navigator.deviceMemory || 4;
+
+  let score = 0;
+  if (cores <= 2) score += 1;
+  else if (cores <= 4) score += 2;
+  else score += 3;
+
+  if (memory <= 2) score += 1;
+  else if (memory <= 4) score += 2;
+  else score += 3;
+
+  if (score <= 2) return 'low';
+  if (score <= 4) return 'medium';
+  return 'high';
+}
+
+let currentDrawInterval = 2; // デフォルト値
+const devicePerformance = detectDevicePerformance();
+if (devicePerformance === 'low') {
+  currentDrawInterval = 3;
+} else if (devicePerformance === 'high') {
+  currentDrawInterval = 1;
+}
+
+// FPS監視用変数
+let lastFrameTime = 0;
+let frameTimes = [];
+const FPS_SAMPLE_SIZE = 60;
+const FPS_LOW_THRESHOLD = 30;
+const FPS_HIGH_THRESHOLD = 55;
+let adjustmentCooldown = 0;
+const ADJUSTMENT_COOLDOWN_FRAMES = 300;
+
+function updateFPS(timestamp) {
+  if (lastFrameTime > 0) {
+    const delta = timestamp - lastFrameTime;
+    frameTimes.push(delta);
+    if (frameTimes.length > FPS_SAMPLE_SIZE) {
+      frameTimes.shift();
+    }
+  }
+  lastFrameTime = timestamp;
+}
+
+function getAverageFPS() {
+  if (frameTimes.length === 0) return 60;
+  const avgDelta = frameTimes.reduce((a, b) => a + b, 0) / frameTimes.length;
+  return 1000 / avgDelta;
+}
+
+function adjustDrawInterval() {
+  if (adjustmentCooldown > 0) {
+    adjustmentCooldown--;
+    return;
+  }
+
+  const fps = getAverageFPS();
+
+  if (fps < FPS_LOW_THRESHOLD && currentDrawInterval < 4) {
+    currentDrawInterval = Math.min(4, currentDrawInterval + 1);
+    frameTimes = [];
+  } else if (fps > FPS_HIGH_THRESHOLD && currentDrawInterval > 1) {
+    currentDrawInterval = Math.max(1, currentDrawInterval - 1);
+    frameTimes = [];
+  }
+
+  adjustmentCooldown = ADJUSTMENT_COOLDOWN_FRAMES;
+}
 
 /**
- * True when the page runs on Gecko (Firefox). UA alone is unreliable:
- * privacy.resistFingerprinting can spoof navigator.userAgent as Chrome.
+ * ページがGeckoレイアウトエンジン（Firefox）で動作しているか判定する。
+ * ユーザーエージェント単体では信頼できないため、CSS.supportsを使用する。
+ * privacy.resistFingerprintingが有効な場合、UAはChromeと偽装される可能性がある。
  * @returns {boolean}
  */
 function isGeckoLayoutEngine() {
@@ -129,7 +200,7 @@ function isGeckoLayoutEngine() {
 
 const geckoLayout = isGeckoLayoutEngine();
 
-/** Gecko: ctx.filter + drawImage(video) can drop the frame; blur a raster copy instead. */
+/** Gecko環境: ctx.filter + drawImage(video) でフレームが落ちる場合があるため、ラスタライズしたコピーをぼかす */
 let geckoVideoSnapCanvas = null;
 let geckoVideoSnapCtx = null;
 
@@ -377,14 +448,24 @@ function startBlurLoop(container) {
   const initialContainer = container || getPlayerContainer();
   if (!initialContainer || !getVideoElement(initialContainer)) return;
 
-  function loop() {
+  // FPS監視と描画間隔調整の初期化
+  lastFrameTime = 0;
+  frameTimes = [];
+  adjustmentCooldown = 0;
+
+  function loop(timestamp) {
     if (currentMode !== 'blur' || !blurCanvas) return;
     const c = getPlayerContainer();
     const video = c ? getVideoElement(c) : null;
     frameCount++;
-    if (video && frameCount % DRAW_INTERVAL === 0) {
+
+    updateFPS(timestamp);
+
+    if (video && frameCount % currentDrawInterval === 0) {
       drawBlurFrame(video, blurCanvas, blurCtx);
     }
+
+    adjustDrawInterval();
     animationId = requestAnimationFrame(loop);
   }
   animationId = requestAnimationFrame(loop);
@@ -651,8 +732,30 @@ if (typeof module !== 'undefined' && module.exports) {
       stopBlurLoop();
       frameCount = 0;
       releaseGeckoVideoSnapCanvas();
+      // 動的描画間隔関連の状態をリセット - デバイス性能を再検出
+      const devicePerformance = detectDevicePerformance();
+      if (devicePerformance === 'low') {
+        currentDrawInterval = 3;
+      } else if (devicePerformance === 'high') {
+        currentDrawInterval = 1;
+      } else {
+        currentDrawInterval = 2;
+      }
+      lastFrameTime = 0;
+      frameTimes = [];
+      adjustmentCooldown = 0;
     },
     saveModeToStorage,
-    loadModeFromStorage
+    loadModeFromStorage,
+    // 追加：テスト用の動的描画間隔関連関数
+    detectDevicePerformance,
+    updateFPS,
+    getAverageFPS,
+    adjustDrawInterval,
+    getCurrentDrawInterval: () => currentDrawInterval,
+    setCurrentDrawInterval: (val) => { currentDrawInterval = val; },
+    getFrameTimes: () => frameTimes,
+    getAdjustmentCooldown: () => adjustmentCooldown,
+    setAdjustmentCooldown: (val) => { adjustmentCooldown = val; }
   };
 }
