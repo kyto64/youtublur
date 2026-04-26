@@ -2,6 +2,8 @@ import { vi } from 'vitest';
 const {
   BLUR_STRENGTH_PX,
   isGeckoLayoutEngine,
+  detectYouTubeTheme,
+  getSolidModeBackgroundColor,
   createBlurCanvas,
   applyMode,
   getPlayerContainer,
@@ -40,6 +42,41 @@ function mock2dContext() {
 }
 
 describe('content.js', () => {
+  // detectYouTubeTheme 関数のテスト
+  describe('detectYouTubeTheme', () => {
+    beforeEach(() => {
+      document.body.innerHTML = '';
+      document.documentElement.removeAttribute('dark');
+      document.documentElement.removeAttribute('theme');
+    });
+
+    test('returns dark when html has dark attribute', () => {
+      document.documentElement.setAttribute('dark', '');
+      expect(detectYouTubeTheme()).toBe('dark');
+    });
+
+    test('returns dark when html has theme="dark"', () => {
+      document.documentElement.setAttribute('theme', 'dark');
+      expect(detectYouTubeTheme()).toBe('dark');
+    });
+
+    test('returns light when html has no dark attributes', () => {
+      expect(detectYouTubeTheme()).toBe('light');
+    });
+  });
+
+  // getSolidModeBackgroundColor 関数のテスト
+  describe('getSolidModeBackgroundColor', () => {
+    test('returns dark color when theme is dark', () => {
+      document.documentElement.setAttribute('dark', '');
+      expect(getSolidModeBackgroundColor()).toBe('#181818');
+    });
+
+    test('returns light color when theme is light', () => {
+      document.documentElement.removeAttribute('dark');
+      expect(getSolidModeBackgroundColor()).toBe('#f1f1f1');
+    });
+  });
   beforeAll(() => {
     HTMLCanvasElement.prototype.getContext = vi.fn(() => mock2dContext());
   });

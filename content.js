@@ -198,6 +198,70 @@ function isGeckoLayoutEngine() {
   }
 }
 
+/**
+ * YouTubeの現在のテーマ（ダーク/ライト）を検出する。
+ * 複数の方法を組み合わせて信頼性を高める。
+ * @returns {'dark'|'light'}
+ */
+function detectYouTubeTheme() {
+  try {
+    // 方法1: html要素のdark属性をチェック（YouTubeの標準的な方法）
+    const htmlElement = document.documentElement;
+    if (htmlElement.hasAttribute('dark') || htmlElement.getAttribute('theme') === 'dark') {
+      return 'dark';
+    }
+
+    // 方法2: CSS変数から判定（YouTubeのテーマカラーをチェック）
+    if (typeof getComputedStyle !== 'undefined') {
+      const style = getComputedStyle(htmlElement);
+      const bgColor = style.getPropertyValue('--yt-spec-base-background').trim();
+      if (bgColor) {
+        // RGB値から明るさを判定
+        const rgbMatch = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        if (rgbMatch) {
+          const r = parseInt(rgbMatch[1], 10);
+          const g = parseInt(rgbMatch[2], 10);
+          const b = parseInt(rgbMatch[3], 10);
+          // 明るさを計算（0-255）
+          const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+          if (brightness < 128) {
+            return 'dark';
+          } else {
+            return 'light';
+          }
+        }
+      }
+    }
+
+    // 方法3: prefers-color-schemeメディアクエリ（フォールバック）
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    }
+
+    // デフォルトはライトテーマ
+    return 'light';
+  } catch (error) {
+    console.warn('Failed to detect YouTube theme:', error);
+    return 'light';
+  }
+}
+
+/**
+ * テーマに応じた単色モードの背景色を取得する。
+ * @returns {string} CSS色値
+ */
+function getSolidModeBackgroundColor() {
+  const theme = detectYouTubeTheme();
+  if (theme === 'dark') {
+    // YouTubeのダークテーマ背景色に近い色
+    return '#181818';
+  }
+  // ライトテーマ時の薄いグレー
+  return '#f1f1f1';
+}
+
 const geckoLayout = isGeckoLayoutEngine();
 
 /** Gecko環境: ctx.filter + drawImage(video) でフレームが落ちる場合があるため、ラスタライズしたコピーをぼかす */
@@ -507,7 +571,12 @@ function hideBlurMode(container) {
     blurCanvas.style.display = 'none';
     blurCanvas.style.visibility = 'hidden';
   }
-  if (container) container.dataset.ytLightBgMode = 'solid';
+  if (container) {
+    container.dataset.ytLightBgMode = 'solid';
+    // テーマに応じた背景色を動的に設定
+    const bgColor = getSolidModeBackgroundColor();
+    container.style.backgroundColor = bgColor;
+  }
 }
 
 function applyMode(mode, container) {
@@ -688,6 +757,23 @@ function initExtension() {
     });
   }
 
+  // テーマ変更を監視して単色モードの背景色を動的に更新
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined') {
+    const themeObserver = new MutationObserver(() => {
+      if (currentMode === 'solid') {
+        const container = getPlayerContainer();
+        if (container) {
+          const bgColor = getSolidModeBackgroundColor();
+          container.style.backgroundColor = bgColor;
+        }
+      }
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['dark', 'theme']
+    });
+  }
+
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('resize', handleResize);
   }
@@ -700,6 +786,8 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     BLUR_STRENGTH_PX,
     isGeckoLayoutEngine,
+    detectYouTubeTheme,
+    getSolidModeBackgroundColor,
     getPlayerContainer,
     getVideoElement,
     createBlurCanvas,
