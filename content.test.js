@@ -792,7 +792,7 @@ describe('content.js', () => {
         setCurrentDrawInterval(2);
         setAdjustmentCooldown(0);
 
-        // Simulate low FPS by adding high frame times
+        // 低FPSをシミュレート（高いフレーム時間を追加）
         const lowFpsFrameTimes = [50, 50, 50, 50, 50]; // ~20 FPS
         getFrameTimes().push(...lowFpsFrameTimes);
 
@@ -805,7 +805,7 @@ describe('content.js', () => {
         setCurrentDrawInterval(3);
         setAdjustmentCooldown(0);
 
-        // Simulate high FPS by adding low frame times
+        // 高FPSをシミュレート（低いフレーム時間を追加）
         const highFpsFrameTimes = [16, 16, 16, 16, 16]; // ~60 FPS
         getFrameTimes().push(...highFpsFrameTimes);
 
@@ -816,46 +816,46 @@ describe('content.js', () => {
 
       test('adjustDrawInterval respects cooldown period', () => {
         setCurrentDrawInterval(2);
-        setAdjustmentCooldown(100); // Not yet at cooldown threshold
+        setAdjustmentCooldown(100); // まだクールダウン閾値に達していない
 
         adjustDrawInterval();
 
-        expect(getCurrentDrawInterval()).toBe(2); // Should not change
+        expect(getCurrentDrawInterval()).toBe(2); // 変更されないはず
       });
 
       test('adjustDrawInterval respects min/max bounds', () => {
-        // Test min bound: currentDrawInterval is 1, FPS high, should not go below 1
+        // 最小値のテスト: currentDrawIntervalが1の場合、FPSが高くても1以下にはならない
         setCurrentDrawInterval(1);
         setAdjustmentCooldown(0);
 
-        // Simulate high FPS by adding low frame times
+        // 高FPSをシミュレート（低いフレーム時間を追加）
         const highFpsFrameTimes = [16, 16, 16, 16, 16]; // ~60 FPS
         getFrameTimes().push(...highFpsFrameTimes);
 
         adjustDrawInterval();
 
-        expect(getCurrentDrawInterval()).toBe(1); // Should not go below min
+        expect(getCurrentDrawInterval()).toBe(1); // 最小値を下回らないはず
 
-        // Test max bound: currentDrawInterval is 4, FPS low, should not go above 4
+        // 最大値のテスト: currentDrawIntervalが4の場合、FPSが低くても4以上にはならない
         setCurrentDrawInterval(4);
         setAdjustmentCooldown(0);
         const lowFpsFrameTimes = [50, 50, 50, 50, 50]; // ~20 FPS
         getFrameTimes().push(...lowFpsFrameTimes);
         adjustDrawInterval();
-        expect(getCurrentDrawInterval()).toBe(4); // Should not go above max
+        expect(getCurrentDrawInterval()).toBe(4); // 最大値を上回らないはず
       });
 
       test('getCurrentDrawInterval and setCurrentDrawInterval work correctly', () => {
-        // Mock device performance to medium (default) for consistent testing
+        // 一貫性を保つため、デバイス性能を中（デフォルト）にモック
         const originalHardwareConcurrency = navigator.hardwareConcurrency;
         const originalDeviceMemory = navigator.deviceMemory;
         Object.defineProperty(navigator, 'hardwareConcurrency', { value: 4, configurable: true });
         Object.defineProperty(navigator, 'deviceMemory', { value: 4, configurable: true });
 
         try {
-          // Need to re-initialize the module to get the correct initial value
-          // Since we can't re-require, we'll set the initial value manually
-          setCurrentDrawInterval(2); // Set to default medium performance value
+          // モジュールを再初期化して正しい初期値を取得する必要があるが、
+          // 再requireできないため、手動で初期値を設定する
+          setCurrentDrawInterval(2); // 中性能のデフォルト値に設定
 
           expect(getCurrentDrawInterval()).toBe(2);
 
@@ -865,13 +865,14 @@ describe('content.js', () => {
           setCurrentDrawInterval(1);
           expect(getCurrentDrawInterval()).toBe(1);
         } finally {
-          // Restore original values
+          // 元の値を復元
           Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalHardwareConcurrency, configurable: true });
           Object.defineProperty(navigator, 'deviceMemory', { value: originalDeviceMemory, configurable: true });
         }
       });
 
       test('frameTimes and adjustmentCooldown state management', () => {
+        // フレーム時間と調整クールダウン状態の管理
         expect(getFrameTimes()).toEqual([]);
         expect(getAdjustmentCooldown()).toBe(0);
 
@@ -880,7 +881,7 @@ describe('content.js', () => {
       });
 
       test('resetState resets dynamic drawing interval state', () => {
-        // Mock device performance to medium (default) for consistent testing
+        // 一貫性を保つため、デバイス性能を中（デフォルト）にモック
         const originalHardwareConcurrency = navigator.hardwareConcurrency;
         const originalDeviceMemory = navigator.deviceMemory;
         Object.defineProperty(navigator, 'hardwareConcurrency', { value: 4, configurable: true });
@@ -896,7 +897,7 @@ describe('content.js', () => {
           expect(getAdjustmentCooldown()).toBe(0);
           expect(getFrameTimes()).toEqual([]);
         } finally {
-          // Restore original values
+          // 元の値を復元
           Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalHardwareConcurrency, configurable: true });
           Object.defineProperty(navigator, 'deviceMemory', { value: originalDeviceMemory, configurable: true });
         }

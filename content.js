@@ -108,7 +108,7 @@ function loadModeFromStorage() {
   });
 }
 
-// デバイス性能検出と動的描画間隔の設定
+// デバイス性能検出と動的な描画間隔の設定
 function detectDevicePerformance() {
   const cores = navigator.hardwareConcurrency || 4;
   const memory = navigator.deviceMemory || 4;
@@ -181,8 +181,9 @@ function adjustDrawInterval() {
 }
 
 /**
- * True when the page runs on Gecko (Firefox). UA alone is unreliable:
- * privacy.resistFingerprinting can spoof navigator.userAgent as Chrome.
+ * ページがGeckoレイアウトエンジン（Firefox）で動作しているか判定する。
+ * ユーザーエージェント単体では信頼できないため、CSS.supportsを使用する。
+ * privacy.resistFingerprintingが有効な場合、UAはChromeと偽装される可能性がある。
  * @returns {boolean}
  */
 function isGeckoLayoutEngine() {
@@ -199,7 +200,7 @@ function isGeckoLayoutEngine() {
 
 const geckoLayout = isGeckoLayoutEngine();
 
-/** Gecko: ctx.filter + drawImage(video) can drop the frame; blur a raster copy instead. */
+/** Gecko環境: ctx.filter + drawImage(video) でフレームが落ちる場合があるため、ラスタライズしたコピーをぼかす */
 let geckoVideoSnapCanvas = null;
 let geckoVideoSnapCtx = null;
 
@@ -731,7 +732,7 @@ if (typeof module !== 'undefined' && module.exports) {
       stopBlurLoop();
       frameCount = 0;
       releaseGeckoVideoSnapCanvas();
-      // 重置动态绘制间隔相关状态 - 重新检测设备性能
+      // 動的描画間隔関連の状態をリセット - デバイス性能を再検出
       const devicePerformance = detectDevicePerformance();
       if (devicePerformance === 'low') {
         currentDrawInterval = 3;
@@ -746,7 +747,7 @@ if (typeof module !== 'undefined' && module.exports) {
     },
     saveModeToStorage,
     loadModeFromStorage,
-    // 新增：用于测试的动态绘制间隔相关函数
+    // 追加：テスト用の動的描画間隔関連関数
     detectDevicePerformance,
     updateFPS,
     getAverageFPS,
