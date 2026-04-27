@@ -1,12 +1,6 @@
 ---
 description: 自身のプラン・実装を多角的な視点でレビューするルール
-globs:
-  - "**/*.md"
-  - "**/*.mdc"
-  - "**/*.js"
-  - "**/*.html"
-  - "**/*.css"
-alwaysApply: false
+alwaysApply: true
 ---
 
 # 多角的セルフレビュールール

@@ -6,7 +6,7 @@ globs:
   - "popup.html"
   - "style.css"
   - "*.test.js"
-alwaysApply: false
+alwaysApply: true
 ---
 
 # コード実装ルール
@@ -18,7 +18,7 @@ alwaysApply: false
 ## 実装フロー
 1. worktree または適切なブランチで作業を開始
 2. コードを変更・実装
-3. `vp lint` を実行し、警告・エラーを解消する
+3. `pnpm exec vp lint` を実行し、警告・エラーを解消する
 4. `pnpm test` を実行し、すべて通過することを確認
 5. `pnpm run test:e2e` も必要に応じて実行（UI 変更時）
 6. コミット: `git add -A && git commit -m "type: message"`
