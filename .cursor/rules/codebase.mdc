@@ -1,0 +1,22 @@
+---
+description: コードベース構造・主要パス・アーキテクチャ
+globs:
+  - "content.js"
+  - "popup.js"
+  - "popup.html"
+  - "style.css"
+alwaysApply: false
+---
+
+# コードベース構造
+
+## 主要ファイル
+- content.js: コンテンツスクリプト（YouTube ページで実行）
+- popup.js: ポップアップ UI ロジック
+- popup.html: ポップアップ UI
+- style.css: 拡張機能のスタイル
+
+## アーキテクチャ注意点
+- ES modules 不使用、グローバルスコープで記述
+- ユーザー設定は chrome.storage を使用
+- ブラウザ互換性: Chrome (MV3) / Firefox (browser_specific_settings.gecko)

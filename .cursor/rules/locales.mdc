@@ -1,12 +1,18 @@
 ---
-description: _locales の messages.json 追加・翻訳時のキー整合ルール
-globs: _locales/**/*.json
+description: _locales の messages.json 追加・翻訳時のキー整合ルール、UI 言語は i18n 厳守
+globs: "_locales/**/*.json"
 alwaysApply: false
 ---
 
-# i18n（_locales）
+# i18n（_locales）ルール
 
-- **default locale**: 英語は [_locales/en/messages.json](_locales/en/messages.json)。`manifest.json` の `default_locale` は `en`。
-- **キー**: 新しい UI 文字列は、まず `en` にキーを追加し、**すべてのロケール**で同じキーを定義する。欠けたキーがあると実行時にフォールバック不整合が起きる。
-- **フィールド**: 各キーに `message`（表示文言）と `description`（開発者・翻訳者向けコンテキスト）を書く。
-- **変更時**: 文言だけ変える場合は既存キーの `message` を更新。新しい概念は新しいキー名を使う。
+## キー管理
+- default locale: en（manifest.json の default_locale は en）
+- 新しい UI 文字列: まず en に追加し、全ロケール（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）で同じキーを定義
+- 各キーに message と description を必須記載
+- 文言変更: 既存キーの message を更新。新しい概念は新しいキー名を使う
+
+## UI 言語の厳守
+- **UI に表示するすべての文字列は i18n 経由（__MSG_キー名__ または chrome.i18n.getMessage）で取得すること**
+- ハードコードされた文字列を UI に直接書かない（ポップアップ HTML/JS ともに）
+- 新しい UI 要素を追加する際は、必ず en の messages.json にキーを定義してから実装する

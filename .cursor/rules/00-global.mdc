@@ -1,0 +1,12 @@
+---
+description: youtublur プロジェクトのグローバルルール
+alwaysApply: true
+---
+
+# youtublur グローバルルール
+
+- 会話は日本語で実施する
+- コード変更後は必ず `pnpm test` を実行
+- コミット前に `pnpm exec vp lint` を実行
+- GitHub 操作は `gh` CLI を使用（REST API/PAT/ブラウザは禁止）
+- バージョンは `pnpm run release` フローで管理（手動変更禁止）

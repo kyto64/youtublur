@@ -1,0 +1,30 @@
+---
+description: コード実装時のルール（worktree、lint、テスト）
+globs:
+  - "content.js"
+  - "popup.js"
+  - "popup.html"
+  - "style.css"
+  - "*.test.js"
+alwaysApply: true
+---
+
+# コード実装ルール
+
+## 作業環境
+- 大規模な変更や複数ファイルにまたがる作業は必ず **git worktree** を作成して実施する
+- worktree 作成例: `git worktree add ../youtublur-feature feature/branch-name`
+
+## 実装フロー
+1. worktree または適切なブランチで作業を開始
+2. コードを変更・実装
+3. `pnpm exec vp lint` を実行し、警告・エラーを解消する
+4. `pnpm test` を実行し、すべて通過することを確認
+5. `pnpm run test:e2e` も必要に応じて実行（UI 変更時）
+6. コミット: `git add -A && git commit -m "type: message"`
+7. プッシュまたは worktree から PR を作成
+
+## 注意
+- テストが失敗したらマージ・リリースしない
+- Lint エラーはコミット前に解消すること
+- 未コミットの変更が残ったまま `pnpm run release` を実行しない
