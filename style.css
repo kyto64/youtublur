@@ -2,13 +2,13 @@
    youtublur - プレイヤー背景スタイル
 ========================================================= */
 
-/* 単色モード時のみ薄いグレーで塗る（属性が明示された場合だけ適用） */
+/* 単色モード時：背景色はJavaScriptで動的に設定されるため、ここでは透明にする */
 .html5-video-player[data-yt-light-bg-mode="solid"],
 .html5-video-player[data-yt-light-bg-mode="solid"] video,
 #player-full-bleed-container:has([data-yt-light-bg-mode="solid"]),
 #player-container:has([data-yt-light-bg-mode="solid"]),
 ytd-player:has([data-yt-light-bg-mode="solid"]) {
-    background-color: #f1f1f1 !important;
+    background-color: transparent !important;
 }
 
 /* ブラーモード時：背景を透明にしてCanvasのブラーが表示されるように */
@@ -23,4 +23,4 @@ ytd-player:has([data-yt-light-bg-mode="blur"]) {
 /* 動画プレイヤーに柔らかな影をつけて境界をマイルドにする */
 #player-container-inner {
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.05) !important;
-}
+}

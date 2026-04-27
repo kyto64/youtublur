@@ -198,6 +198,82 @@ function isGeckoLayoutEngine() {
   }
 }
 
+/**
+ * YouTubeの現在のテーマ（ダーク/ライト）を検出する。
+ * 複数の方法を組み合わせて信頼性を高める。
+ * @returns {'dark'|'light'}
+ */
+function detectYouTubeTheme() {
+  try {
+    // 方法1: html要素のdark属性をチェック（YouTubeの標準的な方法）
+    const htmlElement = document.documentElement;
+    if (htmlElement.hasAttribute('dark') || htmlElement.getAttribute('theme') === 'dark') {
+      return 'dark';
+    }
+
+    // 方法2: CSS変数から判定（YouTubeのテーマカラーをチェック）
+    if (typeof getComputedStyle !== 'undefined') {
+      const style = getComputedStyle(htmlElement);
+      const bgColor = style.getPropertyValue('--yt-spec-base-background').trim();
+      if (bgColor) {
+        // RGB値から明るさを判定（より堅牢なパターン）
+        const rgbMatch = bgColor.match(/rgb\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)/);
+        if (rgbMatch) {
+          const r = parseInt(rgbMatch[1], 10);
+          const g = parseInt(rgbMatch[2], 10);
+          const b = parseInt(rgbMatch[3], 10);
+          // 値の範囲チェック
+          if (r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255) {
+            // 明るさを計算（0-255）
+            const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+            if (brightness < 128) {
+              return 'dark';
+            } else {
+              return 'light';
+            }
+          }
+        }
+        // RGB以外の形式（hex, hsl, 名前付き色など）の場合はフォールバック
+        // ここでは明るい色と暗い色の一般的な値で判定
+        const lowerBgColor = bgColor.toLowerCase();
+        if (lowerBgColor.includes('black') || lowerBgColor.includes('dark') || lowerBgColor.includes('#000') || lowerBgColor.includes('#111')) {
+          return 'dark';
+        }
+        if (lowerBgColor.includes('white') || lowerBgColor.includes('light') || lowerBgColor.includes('#fff') || lowerBgColor.includes('#f')) {
+          return 'light';
+        }
+      }
+    }
+
+    // 方法3: prefers-color-schemeメディアクエリ（フォールバック）
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+      }
+    }
+
+    // デフォルトはライトテーマ
+    return 'light';
+  } catch (error) {
+    console.warn('Failed to detect YouTube theme:', error);
+    return 'light';
+  }
+}
+
+/**
+ * テーマに応じた単色モードの背景色を取得する。
+ * @returns {string} CSS色値
+ */
+function getSolidModeBackgroundColor() {
+  const theme = detectYouTubeTheme();
+  if (theme === 'dark') {
+    // YouTubeのダークテーマ背景色に近い色
+    return '#181818';
+  }
+  // ライトテーマ時の薄いグレー
+  return '#f1f1f1';
+}
+
 const geckoLayout = isGeckoLayoutEngine();
 
 /** Gecko環境: ctx.filter + drawImage(video) でフレームが落ちる場合があるため、ラスタライズしたコピーをぼかす */
@@ -213,6 +289,7 @@ let playerDomObserver = null;
 let playerResizeObserver = null;
 let youtubeNavHooksInstalled = false;
 let documentLifecycleHooksInstalled = false;
+let themeObserver = null;
 
 const BLUR_INIT_RETRY_INITIAL_MS = 50;
 const BLUR_INIT_RETRY_MAX_MS = 2000;
@@ -507,7 +584,11 @@ function hideBlurMode(container) {
     blurCanvas.style.display = 'none';
     blurCanvas.style.visibility = 'hidden';
   }
-  if (container) container.dataset.ytLightBgMode = 'solid';
+  if (container) {
+    container.dataset.ytLightBgMode = 'solid';
+    // !importantを指定してCSSの優先度を確保
+    container.style.setProperty('background-color', getSolidModeBackgroundColor(), 'important');
+  }
 }
 
 function applyMode(mode, container) {
@@ -688,6 +769,23 @@ function initExtension() {
     });
   }
 
+  // テーマ変更を監視して単色モードの背景色を動的に更新
+  if (typeof document !== 'undefined' && typeof MutationObserver !== 'undefined' && !themeObserver) {
+    themeObserver = new MutationObserver(() => {
+      if (currentMode === 'solid') {
+        const container = getPlayerContainer();
+        if (container) {
+          const bgColor = getSolidModeBackgroundColor();
+          container.style.setProperty('background-color', bgColor, 'important');
+        }
+      }
+    });
+    themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['dark', 'theme']
+    });
+  }
+
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('resize', handleResize);
   }
@@ -700,6 +798,8 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     BLUR_STRENGTH_PX,
     isGeckoLayoutEngine,
+    detectYouTubeTheme,
+    getSolidModeBackgroundColor,
     getPlayerContainer,
     getVideoElement,
     createBlurCanvas,
