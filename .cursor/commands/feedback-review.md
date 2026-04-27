@@ -7,9 +7,9 @@ PR のレビューコメントを取得し、優先順位をつけて修正を�
 1. **PR のレビューコメントを取得**
 
    ```bash
-   gh api repos/kyto64/youtublur/pulls --jq '.[].number'
+   gh pr list --json number -q '.[].number'
    # 特定の PR のコメントを取得
-   gh api repos/kyto64/youtublur/pulls/PR番号/comments --jq '.[] | {id, body, path, line}'
+   gh api :owner/:repo/pulls/PR番号/comments --jq '.[] | {id, body, path, line}'
    # または
    gh pr view PR番号 --comments
    ```
@@ -25,12 +25,12 @@ PR のレビューコメントを取得し、優先順位をつけて修正を�
 
    - worktree またはブランチで作業: `git worktree add ../youtublur-fix feature/fix-pr-comments`
    - 該当ファイルを修正
-   - `vp lint` と `pnpm test` を実行
+   - `pnpm exec vp lint` と `pnpm test` を実行
    - コミット: `git add -A && git commit -m "fix: address review comments"`
 
 4. **回答・更新**
 
-   - 修正完了後、該当コメントに返信: `gh api repos/kyto64/youtublur/pulls/PR番号/comments/COMMENT_ID/replies -f body="修正しました"`
+   - 修正完了後、該当コメントに返信: `gh api :owner/:repo/pulls/PR番号/comments/COMMENT_ID/replies -f body="修正しました"`
    - または `gh pr review PR番号 --comment -b "修正内容の説明"`
 
 ## 注意

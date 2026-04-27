@@ -7,14 +7,14 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 | 項目 | 詳細 |
 |------|------|
 | 言語 | JavaScript（ES modules 不使用、グローバルスコープ） |
-| テスト | Vite+ (vp test) + jsdom / Playwright E2E |
-| Lint | vp lint |
+| テスト | Vite+ (pnpm test) + jsdom / Playwright E2E |
+| Lint | pnpm exec vp lint |
 | パッケージ管理 | pnpm（packageManager フィールド固定） |
 
 ## 基本ルール
 
 - テスト実行: コード変更後は必ず `pnpm test`
-- Lint 実行: コミット前に `vp lint`
+- Lint 実行: コミット前に `pnpm exec vp lint`
 - バージョン管理: `manifest.json` のバージョンは手動変更せず `pnpm run release` を使用
 - GitHub 操作: 必ず `gh` CLI を使用（REST API/PAT/ブラウザ操作は禁止）
 - i18n: 新しい UI 文字列はまず `en` に追加し、全ロケールで同じキーを定義
@@ -29,7 +29,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 |------|----------|
 | ユニットテスト | `pnpm test` |
 | E2E テスト | `pnpm run test:e2e` |
-| Lint | `vp lint` |
+| Lint | `pnpm exec vp lint` |
 | リリース | `pnpm run release` → `git push --follow-tags origin master` |
 
 ## 主要パス

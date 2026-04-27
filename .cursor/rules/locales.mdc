@@ -8,7 +8,7 @@ alwaysApply: false
 
 ## キー管理
 - default locale: en（manifest.json の default_locale は en）
-- 新しい UI 文字列: まず en に追加し、全ロケール（es, id, ja, ko, pt_BR, zh_CN, zh_TW）で同じキーを定義
+- 新しい UI 文字列: まず en に追加し、全ロケール（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）で同じキーを定義
 - 各キーに message と description を必須記載
 - 文言変更: 既存キーの message を更新。新しい概念は新しいキー名を使う
 
