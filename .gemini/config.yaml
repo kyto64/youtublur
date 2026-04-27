@@ -1,4 +1,7 @@
 version: 1
+
+have_fun: true
+
 enabled_features:
   auto_review: true
   post_review_summary: true
