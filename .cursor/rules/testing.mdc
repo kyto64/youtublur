@@ -1,0 +1,16 @@
+---
+description: テスト実行・E2E規約
+globs:
+  - "*.test.js"
+  - "e2e/**"
+  - "playwright.config.js"
+alwaysApply: false
+---
+
+# テストルール
+
+- ユニットテスト: `pnpm test`（Vite+ + jsdom）
+- E2E テスト: `pnpm run test:e2e`（Playwright）
+- コード変更後は必ず `pnpm test` を実行し、すべて通過すること
+- E2E テストは SPA 遷移・ショート・ブラー状態など主要ユーザーストーリーをカバー
+- 失敗したらマージ・リリースしない

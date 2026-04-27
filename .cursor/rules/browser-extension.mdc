@@ -1,0 +1,26 @@
+---
+description: ブラウザ拡張（Chrome/Firefox）の制約と CI との整合
+globs:
+  - "manifest.json"
+  - "content.js"
+  - "popup.js"
+  - "popup.html"
+  - "style.css"
+alwaysApply: false
+---
+
+# ブラウザ拡張機能ルール
+
+## Chrome (Manifest V3)
+- manifest_version は 3。権限は storage/activeTab のみ
+- Content scripts: マッチパターンは *://*.youtube.com/* を維持
+
+## Firefox (AMO)
+- browser_specific_settings.gecko を維持（id, strict_min_version）
+- AMO 上のアドオン ID とずれたら id を合わせる
+- リリース zip: extension.zip と extension-firefox.zip の両方を生成
+
+## 共通
+- リリース zip: .github/workflows/publish.yml のファイル一覧と一致させる
+- バージョン: manifest.json の version は手動変更せず pnpm run release に任せる
+- 権限追加時はユーザーへの説明とストア審査への影響を考慮する
