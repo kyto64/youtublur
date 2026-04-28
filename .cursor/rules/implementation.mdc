@@ -12,8 +12,9 @@ alwaysApply: true
 # コード実装ルール
 
 ## 作業環境
-- 大規模な変更や複数ファイルにまたがる作業は必ず **git worktree** を作成して実施する
+- **すべての作業は必ず git worktree を作成してから実施する**（master ブランチでの直接作業は禁止）
 - worktree 作成例: `git worktree add ../youtublur-feature feature/branch-name`
+- 作業完了後は `git worktree remove ../youtublur-feature` で cleanup すること
 
 ## 実装フロー
 1. worktree または適切なブランチで作業を開始
