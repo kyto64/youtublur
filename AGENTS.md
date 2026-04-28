@@ -61,6 +61,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 | 作業 | コマンド |
 |------|----------|
 | ユニットテスト | `pnpm test` |
+| カバレッジ付きユニットテスト | `pnpm run test:coverage`（レポートは `coverage/`） |
 | E2E テスト | `pnpm run test:e2e` |
 | Lint | `pnpm exec vp lint` |
 | リリース | `pnpm run release` → `git push --follow-tags origin master` |
