@@ -6,6 +6,7 @@ const extensionPath = path.join(__dirname, '..');
 const GECKO_ID = 'youtublur@kyto64.github.io';
 
 // Read once at module level to avoid repeated disk I/O per test context.
+const storageModeSrc = fs.readFileSync(path.join(extensionPath, 'storage-mode.js'), 'utf8');
 const contentJsSrc = fs.readFileSync(path.join(extensionPath, 'content.js'), 'utf8');
 
 const CONSENT_COOKIE = {
@@ -38,25 +39,32 @@ const test = base.extend({
         (function () {
           if (!location.hostname.endsWith('youtube.com')) return;
 
-          // Mock the chrome extension API that content.js depends on.
+          // Mock the chrome extension API that storage-mode.js / content.js depend on.
           // Always returns the default 'blur' mode so the canvas is rendered.
+          var mockStore = { playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: 0 };
+          function storageGet(keys, callback) {
+            const defaults = (keys !== null && typeof keys === 'object' && !Array.isArray(keys)) ? keys : {};
+            callback({ ...defaults, ...mockStore });
+          }
           window.chrome = {
             storage: {
               sync: {
-                get: function (keys, callback) {
-                  const store = { playerBackgroundMode: 'blur' };
-                  const defaults = (keys !== null && typeof keys === 'object' && !Array.isArray(keys)) ? keys : {};
-                  callback({ ...defaults, ...store });
-                },
-                set: function () {},
+                get: storageGet,
+                set: function (data) { Object.assign(mockStore, data); },
+              },
+              local: {
+                get: storageGet,
+                set: function (data) { Object.assign(mockStore, data); },
               },
             },
             runtime: {
               onMessage: { addListener: function () {} },
+              lastError: undefined,
             },
           };
 
           function runContentScript() {
+            ${storageModeSrc}
             ${contentJsSrc}
           }
 

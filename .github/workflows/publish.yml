@@ -37,6 +37,7 @@ jobs:
         run: |
           zip -r extension.zip \
             manifest.json \
+            storage-mode.js \
             content.js \
             style.css \
             popup.html \

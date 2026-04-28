@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+require('./storage-mode.js');
 const {
   BLUR_STRENGTH_PX,
   isGeckoLayoutEngine,
@@ -22,6 +23,7 @@ const {
   normalizeMode,
   saveModeToStorage,
   loadModeFromStorage,
+  reconcileStorageCopies,
   // 新增：动态绘制间隔相关函数
   detectDevicePerformance,
   updateFPS,
@@ -622,8 +624,8 @@ describe('content.js', () => {
       await Promise.resolve();
       await Promise.resolve();
 
-      // storage.sync.get should have been called again for the reload
-      expect(syncGet).toHaveBeenCalledTimes(2);
+      // init load + reconcile microtask + reload load + reconcile microtask
+      expect(syncGet).toHaveBeenCalledTimes(4);
 
       // Canvas should be re-created after reload
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
@@ -762,9 +764,56 @@ describe('content.js', () => {
 
       const mode = await loadModeFromStorage();
       expect(mode).toBe('solid');
-      // Should sync the newer local value back to sync storage
+      await new Promise((r) => queueMicrotask(r));
+      // Should sync the newer local value back to sync storage (after reconcile microtask)
       expect(syncSet).toHaveBeenCalledWith(
         expect.objectContaining({ playerBackgroundMode: 'solid' }),
+        expect.any(Function)
+      );
+    });
+
+    test('reconcileStorageCopies converges from fresh reads (winner by timestamp)', async () => {
+      const storedSync = {
+        playerBackgroundMode: 'blur',
+        playerBackgroundModeTimestamp: 5000
+      };
+      const storedLocal = {
+        playerBackgroundMode: 'solid',
+        playerBackgroundModeTimestamp: 2000
+      };
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ ...storedSync });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({ ...storedLocal });
+      });
+      const syncSet = vi.fn((data, cb) => {
+        Object.assign(storedSync, data);
+        if (cb) cb();
+      });
+      const localSet = vi.fn((data, cb) => {
+        Object.assign(storedLocal, data);
+        if (cb) cb();
+      });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: syncSet },
+          local: { get: localGet, set: localSet }
+        },
+        runtime: { lastError: undefined }
+      });
+
+      reconcileStorageCopies();
+      await new Promise((r) => queueMicrotask(r));
+      await new Promise((r) => queueMicrotask(r));
+
+      // 勝者は sync のみ更新が必要（local を合わせる）— sync への不要な set は行わない
+      expect(syncSet).not.toHaveBeenCalled();
+      expect(localSet).toHaveBeenCalledWith(
+        expect.objectContaining({
+          playerBackgroundMode: 'blur',
+          playerBackgroundModeTimestamp: 5000
+        }),
         expect.any(Function)
       );
     });

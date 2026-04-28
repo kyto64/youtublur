@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+require('./storage-mode.js');
 const { initPopup, saveModeToStorage, loadModeFromStorage } = require('./popup.js');
 
 describe('popup.js', () => {
