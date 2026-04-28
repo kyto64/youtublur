@@ -6,6 +6,12 @@ alwaysApply: true
 # youtublur グローバルルール
 
 - 会話は日本語で実施する
+- **すべての作業は必ず git worktree を作成してから実施する**（master ブランチでの直接作業は禁止）
+  - 新規ブランチ: `git worktree add -b feature/<name> ../youtublur-<name> master`
+  - 既存ブランチ: `git worktree add ../youtublur-<name> <branch-name>`
+  - 権限エラー時は `required_permissions: ["all"]` を使用
+  - worktree 作成後は必ず `pnpm install` を実行
+  - cleanup: `git worktree remove ../youtublur-<name>`
 - コード変更後は必ず `pnpm test` を実行
 - コミット前に `pnpm exec vp lint` を実行
 - GitHub 操作は `gh` CLI を使用（REST API/PAT/ブラウザは禁止）

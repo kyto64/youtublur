@@ -27,6 +27,14 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 ## Do（必ず行うこと）
 
+- **すべての作業は git worktree で行う**: master ブランチでの直接作業は禁止。
+  - 新規ブランチ: `git worktree add -b feature/<name> ../youtublur-<name> master`
+  - 既存ブランチ: `git worktree add ../youtublur-<name> <branch>`
+  - リモートにブランチがあるがローカルに worktree がない場合: `git fetch origin <branch> && git worktree add ../youtublur-<name> <branch>`
+  - 既存 worktree への修正追加: worktree ディレクトリに移動し、`git fetch origin && git merge origin/<branch>` で最新化してから修正
+  - 権限エラー時は Shell 実行に `required_permissions: ["all"]` を指定
+  - worktree 作成後は必ず `pnpm install` を実行（node_modules がないと test/lint が失敗）
+  - 作業完了後: `git worktree remove ../youtublur-<name>`（パス指定必須）
 - **テストを実行する**: コード変更後は必ず `pnpm test` を実行し、すべて通過すること。失敗したらマージ・リリースしない。
 - **Lint を実行する**: コミット前に `pnpm exec vp lint` を実行し、警告・エラーを解消すること。
 - **バージョン管理に従う**: [`manifest.json`](manifest.json) の `version` は手動で書き換えず、[`scripts/sync-version.js`](scripts/sync-version.js) を介した `pnpm run release` フローに任せること。
