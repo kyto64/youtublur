@@ -12,6 +12,64 @@ const STORAGE_TIMESTAMP_KEY = 'playerBackgroundModeTimestamp';
  * @param {string} mode - 'blur' or 'solid'
  * @returns {Promise<boolean>} - true if saved to sync, false if saved to local
  */
+/**
+ * Re-read both storage areas and converge them to the same mode+timestamp winner.
+ * Called after load resolves so we never persist stale values captured before a concurrent save.
+ */
+function reconcileStorageCopies() {
+  chrome.storage.sync.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (syncResult) => {
+    if (chrome.runtime && chrome.runtime.lastError) {
+      syncResult = {};
+    }
+    chrome.storage.local.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (localResult) => {
+      if (chrome.runtime && chrome.runtime.lastError) {
+        localResult = {};
+      }
+
+      const syncMode = syncResult[STORAGE_KEY];
+      const localMode = localResult[STORAGE_KEY];
+      const syncTimestamp = syncResult[STORAGE_TIMESTAMP_KEY] || 0;
+      const localTimestamp = localResult[STORAGE_TIMESTAMP_KEY] || 0;
+
+      if (syncMode === undefined && localMode === undefined) {
+        return;
+      }
+
+      let canonMode;
+      let canonTs;
+      if (syncMode !== undefined && localMode !== undefined) {
+        if (syncTimestamp >= localTimestamp) {
+          canonMode = syncMode;
+          canonTs = syncTimestamp;
+        } else {
+          canonMode = localMode;
+          canonTs = localTimestamp;
+        }
+      } else if (syncMode !== undefined) {
+        canonMode = syncMode;
+        canonTs = syncTimestamp;
+      } else {
+        canonMode = localMode;
+        canonTs = localTimestamp;
+      }
+
+      const data = { [STORAGE_KEY]: canonMode, [STORAGE_TIMESTAMP_KEY]: canonTs };
+      const needsLocalFix = localMode !== canonMode || localTimestamp !== canonTs;
+      const needsSyncFix = syncMode !== canonMode || syncTimestamp !== canonTs;
+      if (!needsLocalFix && !needsSyncFix) {
+        return;
+      }
+
+      chrome.storage.local.set(data);
+      chrome.storage.sync.set(data, () => {
+        if (chrome.runtime && chrome.runtime.lastError) {
+          console.warn('Failed to converge sync storage:', chrome.runtime.lastError);
+        }
+      });
+    });
+  });
+}
+
 function saveModeToStorage(mode) {
   const timestamp = Date.now();
   const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
@@ -61,40 +119,21 @@ function loadModeFromStorage() {
           if (syncMode !== undefined && localMode !== undefined) {
             if (syncTimestamp >= localTimestamp) {
               resolve(syncMode);
-              // Sync local in background
-              chrome.storage.local.set({
-                [STORAGE_KEY]: syncMode,
-                [STORAGE_TIMESTAMP_KEY]: syncTimestamp
-              });
             } else {
-              // Local is newer, resolve immediately and sync back to sync storage in background
               resolve(localMode);
-              chrome.storage.sync.set({
-                [STORAGE_KEY]: localMode,
-                [STORAGE_TIMESTAMP_KEY]: localTimestamp
-              }, () => {
-                if (chrome.runtime && chrome.runtime.lastError) {
-                  console.warn('Failed to sync local value back to sync storage:', chrome.runtime.lastError);
-                }
-              });
             }
+            queueMicrotask(() => {
+              reconcileStorageCopies();
+            });
           } else if (syncMode !== undefined) {
             resolve(syncMode);
-            // Sync to local in background
-            chrome.storage.local.set({
-              [STORAGE_KEY]: syncMode,
-              [STORAGE_TIMESTAMP_KEY]: syncTimestamp
+            queueMicrotask(() => {
+              reconcileStorageCopies();
             });
           } else if (localMode !== undefined) {
             resolve(localMode);
-            // Sync to sync in background
-            chrome.storage.sync.set({
-              [STORAGE_KEY]: localMode,
-              [STORAGE_TIMESTAMP_KEY]: localTimestamp
-            }, () => {
-              if (chrome.runtime && chrome.runtime.lastError) {
-                console.warn('Failed to sync local value to sync storage:', chrome.runtime.lastError);
-              }
+            queueMicrotask(() => {
+              reconcileStorageCopies();
             });
           } else {
             resolve('blur');
@@ -847,6 +886,7 @@ if (typeof module !== 'undefined' && module.exports) {
     },
     saveModeToStorage,
     loadModeFromStorage,
+    reconcileStorageCopies,
     // 追加：テスト用の動的描画間隔関連関数
     detectDevicePerformance,
     updateFPS,
