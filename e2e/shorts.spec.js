@@ -1,13 +1,7 @@
 const { test, expect } = require('./fixtures');
 
 test('should load extension and apply blur on YouTube Shorts', async ({ page }) => {
-  // 1. Navigate directly to a stable YouTube Shorts URL
-  // We'll just pick a popular shorts URL or a generic one. 
-  // It's better to use a known video ID if possible to avoid 404s, 
-  // or navigate to /shorts/ first video. Let's try navigating to a known one or the shorts tab.
-  await page.goto('https://www.youtube.com/shorts/dQw4w9WgXcQ'); 
-  // Wait, Rick Roll as a short might not exist, it might redirect to /watch. 
-  // Let's navigate to the shorts feed and let it pick the first one.
+  // Shorts feed: first video is chosen by YouTube (stable entry point for CI).
   await page.goto('https://www.youtube.com/shorts/');
 
   // Wait for the shorts player to load
