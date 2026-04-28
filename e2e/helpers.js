@@ -3,6 +3,31 @@
  */
 
 const STABLE_WATCH_VIDEO_ID = 'dQw4w9WgXcQ';
+const STORAGE_KEY_MODE = 'playerBackgroundMode';
+
+/**
+ * Wait until chrome.storage.sync reflects the expected mode (avoids fixed sleep after save).
+ * @param {import('@playwright/test').Page} popupPage
+ * @param {'blur'|'solid'} expectedMode
+ * @param {{ timeout?: number }} [options]
+ */
+async function waitForExtensionStorageMode(popupPage, expectedMode, options = {}) {
+  const timeout = options.timeout ?? 15000;
+  await popupPage.waitForFunction(
+    ({ key, mode }) =>
+      new Promise((resolve) => {
+        try {
+          chrome.storage.sync.get([key], (r) => {
+            resolve(r[key] === mode);
+          });
+        } catch {
+          resolve(false);
+        }
+      }),
+    { key: STORAGE_KEY_MODE, mode: expectedMode },
+    { timeout }
+  );
+}
 
 /**
  * @param {import('@playwright/test').Page} page
@@ -31,6 +56,7 @@ async function openExtensionPopup(context, extensionId) {
 
 module.exports = {
   STABLE_WATCH_VIDEO_ID,
+  waitForExtensionStorageMode,
   waitForWatchPlayer,
   youtublurCanvasLocator,
   openExtensionPopup,

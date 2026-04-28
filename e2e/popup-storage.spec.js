@@ -1,5 +1,10 @@
 const { test, expect } = require('./fixtures');
-const { STABLE_WATCH_VIDEO_ID, waitForWatchPlayer, openExtensionPopup } = require('./helpers');
+const {
+  STABLE_WATCH_VIDEO_ID,
+  waitForExtensionStorageMode,
+  waitForWatchPlayer,
+  openExtensionPopup,
+} = require('./helpers');
 
 test('should persist mode in popup UI after storage write (Chromium)', async ({
   page,
@@ -19,7 +24,7 @@ test('should persist mode in popup UI after storage write (Chromium)', async ({
 
   const popup1 = await openExtensionPopup(context, extensionId);
   await popup1.locator('label[for="modeSolid"]').click();
-  await popup1.waitForTimeout(500);
+  await waitForExtensionStorageMode(popup1, 'solid');
   await popup1.close();
 
   const popup2 = await openExtensionPopup(context, extensionId);
