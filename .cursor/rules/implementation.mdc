@@ -15,7 +15,7 @@ alwaysApply: true
 - **すべての作業は必ず git worktree を作成してから実施する**（master ブランチでの直接作業は禁止）
 - **作業前の確認**：現在のブランチが master の場合、直接修正せず必ず worktree を作成すること
 - **worktree 作成コマンド**（新規ブランチの場合は `-b` を忘れずに）：
-  `git worktree add -b feature/branch-name ../youtublur-feature master`
+  `git worktree add -b feature/branch-name ../youtublur-<name> master`
 - **既に master で修正をしてしまった場合のリカバリ**：
   1. `git stash` で変更を退避
   2. 上記コマンドで worktree を作成
@@ -23,8 +23,9 @@ alwaysApply: true
 - **権限エラー時の対処**：worktree 作成時に `Permission denied` が発生した場合、Shell コマンドに `required_permissions: ["all"]` を指定してサンドボックス制限を回避する
 - **依存関係のインストール**：worktree 作成後、最初に `pnpm install` を実行して node_modules を整備すること（test/lint 実行前に必須）
 - **cleanup 手順**：
-  1. `git worktree remove ../youtublur-feature`
-  2. 残留ディレクトリがあれば `rm -rf ../youtublur-feature` で削除
+  1. 未コミットの変更がないことを確認（`git status`）
+  2. `git worktree remove ../youtublur-<name>`
+  3. 残留ディレクトリがあれば `rm -rf ../youtublur-<name>` で削除（注意: 重要なファイルが残っていないか確認してから実行）
 - **既存 worktree への修正追加**：
   1. 既存の worktree ディレクトリに移動：`cd ../youtublur-<name>`
   2. ブランチを最新化：`git fetch origin && git merge origin/<branch>`
@@ -35,8 +36,8 @@ alwaysApply: true
   3. worktree ディレクトリに移動：`cd ../youtublur-<name>`
 
 ## 実装フロー
-1. **worktree を作成**（master では作業しない）：`git worktree add -b feature/branch-name ../youtublur-feature master`
-2. worktree ディレクトリに移動：`cd ../youtublur-feature`
+1. **worktree を作成**（master では作業しない）：`git worktree add -b feature/branch-name ../youtublur-<name> master`
+2. worktree ディレクトリに移動：`cd ../youtublur-<name>`
 3. **依存関係をインストール**：`pnpm install`
 4. コードを変更・実装
 5. `pnpm exec vp lint` を実行し、警告・エラーを解消する
@@ -45,7 +46,7 @@ alwaysApply: true
 8. コミット: `git add -A && git commit -m "type: message"`
 9. プッシュ: `git push -u origin feature/branch-name`
 10. `gh pr create` で PR を作成
-11. **cleanup**: `git worktree remove ../youtublur-feature`
+11. **cleanup**: `git worktree remove ../youtublur-<name>`
 
 ## 注意
 - テストが失敗したらマージ・リリースしない
