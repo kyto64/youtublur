@@ -9,13 +9,7 @@ export default defineConfig({
       provider: 'v8',
       reportsDirectory: './coverage',
       reporter: ['text', 'text-summary', 'html', 'json-summary', 'lcov'],
-      include: ['content.js', 'popup.js', 'storage-mode.js'],
-      exclude: [
-        '**/*.test.js',
-        'e2e/**',
-        'scripts/**',
-        'playwright.config.js'
-      ]
+      include: ['content.js', 'popup.js', 'storage-mode.js']
     }
   }
 });
