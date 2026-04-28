@@ -5,6 +5,7 @@
   "main": "content.js",
   "scripts": {
     "test": "vp test",
+    "test:coverage": "vp test --coverage --run",
     "test:e2e": "playwright test",
     "version": "node scripts/sync-version.js && git add manifest.json",
     "release": "commit-and-tag-version"
@@ -22,6 +23,7 @@
   "homepage": "https://github.com/kyto64/youtublur#readme",
   "devDependencies": {
     "@playwright/test": "1.59.1",
+    "@vitest/coverage-v8": "4.1.4",
     "@voidzero-dev/vite-plus-core": "0.1.19",
     "@voidzero-dev/vite-plus-test": "0.1.19",
     "chrome-webstore-upload": "4.0.3",
@@ -32,7 +34,7 @@
   "pnpm": {
     "overrides": {
       "vite": "8.0.5",
-      "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.18"
+      "vitest": "npm:@voidzero-dev/vite-plus-test@0.1.19"
     }
   },
   "packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8"

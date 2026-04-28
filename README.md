@@ -57,6 +57,7 @@ youtublur/
 
 本プロジェクトは **Vite+** を用いてテスト・Lintを行っています。
 - **テストの実行**: `pnpm test` または `vp test`
+- **カバレッジ**: `pnpm run test:coverage`（HTML は `coverage/index.html`）
 - **Lintの実行**: `vp lint`
 
 また、`master` ブランチへのプッシュやPR作成時に、GitHub Actions（CI）によって自動的にテストとLintが実行されます。
