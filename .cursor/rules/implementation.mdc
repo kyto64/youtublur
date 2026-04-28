@@ -25,6 +25,14 @@ alwaysApply: true
 - **cleanup 手順**：
   1. `git worktree remove ../youtublur-feature`
   2. 残留ディレクトリがあれば `rm -rf ../youtublur-feature` で削除
+- **既存 worktree への修正追加**：
+  1. 既存の worktree ディレクトリに移動：`cd ../youtublur-<name>`
+  2. ブランチを最新化：`git fetch origin && git merge origin/<branch>`
+  3. 修正を実施し、新たにコミット・プッシュする
+- **リモートにブランチがあるがローカルに worktree がない場合**：
+  1. `git fetch origin <branch>`
+  2. `git worktree add ../youtublur-<name> <branch>`
+  3. worktree ディレクトリに移動：`cd ../youtublur-<name>`
 
 ## 実装フロー
 1. **worktree を作成**（master では作業しない）：`git worktree add -b feature/branch-name ../youtublur-feature master`
