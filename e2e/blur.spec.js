@@ -50,3 +50,33 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
   const reloadedCanvas = page.locator('#yt-light-bg-blur-canvas');
   await expect(reloadedCanvas).toBeHidden({ timeout: 15000 });
 });
+
+test('should keep blur visible when extension popup is opened in a tab (Chromium)', async ({
+  page,
+  context,
+  extensionId,
+  browserName,
+}) => {
+  if (browserName === 'firefox') {
+    test.skip(
+      true,
+      'Firefox E2E uses a chrome API mock instead of a real extension.'
+    );
+  }
+
+  await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+  await page.waitForSelector('#ytd-player', { state: 'attached' });
+
+  const youtublurCanvas = page.locator('#yt-light-bg-blur-canvas');
+  await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
+  await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
+
+  const popupPage = await context.newPage();
+  await popupPage.goto(`chrome-extension://${extensionId}/popup.html`);
+  await expect(popupPage.locator('#popupHeading')).toBeVisible();
+
+  await page.bringToFront();
+  await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
+
+  await popupPage.close();
+});
