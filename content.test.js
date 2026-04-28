@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+require('./storage-mode.js');
 const {
   BLUR_STRENGTH_PX,
   isGeckoLayoutEngine,
@@ -806,7 +807,9 @@ describe('content.js', () => {
       await new Promise((r) => queueMicrotask(r));
       await new Promise((r) => queueMicrotask(r));
 
-      expect(syncSet).toHaveBeenCalledWith(
+      // 勝者は sync のみ更新が必要（local を合わせる）— sync への不要な set は行わない
+      expect(syncSet).not.toHaveBeenCalled();
+      expect(localSet).toHaveBeenCalledWith(
         expect.objectContaining({
           playerBackgroundMode: 'blur',
           playerBackgroundModeTimestamp: 5000
