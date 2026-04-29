@@ -1,13 +1,13 @@
 # リリース手順
 
-## 前提
+## 1. 前提
 
 - `master` ブランチで作業する
 - すべての変更がコミット済みであること
 
 ---
 
-## Dependabot（自動マージ・自動パッチリリース）
+## 2. Dependabot（自動マージ・自動パッチリリース）
 
 設定は [.github/dependabot.yml](.github/dependabot.yml)。
 
@@ -147,7 +147,7 @@ pnpm test
 
 ---
 
-## 6. リリースコミット＆タグを作成する
+## 7. リリースコミット＆タグを作成する
 
 通常リリース（Conventional Commits に基づく自動バンプ）:
 
@@ -174,7 +174,7 @@ Chrome と Firefox で `manifest.json` を分けていないため、バージ�
 
 ---
 
-## 7. GitHub へ push する
+## 8. GitHub へ push する
 
 ```bash
 git push --follow-tags origin master
@@ -182,7 +182,7 @@ git push --follow-tags origin master
 
 ---
 
-## 8. CI/CD の完了を確認する
+## 9. CI/CD の完了を確認する
 
 push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以下が実行される:
 
@@ -198,9 +198,9 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 
 ---
 
-## 9. Firefox（AMO）
+## 10. Firefox（AMO）
 
-### 5.1 AMO 自動アップロード（GitHub Actions）
+### 10.1 AMO 自動アップロード（GitHub Actions）
 
 リポジトリの **Settings → Secrets and variables → Actions** で次を設定する。
 
@@ -215,7 +215,7 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 
 初めて AMO に出す場合は、開発者ハブでアドオンを一度登録し、上記 `AMO_ADDON_ID` が指すアドオンに対して API からバージョンを載せられる状態にしておく。
 
-### 5.2 手動提出（自動化しない場合）
+### 10.2 手動提出（自動化しない場合）
 
 `AMO_PUBLISH` を `true` にしない場合は、従来どおり手動でよい。
 
