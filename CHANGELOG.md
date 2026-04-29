@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.10.0](https://github.com/kyto64/youtublur/compare/v1.9.0...v1.10.0) (2026-04-29)
+
+
+### Features
+
+* improve storage persistence with sync+local fallback (Issue [#37](https://github.com/kyto64/youtublur/issues/37)) ([#47](https://github.com/kyto64/youtublur/issues/47)) ([01c49cc](https://github.com/kyto64/youtublur/commit/01c49ccfb49088a644b59da77ce3cdbf117621d7))
+* すべての作業で git worktree の使用を必須化 ([#56](https://github.com/kyto64/youtublur/issues/56)) ([05d6a46](https://github.com/kyto64/youtublur/commit/05d6a46d2de0ebd74617746efe4703a5fd99aa62)), closes [#3157693840](https://github.com/kyto64/youtublur/issues/3157693840) [#3157703473](https://github.com/kyto64/youtublur/issues/3157703473) [#3157703476](https://github.com/kyto64/youtublur/issues/3157703476) [#3157703478](https://github.com/kyto64/youtublur/issues/3157703478)
+* パフォーマンス最適化 - 描画頻度をデバイス性能に応じて動的に調整 ([#48](https://github.com/kyto64/youtublur/issues/48)) ([4ebe2d0](https://github.com/kyto64/youtublur/commit/4ebe2d0e995cd891d3d1d9b072775d4f3003b8c3))
+
 ## [1.9.0](https://github.com/kyto64/youtublur/compare/v1.8.0...v1.9.0) (2026-04-26)
 
 
