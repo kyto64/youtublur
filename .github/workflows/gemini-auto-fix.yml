@@ -36,10 +36,10 @@ jobs:
           set -euo pipefail
           if [ "${{ github.event_name }}" = "pull_request_review" ]; then
             PR_NUMBER="${{ github.event.pull_request.number }}"
-            BODY=$(jq -r '.review.body // ""' "$GITHUB_EVENT_PATH")
+            jq -r '.review.body // ""' "$GITHUB_EVENT_PATH" > /tmp/gemini-review-body.txt
           else
             PR_NUMBER="${{ github.event.issue.number }}"
-            BODY=$(jq -r '.comment.body // ""' "$GITHUB_EVENT_PATH")
+            jq -r '.comment.body // ""' "$GITHUB_EVENT_PATH" > /tmp/gemini-review-body.txt
           fi
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" \
             --json headRefName,headRefOid,labels,commits)
@@ -51,20 +51,15 @@ jobs:
           echo "head_ref=$HEAD_REF"     >> "$GITHUB_OUTPUT"
           echo "labels=$LABELS"         >> "$GITHUB_OUTPUT"
           echo "iter_count=$ITER_COUNT" >> "$GITHUB_OUTPUT"
-          {
-            echo 'body<<__GEMINI_EOF__'
-            echo "$BODY"
-            echo '__GEMINI_EOF__'
-          } >> "$GITHUB_OUTPUT"
 
       - name: Decide whether to skip
         id: gate
         env:
-          BODY: ${{ steps.pr.outputs.body }}
           LABELS: ${{ steps.pr.outputs.labels }}
           ITER_COUNT: ${{ steps.pr.outputs.iter_count }}
         run: |
           set -euo pipefail
+          BODY=$(cat /tmp/gemini-review-body.txt 2>/dev/null || echo "")
           skip_reason=""
           if echo ",$LABELS," | grep -q ',gemini-loop-stop,'; then
             skip_reason="gemini-loop-stop label present"
@@ -73,6 +68,12 @@ jobs:
           elif echo "$BODY" | grep -qiE '\b(LGTM|no issues found|looks good to me)\b'; then
             skip_reason="convergence keyword detected"
           fi
+          echo "::group::Skip decision"
+          echo "Body preview: $(echo "$BODY" | head -c 200)"
+          echo "Labels: $LABELS"
+          echo "Iter count: $ITER_COUNT"
+          echo "Skip reason: $skip_reason"
+          echo "::endgroup::"
           if [ -n "$skip_reason" ]; then
             echo "skip=true"  >> "$GITHUB_OUTPUT"
             echo "::notice::Skipping auto-fix: $skip_reason"
@@ -118,9 +119,9 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
-          BODY: ${{ steps.pr.outputs.body }}
         run: |
           set -euo pipefail
+          BODY=$(cat /tmp/gemini-review-body.txt 2>/dev/null || echo "")
           {
             echo "# Gemini Code Assist review feedback"
             echo
