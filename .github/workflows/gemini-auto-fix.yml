@@ -2,9 +2,11 @@ name: Gemini auto-fix loop
 
 on:
   pull_request_review:
-    types: [submitted]
+    # types: [submitted]
+    types: []
   issue_comment:
-    types: [created]
+    # types: [created]
+    types: []
 
 permissions:
   contents: read
