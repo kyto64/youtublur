@@ -5,7 +5,7 @@
  * Usage: node create-pr-from-issue.js ISSUE_NUMBER [--create] [--commit-type=fix|feat|docs|refactor]
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -15,6 +15,10 @@ if (args.length === 0) {
 }
 
 const issueNumber = args[0];
+if (!/^\d+$/.test(issueNumber)) {
+  console.error('Error: ISSUE_NUMBER must be a numeric value');
+  process.exit(1);
+}
 let shouldCreate = false;
 let commitType = 'fix'; // default
 
@@ -28,7 +32,7 @@ for (const arg of args.slice(1)) {
 
 try {
   // Get issue information
-  const issueJson = execSync(`gh issue view ${issueNumber} --json number,title,body,labels`, {
+  const issueJson = execFileSync('gh', ['issue', 'view', issueNumber, '--json', 'number,title,body,labels'], {
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe']
   });
@@ -47,7 +51,7 @@ try {
 - ${issue.title}
 
 ## Description
-${issue.body ? issue.body.substring(0, 500) : 'No description provided.'}
+${issue.body || 'No description provided.'}
 
 ## Test plan
 - [ ] \`pnpm test\` passes
@@ -58,10 +62,13 @@ Closes #${issueNumber}`;
 
   if (shouldCreate) {
     // Create the PR using gh CLI
-    const createCommand = `gh pr create --title "${prTitle}" --body "${prBody.replace(/"/g, '\\"')}" --head "${branchName}"`;
-    
     try {
-      const prUrl = execSync(createCommand, {
+      const prUrl = execFileSync('gh', [
+        'pr', 'create',
+        '--title', prTitle,
+        '--body', prBody,
+        '--head', branchName
+      ], {
         encoding: 'utf8',
         stdio: ['pipe', 'pipe', 'pipe']
       });

@@ -5,7 +5,7 @@
  * Usage: node get-issue-info.js ISSUE_NUMBER [--format=json|text] [--field=title|body|labels|all]
  */
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -15,6 +15,10 @@ if (args.length === 0) {
 }
 
 const issueNumber = args[0];
+if (!/^\d+$/.test(issueNumber)) {
+  console.error('Error: ISSUE_NUMBER must be a numeric value.');
+  process.exit(1);
+}
 let format = 'text';
 let field = 'all';
 
@@ -28,7 +32,7 @@ for (const arg of args.slice(1)) {
 
 try {
   // Get issue information using gh CLI
-  const issueJson = execSync(`gh issue view ${issueNumber} --json number,title,body,labels,state,author,comments,createdAt,updatedAt`, {
+  const issueJson = execFileSync('gh', ['issue', 'view', issueNumber, '--json', 'number,title,body,labels,state,author,comments,createdAt,updatedAt'], {
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'pipe']
   });

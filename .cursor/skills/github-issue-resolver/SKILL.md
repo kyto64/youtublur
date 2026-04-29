@@ -50,14 +50,14 @@ Follow the project's git worktree rule (master branch work is prohibited):
 
 ```bash
 # Create a new worktree with branch named after the issue
-cd /home/kira/apps/youtublur
-git worktree add -b fix/issue-ISSUE_NUMBER /home/kira/apps/youtublur-issue-ISSUE_NUMBER master
+cd ../youtublur
+git worktree add -b fix/issue-ISSUE_NUMBER ../youtublur-issue-ISSUE_NUMBER master
 ```
 
 If the branch already exists remotely:
 ```bash
 git fetch origin fix/issue-ISSUE_NUMBER
-git worktree add /home/kira/apps/youtublur-issue-ISSUE_NUMBER fix/issue-ISSUE_NUMBER
+git worktree add ../youtublur-issue-ISSUE_NUMBER fix/issue-ISSUE_NUMBER
 ```
 
 ### Step 4: Install Dependencies
@@ -65,7 +65,7 @@ git worktree add /home/kira/apps/youtublur-issue-ISSUE_NUMBER fix/issue-ISSUE_NU
 After creating the worktree, install dependencies:
 
 ```bash
-cd /home/kira/apps/youtublur-issue-ISSUE_NUMBER
+cd ../youtublur-issue-ISSUE_NUMBER
 pnpm install
 ```
 
@@ -142,8 +142,8 @@ EOF
 After PR is created (not merged), you can remove the worktree if no further changes are needed:
 
 ```bash
-cd /home/kira/apps/youtublur
-git worktree remove /home/kira/apps/youtublur-issue-ISSUE_NUMBER
+cd ../youtublur
+git worktree remove ../youtublur-issue-ISSUE_NUMBER
 ```
 
 ## Important Rules
