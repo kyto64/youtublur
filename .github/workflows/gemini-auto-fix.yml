@@ -22,7 +22,13 @@ jobs:
       (
         github.event_name == 'issue_comment' &&
         github.event.issue.pull_request != null &&
-        github.event.comment.user.login == 'gemini-code-assist[bot]'
+        (
+          github.event.comment.user.login == 'gemini-code-assist[bot]' ||
+          (
+            github.event.comment.body != null &&
+            contains(github.event.comment.body, '/gemini-auto-fix')
+          )
+        )
       )
     permissions:
       contents: write
@@ -51,6 +57,19 @@ jobs:
           echo "head_ref=$HEAD_REF"     >> "$GITHUB_OUTPUT"
           echo "labels=$LABELS"         >> "$GITHUB_OUTPUT"
           echo "iter_count=$ITER_COUNT" >> "$GITHUB_OUTPUT"
+
+      - name: Determine trigger type
+        id: trigger
+        run: |
+          set -euo pipefail
+          TRIGGER_TYPE="auto"
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            COMMENT_BODY='${{ github.event.comment.body }}'
+            if echo "$COMMENT_BODY" | grep -q '/gemini-auto-fix'; then
+              TRIGGER_TYPE="manual"
+            fi
+          fi
+          echo "type=$TRIGGER_TYPE" >> "$GITHUB_OUTPUT"
 
       - name: Decide whether to skip
         id: gate
@@ -119,19 +138,43 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          TRIGGER_TYPE: ${{ steps.trigger.outputs.type }}
         run: |
           set -euo pipefail
-          BODY=$(cat /tmp/gemini-review-body.txt 2>/dev/null || echo "")
+          REPO="${{ github.repository }}"
+          PR_NUM="$PR_NUMBER"
           {
             echo "# Gemini Code Assist review feedback"
             echo
-            echo "$BODY"
-            echo
-            if [ "${{ github.event_name }}" = "pull_request_review" ]; then
-              echo "## Inline review comments"
-              gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/comments" \
+            if [ "$TRIGGER_TYPE" = "manual" ]; then
+              # 手动触发：收集所有Gemini反馈
+              echo "## All reviews from gemini-code-assist[bot]"
+              gh api "repos/$REPO/pulls/${PR_NUM}/reviews" \
+                --jq '.[] | select(.user.login == "gemini-code-assist[bot]") | .body' 2>/dev/null |
+                while IFS= read -r review_body; do
+                  echo "$review_body"
+                  echo
+                done
+              echo
+              echo "## All inline comments from gemini-code-assist[bot]"
+              gh api "repos/$REPO/pulls/${PR_NUM}/comments" \
                 --jq '.[] | select(.user.login == "gemini-code-assist[bot]") |
-                  "### \(.path):\(.line // .original_line // "?")\n\n\(.body)\n"'
+                  "### \(.path):\(.line // .original_line // "?")\n\n\(.body)\n"' 2>/dev/null
+              echo
+              echo "## All PR comments from gemini-code-assist[bot]"
+              gh api "repos/$REPO/issues/${PR_NUM}/comments" \
+                --jq '.[] | select(.user.login == "gemini-code-assist[bot]") | .body' 2>/dev/null
+            else
+              # 自动触发：原来的逻辑
+              BODY=$(cat /tmp/gemini-review-body.txt 2>/dev/null || echo "")
+              echo "$BODY"
+              echo
+              if [ "${{ github.event_name }}" = "pull_request_review" ]; then
+                echo "## Inline review comments"
+                gh api "repos/$REPO/pulls/${PR_NUM}/comments" \
+                  --jq '.[] | select(.user.login == "gemini-code-assist[bot]") |
+                    "### \(.path):\(.line // .original_line // "?")\n\n\(.body)\n"'
+              fi
             fi
           } > /tmp/gemini-feedback.md
           echo "::group::Collected feedback"
@@ -143,17 +186,36 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ steps.pr.outputs.pr_number }}
+          TRIGGER_TYPE: ${{ steps.trigger.outputs.type }}
         run: |
           set -euo pipefail
-          # Inline commentsからファイルパスを抽出
-          if [ "${{ github.event_name }}" = "pull_request_review" ]; then
-            gh api "repos/${{ github.repository }}/pulls/${PR_NUMBER}/comments" \
+          REPO="${{ github.repository }}"
+          PR_NUM="$PR_NUMBER"
+          > /tmp/target-files.txt
+          if [ "$TRIGGER_TYPE" = "manual" ]; then
+            # 手动触发：收集所有Gemini内联评论的文件路径
+            gh api "repos/$REPO/pulls/${PR_NUM}/comments" \
               --jq '[.[] | select(.user.login == "gemini-code-assist[bot]") | .path] | unique[]' \
               > /tmp/target-files.txt 2>/dev/null || true
+            # 从review body中提取文件路径
+            gh api "repos/$REPO/pulls/${PR_NUM}/reviews" \
+              --jq '[.[] | select(.user.login == "gemini-code-assist[bot]") | .body] | .[]' 2>/dev/null |
+              grep -oE '[^[:space:]]+\.(js|md|json|yml|yaml)' | sort -u >> /tmp/target-files.txt 2>/dev/null || true
+            # 从PR comments中提取文件路径
+            gh api "repos/$REPO/issues/${PR_NUM}/comments" \
+              --jq '[.[] | select(.user.login == "gemini-code-assist[bot]") | .body] | .[]' 2>/dev/null |
+              grep -oE '[^[:space:]]+\.(js|md|json|yml|yaml)' | sort -u >> /tmp/target-files.txt 2>/dev/null || true
+          else
+            # 自动触发：原来的逻辑
+            if [ "${{ github.event_name }}" = "pull_request_review" ]; then
+              gh api "repos/$REPO/pulls/${PR_NUM}/comments" \
+                --jq '[.[] | select(.user.login == "gemini-code-assist[bot]") | .path] | unique[]' \
+                > /tmp/target-files.txt 2>/dev/null || true
+            fi
           fi
-          # フィードバック本文からもファイルパスを抽出（.js, .mdファイル）
+          # 从反馈文本中提取文件路径（.js, .md, .json, .yml, .yaml文件）
           grep -oE '[^[:space:]]+\.(js|md|json|yml|yaml)' /tmp/gemini-feedback.md | sort -u >> /tmp/target-files.txt 2>/dev/null || true
-          # 存在するファイルのみ残す
+          # 只保留存在的文件
           while IFS= read -r file; do
             [ -f "$file" ] && echo "$file"
           done < /tmp/target-files.txt | sort -u > /tmp/files-to-edit.txt
