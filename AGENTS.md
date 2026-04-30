@@ -2,6 +2,54 @@
 
 YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切り替えるブラウザ拡張（Chrome/Firefox、Manifest V3）。
 
+この AGENTS.md はエージェントがリポジトリを理解するためのマップです。詳細は各ドキュメントを参照してください。
+
+## クイックスタート
+
+- **開発手順**: [AGENTS.md#開発手順](./AGENTS.md#開発手順)
+- **アーキテクチャ**: [ARCHITECTURE.md](./ARCHITECTURE.md)
+- **コーディング標準**: [.cursor/rules](./.cursor/rules/)
+- **リリース手順**: [docs/release.md](./docs/release.md)
+
+## リポジトリ構造
+
+```
+.
+├── .cursor/              # Cursor 設定・ルール・スキル
+├── docs/                 # プロジェクトドキュメント
+│   ├── design-docs/      # 設計ドキュメント
+│   ├── exec-plans/       # 実行計画
+│   ├── product-specs/    # 製品仕様
+│   └── references/       # リファレンス
+├── _locales/             # 国際化（i18n）メッセージ
+├── e2e/                  # E2E テスト
+├── scripts/              # 補助スクリプト
+└── (ソースコード)
+```
+
+## 開発手順
+
+### 前提
+
+- すべての作業は `git worktree` で行う（master ブランチでの直接作業は禁止）
+- コード変更後は必ず `pnpm test` と `pnpm exec vp lint` を実行
+- バージョンは `pnpm run release` フローで管理
+
+### 基本ワークフロー
+
+1. **ブランチ作成**: `git worktree add -b feature/<name> ../youtublur-<name> master`
+2. **依存インストール**: `cd ../youtublur-<name> && pnpm install`
+3. **実装**: コードを変更
+4. **テスト**: `pnpm test` でユニットテスト実行
+5. **Lint**: `pnpm exec vp lint` でコード品質チェック
+6. **E2E テスト（必要時）**: `pnpm run test:e2e`
+7. **コミット**: `git add -A && git commit -m "type: message"`
+8. **プッシュ**: `git push -u origin feature/branch-name`
+9. **PR 作成**: `gh pr create`
+10. **Cleanup**: `git worktree remove ../youtublur-<name>`
+
+詳しくは [implementation.mdc](./.cursor/rules/implementation.mdc) を参照。
+
 ## 技術スタック
 
 | 項目 | 詳細 |
@@ -13,57 +61,6 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 | パッケージ管理 | pnpm（`packageManager` フィールド固定） |
 | 対応ブラウザ | Chrome（Manifest V3）/ Firefox（`browser_specific_settings.gecko`） |
 
-## コンテキスト優先順位
-
-コード変更前に、以下を**順に**確認すること。
-
-| 順位 | ファイル | 確認すべき理由 |
-|------|----------|----------------|
-| 1 | [`manifest.json`](manifest.json) | 権限、マッチパターン、バージョン、ブラウザ別設定の正確性 |
-| 2 | [`.cursor/rules/browser-extension.mdc`](.cursor/rules/browser-extension.mdc) | MV3 制約、Firefox AMO 要件、リリース zip 整合性 |
-| 3 | [`.cursor/rules/locales.mdc`](.cursor/rules/locales.mdc) | i18n キー追加・更新ルール |
-| 4 | [`content.js`](content.js) / [`popup.js`](popup.js) | 主要ビジネスロジックと既存実装の整合性 |
-| 5 | [`docs/release.md`](docs/release.md) | リリース手順、Dependabot 自動化、Secrets 設定の詳細 |
-
-## Do（必ず行うこと）
-
-- **すべての作業は git worktree で行う**: master ブランチでの直接作業は禁止。
-  - 新規ブランチ: `git worktree add -b feature/<name> ../youtublur-<name> master`
-  - 既存ブランチ: `git worktree add ../youtublur-<name> <branch>`
-  - リモートにブランチがあるがローカルに worktree がない場合: `git fetch origin <branch> && git worktree add ../youtublur-<name> <branch>`
-  - 既存 worktree への修正追加: worktree ディレクトリに移動し、`git fetch origin && git merge origin/<branch>` で最新化してから修正
-  - 権限エラー時は Shell 実行に `required_permissions: ["all"]` を指定
-  - worktree 作成後は必ず `pnpm install` を実行（node_modules がないと test/lint が失敗）
-  - 作業完了後: `git worktree remove ../youtublur-<name>`（パス指定必須）
-- **テストを実行する**: コード変更後は必ず `pnpm test` を実行し、すべて通過すること。失敗したらマージ・リリースしない。
-- **Lint を実行する**: コミット前に `pnpm exec vp lint` を実行し、警告・エラーを解消すること。
-- **バージョン管理に従う**: [`manifest.json`](manifest.json) の `version` は手動で書き換えず、[`scripts/sync-version.js`](scripts/sync-version.js) を介した `pnpm run release` フローに任せること。
-- **i18n キーを完全に追加する**: 新しい UI 文字列は、**まず** [`_locales/en/messages.json`](_locales/en/messages.json) に追加し、**すべてのロケール**（`en`, `es`, `id`, `ja`, `ko`, `pt_BR`, `zh_CN`, `zh_TW`）で同じキーを定義すること。各キーには `message` と `description` を含めること。
-- **リリース zip を同期する**: zip に含まれるファイルを変更・追加したら、[`.github/workflows/publish.yml`](.github/workflows/publish.yml) の `zip` コマンドも更新すること。
-- **GitHub 操作は CLI を使う**: GitHub への操作は必ず `gh` CLI を使用すること。
-
-## Don't（禁止・注意事項）
-
-- **権限を勝手に追加しない**: `storage` / `activeTab` 以外の権限を追加すると、Chrome Web Store / AMO の審査に影響する。必要な場合はユーザーへの説明を添えること。
-- **マッチパターンを広げない**: YouTube 向けの `*://*.youtube.com/*` を維持し、不要な広いマッチを追加しないこと。
-- **`manifest.json` のバージョンを手動変更しない**: `version` フィールドは `pnpm run release` フロー以外で書き換えないこと。
-- **GitHub を REST API / PAT / ブラウザで操作しない**: `gh` CLI を使用すること。REST API、Personal Access Token、ブラウザ操作は禁止。
-- **`description` を省略しない**: ロケールファイルの各キーは、翻訳者・開発者向けコンテキストのため `description` を必ず含めること。
-- **E2E テストを無視しない**: SPA 遷移・ショート・ブラー状態など、主要ユーザーストーリーは [`e2e/`](e2e/) でカバーされている。変更後は `pnpm run test:e2e` も実行すること。
-
-## 主要パス
-
-| 用途 | パス |
-|------|------|
-| コンテンツロジック | [`content.js`](content.js), [`content.test.js`](content.test.js) |
-| ポップアップ UI | [`popup.html`](popup.html), [`popup.js`](popup.js), [`popup.test.js`](popup.test.js) |
-| スタイル | [`style.css`](style.css) |
-| マニフェスト | [`manifest.json`](manifest.json) |
-| 文言（i18n） | [`_locales/*/messages.json`](_locales/)（基準は [`en`](_locales/en/messages.json)） |
-| E2E テスト | [`e2e/`](e2e/) |
-| 補助スクリプト | [`scripts/`](scripts/)（[`sync-version.js`](scripts/sync-version.js), [`publish-chrome-webstore.mjs`](scripts/publish-chrome-webstore.mjs), [`sync-chrome-refresh-token.mjs`](scripts/sync-chrome-refresh-token.mjs)） |
-| CI zip 定義 | [`.github/workflows/publish.yml`](.github/workflows/publish.yml) |
-
 ## 開発コマンド
 
 | 作業 | コマンド |
@@ -74,23 +71,103 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 | Lint | `pnpm exec vp lint` |
 | リリース | `pnpm run release` → `git push --follow-tags origin master` |
 
-## リリース
+## コンテキスト優先順位
 
-詳細は [`docs/release.md`](docs/release.md) を参照。概要:
+コード変更前に、以下を**順に**確認すること。
 
-1. 未コミットがないことを確認する。
-2. `pnpm test` を実行し、すべて通過すること。
-3. `pnpm run release` でバージョンバンプ、CHANGELOG 更新、コミット、タグ作成を自動実行する。
-4. `git push --follow-tags origin master` で push する。
-5. GitHub Actions の `publish.yml` が自動トリガーされ、GitHub Release 作成・Chrome Web Store 公開・（設定時）Firefox AMO アップロードが行われる。
+1. **[`manifest.json`](./manifest.json)** - 権限、マッチパターン、バージョン、正確性
+2. **[browser-extension.mdc](./.cursor/rules/browser-extension.mdc)** - MV3 制約、Firefox AMO 要件
+3. **[locales.mdc](./.cursor/rules/locales.mdc)** - i18n キー追加・更新ルール
+4. **[content.js](./content.js) / [popup.js](./popup.js)** - 主要ビジネスロジック
+5. **[docs/release.md](./docs/release.md)** - リリース手順
+
+## ドキュメント構造
+
+### 主要ドキュメント
+
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - システムアーキテクチャと依存関係
+- **[DESIGN.md](./DESIGN.md)** - 設計原則とパターン
+- **[FRONTEND.md](./FRONTEND.md)** - フロントエンドアーキテクチャ
+- **[QUALITY_SCORE.md](./QUALITY_SCORE.md)** - 品質指標と技術的負債
+
+### docs/ ディレクトリ
+
+- **[docs/design-docs/](./docs/design-docs/)** - 設計ドキュメント集
+- **[docs/exec-plans/](./docs/exec-plans/)** - 実行計画
+- **[docs/product-specs/](./docs/product-specs/)** - 製品仕様
+- **[docs/references/](./docs/references/)** - リファレンス資料
+
+## Cursor 設定
+
+- **スラッシュコマンド**: [`.cursor/commands/`](./.cursor/commands/)（`/feedback-review`, `/self-review` など）
+- **ルールファイル**: [`.cursor/rules/*.mdc`](./.cursor/rules/)（グローバルルールは `alwaysApply: true`）
+
+## 主なパス
+
+| 用途 | パス |
+|------|------|
+| コンテンツロジック | [`content.js`](./content.js), [`content.test.js`](./content.test.js) |
+| ポップアップ UI | [`popup.html`](./popup.html), [`popup.js`](./popup.js), [`popup.test.js`](./popup.test.js) |
+| スタイル | [`style.css`](./style.css) |
+| マニフェスト | [`manifest.json`](./manifest.json) |
+| 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |
+| E2E テスト | [`e2e/`](./e2e/) |
+| 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token） |
+| CI/CD | [`.github/workflows/publish.yml`](./.github/workflows/publish.yml) |
+
+## Do / Don't
+
+### Do（必ず行うこと）
+
+- **git worktree で作業**: master ブランチでの直接作業は禁止
+- **テスト実行**: `pnpm test` で全テスト通過を確認
+- **Lint 実行**: コミット前に `pnpm exec vp lint` でエラー解消
+- **バージョン管理**: `pnpm run release` フローに従う
+- **i18n キー管理**: 全ロケール（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）でキー定義
+- **zip 同期**: リリース zip の変更は `.github/workflows/publish.yml` にも反映
+- **CLI 使用**: GitHub 操作は `gh` CLI のみ
+
+### Don't（禁止・注意事項）
+
+- **勝手に権限追加**: `storage` / `activeTab` 以外の権限追加は慎重に
+- **マッチパターン拡張**: `*://*.youtube.com/*` を維持
+- **manifest.json 手動変更**: `version` は `pnpm run release` で管理
+- **REST API / PAT / ブラウザ操作**: `gh` CLI のみを使用
+- **description 省略不可**: i18n キーには `message` と `description` を必須
+- **E2E テスト無視**: 主要ユーザーストーリーは e2e でカバー
+
+## リリース手順
+
+詳細は [`docs/release.md`](./docs/release.md) を参照。
+
+1. 未コミットがないことを確認
+2. `pnpm test` で全テスト通過を確認
+3. `pnpm run release` でバージョンバンプ、CHANGELOG 更新、コミット、タグ作成
+4. `git push --follow-tags origin master` で push
+5. GitHub Actions で公開処理が自動実行
 
 ### Dependabot 自動化
 
-- **patch / minor**: CI 合格後に自動マージされる。
-- **自動パッチリリース**: 最大 1 日 1 回（UTC 15:00 の cron、または手動 `workflow_dispatch`）。
-- **major**: ラベル `semver-major` が付き、手動レビュー・マージが必要。
+- **patch / minor**: CI 合格後に自動マージ
+- **自動パッチリリース**: 最大 1 日 1 回（UTC 15:00 cron）
+- **major**: `semver-major` ラベル付きで手動レビュー必要
 
-## Cursor 固有設定
+## 設計理念
 
-- **スラッシュコマンド**: [`.cursor/commands/`](.cursor/commands/)（`/feedback-review`, `/self-review` など）
-- **ルールファイル**: [`.cursor/rules/*.mdc`](.cursor/rules/)（グローバルルールは `alwaysApply: true`、ファイル固有ルールは glob でトリガー）
+このリポジトリは AI エージェントとの協調開発を前提として設計されています。
+
+- **Progressive Disclosure**: 最小の安定したエントリーポイントから段階的に文脈を広げる
+- **Knowledge as Code**: ドキュメントはすべてリポジトリ内にバージョン管理
+- **Mechanical Enforcement**: ルールはリンターやテストで自動強制
+- **Legibility First**: エージェントが直接アクセスできるコンテキストを最大化
+
+詳しくは各ドキュメントを参照してください。
+
+## 参考文献
+
+- [Harness Engineering: Leveraging Codex in an Agent-First World](https://openai.com/index/harness-engineering/) - OpenAI の AI 駆動開発ベストプラクティス
+- [Cortex CLI](https://github.com/lobehub/cortex-cli) - ローカル LLM 管理
+
+## サポート
+
+問題や質問がある場合は、GitHub Issue を作成してください（[GitHub](https://github.com/kyto64/youtublur/issues)）。
