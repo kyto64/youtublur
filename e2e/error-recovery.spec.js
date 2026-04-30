@@ -28,7 +28,6 @@ test.describe('Error recovery and DOM mutation handling', () => {
       }
     });
 
-    await page.waitForTimeout(100);
 
     // Canvas should be gone
     await expect(canvas).toHaveCount(0);
@@ -123,9 +122,9 @@ test.describe('Error recovery and DOM mutation handling', () => {
 
     await page.waitForTimeout(100);
 
-    // Canvas might be hidden or removed - both are acceptable
-    const count = await canvas.count();
-    expect([0, 1]).toContain(count);
+
+    // Canvas might be hidden after video removal
+    await expect(canvas).toBeHidden({ timeout: 10000 });
   });
 
   test('blur recovers after player container is mutated', async ({ page, context, extensionId, browserName }) => {

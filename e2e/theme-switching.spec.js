@@ -43,20 +43,15 @@ test.describe('Theme switching behavior', () => {
     await expect(canvas).toBeHidden({ timeout: 10000 });
 
     // Check that container has solid mode background color (light theme default)
+    await expect(page.locator("#movie_player, .html5-video-player")).toHaveCSS("background-color", "rgb(241, 241, 241)");
 
     // Switch to dark theme by setting dark attribute on html
     await page.evaluate(() => {
-      document.documentElement.setAttribute('dark', '');
+      document.documentElement.setAttribute("dark", "");
     });
 
-    // Give time for theme observer to react
-    await page.waitForTimeout(150);
-
-    // The theme observer in content.js watches for 'dark' and 'theme' attribute changes
-    const hasDarkAttr = await page.evaluate(() => {
-      return document.documentElement.hasAttribute('dark');
-    });
-    expect(hasDarkAttr).toBe(true);
+    // The theme observer in content.js watches for "dark" and "theme" attribute changes
+    await expect(page.locator("#movie_player, .html5-video-player")).toHaveCSS("background-color", "rgb(24, 24, 24)");
   });
 
   test('solid mode background updates when YouTube theme changes to light', async ({

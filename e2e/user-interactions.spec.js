@@ -70,8 +70,7 @@ test.describe('User interaction scenarios', () => {
     await page.waitForTimeout(100);
 
     // Canvas should be hidden (solid mode) or not present
-    const count = await canvas.count();
-    expect([0, 1]).toContain(count);
+    await expect(canvas).toBeHidden({ timeout: 10000 });
   });
 
   test('blur and solid modes maintain state across multiple page navigations', async ({ page, context, extensionId, browserName }) => {
