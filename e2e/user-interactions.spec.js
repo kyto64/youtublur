@@ -37,7 +37,6 @@ test.describe('User interaction scenarios', () => {
     await popupPage.close();
 
     // Final mode should be blur
-    await page.bringToFront();
     await expect(canvas).toBeAttached({ timeout: 10000 });
   });
 
@@ -91,22 +90,10 @@ test.describe('User interaction scenarios', () => {
     await waitForExtensionStorageMode(popupPage, 'solid');
     await popupPage.close();
 
-    // Navigate to shorts page using SPA navigation
-    await page.evaluate(() => {
-      history.pushState({}, '', '/shorts/test123');
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    });
-
-    await page.waitForTimeout(100);
-
-    // Navigate back to watch page
-    await page.evaluate((videoId) => {
-      history.pushState({}, '', `/watch?v=${videoId}`);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }, STABLE_WATCH_VIDEO_ID);
-
+    // Navigate away and back via real navigation
+    await page.goto('https://www.youtube.com/');
+    await page.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
     await waitForWatchPlayer(page);
-    await page.waitForTimeout(100);
 
     // Canvas should be hidden (solid mode persisted)
     await expect(canvas).toBeHidden({ timeout: 10000 });

@@ -97,12 +97,7 @@ test.describe('Theme switching behavior', () => {
       document.documentElement.removeAttribute('theme');
     });
 
-    await page.waitForTimeout(150);
-
-    const hasDarkAttr = await page.evaluate(() => {
-      return document.documentElement.hasAttribute('dark');
-    });
-    expect(hasDarkAttr).toBe(false);
+    await expect(page.locator('html')).not.toHaveAttribute('dark', /.*/);
   });
 
   test('solid mode uses correct background colors for both themes', async ({
