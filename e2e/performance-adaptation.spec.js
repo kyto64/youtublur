@@ -89,8 +89,8 @@ test.describe('Performance adaptation', () => {
       }
     }
 
-    // Final mode should be blur
-    await expect(canvas).toBeVisible({ timeout: 5000 });
+    // Final mode should be solid
+    await expect(canvas).toBeHidden({ timeout: 5000 });
 
     await popupPage.close();
   });
