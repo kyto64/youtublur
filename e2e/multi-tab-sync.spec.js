@@ -47,7 +47,7 @@ test.describe('Multi-tab synchronization', () => {
     await waitForWatchPlayer(page2);
 
     // Wait for the extension to initialize in the second tab
-    await page2.waitForTimeout(1000);
+    await expect(page2.locator("#movie_player")).toHaveAttribute("data-yt-light-bg-mode", "solid", { timeout: 10000 });
 
     const canvas2 = page2.locator('#yt-light-bg-blur-canvas');
     // Second tab should also have solid mode (synchronized)

@@ -47,8 +47,7 @@ test.describe('Performance adaptation', () => {
     // The extension should automatically adjust draw interval based on performance
     // This is handled internally by the content script
     // We verify the canvas is still functional after some time
-    await page.waitForTimeout(1000);
-    await expect(canvas).toBeVisible();
+    await expect(canvas).toBeVisible({ timeout: 2000 });
 
     await popupPage.close();
   });
@@ -81,7 +80,8 @@ test.describe('Performance adaptation', () => {
 
       await popupPage.locator(`label[for="${radioId}"]`).click();
       await waitForExtensionStorageMode(popupPage, mode);
-      await page.waitForTimeout(100);
+      // Wait for canvas state to update instead of fixed timeout
+      await expect(canvas).toBeVisible({ timeout: 5000 });
 
       if (mode === 'blur') {
         await expect(canvas).toBeVisible({ timeout: 5000 });

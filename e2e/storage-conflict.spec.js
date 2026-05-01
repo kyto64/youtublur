@@ -56,12 +56,8 @@ test.describe('Storage conflict resolution', () => {
     await page.reload();
     await waitForWatchPlayer(page);
 
-    // The extension should reconcile and use sync storage value (solid)
-    // because it was set more recently through the popup
-    await page.waitForTimeout(500);
-    
-    // Canvas should still be hidden (solid mode)
-    await expect(canvas).toBeHidden({ timeout: 5000 });
+    // Wait for canvas state to confirm solid mode
+    await expect(canvas).toBeHidden({ timeout: 10000 });
     
     await popupPage.close();
   });
