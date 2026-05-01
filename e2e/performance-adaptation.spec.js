@@ -81,7 +81,6 @@ test.describe('Performance adaptation', () => {
       await popupPage.locator(`label[for="${radioId}"]`).click();
       await waitForExtensionStorageMode(popupPage, mode);
       // Wait for canvas state to update instead of fixed timeout
-      await expect(canvas).toBeVisible({ timeout: 5000 });
 
       if (mode === 'blur') {
         await expect(canvas).toBeVisible({ timeout: 5000 });

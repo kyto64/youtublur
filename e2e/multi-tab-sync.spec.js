@@ -108,7 +108,8 @@ test.describe('Multi-tab synchronization', () => {
     const page2 = await context.newPage();
     await page2.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
     await waitForWatchPlayer(page2);
-    await page2.waitForTimeout(1000);
+    // Wait for solid mode to be applied
+    await expect(page2.locator('#movie_player')).toHaveAttribute('data-yt-light-bg-mode', 'solid', { timeout: 10000 });
 
     const canvas2 = page2.locator('#yt-light-bg-blur-canvas');
     await expect(canvas2).toBeHidden({ timeout: 10000 });
@@ -143,7 +144,6 @@ test.describe('Multi-tab synchronization', () => {
 
       await popupPage.locator(`label[for="${radioId}"]`).click();
       await waitForExtensionStorageMode(popupPage, mode);
-      await page.waitForTimeout(200);
     }
 
     await popupPage.close();
