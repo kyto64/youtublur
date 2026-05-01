@@ -61,7 +61,7 @@ function reconcileStorageCopies() {
  * @param {string} mode - 'blur' or 'solid'
  * @returns {Promise<boolean>} - true if saved to sync, false if saved to local
  */
-function saveModeToStorage(mode: string) {
+function saveModeToStorage(mode: BackgroundMode) {
   const timestamp = Date.now();
   const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
 
@@ -90,8 +90,8 @@ function saveModeToStorage(mode: string) {
  * Load mode from storage with fallback and latest value determination
  * @returns {Promise<string>} - 'blur' or 'solid'
  */
-function loadModeFromStorage() {
-  return new Promise(/** @param {(value: string) => void} resolve */ (resolve) => {
+function loadModeFromStorage(): Promise<BackgroundMode> {
+  return new Promise<BackgroundMode>((resolve) => {
     try {
       chrome.storage.sync.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (syncResult) => {
         if (chrome.runtime && chrome.runtime.lastError) {
@@ -102,10 +102,10 @@ function loadModeFromStorage() {
             localResult = {};
           }
 
-          const syncMode = /** @type {string | undefined} */ (syncResult[STORAGE_KEY]);
-          const localMode = /** @type {string | undefined} */ (localResult[STORAGE_KEY]);
-          const syncTimestamp = /** @type {number} */ (syncResult[STORAGE_TIMESTAMP_KEY] || 0);
-          const localTimestamp = /** @type {number} */ (localResult[STORAGE_TIMESTAMP_KEY] || 0);
+          const syncMode = syncResult[STORAGE_KEY] as BackgroundMode | undefined;
+          const localMode = localResult[STORAGE_KEY] as BackgroundMode | undefined;
+          const syncTimestamp = (syncResult[STORAGE_TIMESTAMP_KEY] || 0) as number;
+          const localTimestamp = (localResult[STORAGE_TIMESTAMP_KEY] || 0) as number;
 
           if (syncMode !== undefined && localMode !== undefined) {
             if (syncTimestamp >= localTimestamp) {

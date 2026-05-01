@@ -2,8 +2,10 @@
 // `storage-mode.js` is loaded before `content.js` via the manifest, exposing
 // these helpers on `globalThis`. Declare them so type-checking sees them.
 
-declare function saveModeToStorage(mode: string): Promise<boolean>;
-declare function loadModeFromStorage(): Promise<string>;
+type BackgroundMode = 'blur' | 'solid';
+
+declare function saveModeToStorage(mode: BackgroundMode): Promise<boolean>;
+declare function loadModeFromStorage(): Promise<BackgroundMode>;
 declare function reconcileStorageCopies(): void;
 
 interface Navigator {

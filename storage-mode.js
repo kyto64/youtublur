@@ -82,7 +82,7 @@ function saveModeToStorage(mode) {
  * @returns {Promise<string>} - 'blur' or 'solid'
  */
 function loadModeFromStorage() {
-    return new Promise(/** @param {(value: string) => void} resolve */ (resolve) => {
+    return new Promise((resolve) => {
         try {
             chrome.storage.sync.get([STORAGE_KEY, STORAGE_TIMESTAMP_KEY], (syncResult) => {
                 if (chrome.runtime && chrome.runtime.lastError) {
@@ -92,10 +92,10 @@ function loadModeFromStorage() {
                     if (chrome.runtime && chrome.runtime.lastError) {
                         localResult = {};
                     }
-                    const syncMode = /** @type {string | undefined} */ (syncResult[STORAGE_KEY]);
-                    const localMode = /** @type {string | undefined} */ (localResult[STORAGE_KEY]);
-                    const syncTimestamp = /** @type {number} */ (syncResult[STORAGE_TIMESTAMP_KEY] || 0);
-                    const localTimestamp = /** @type {number} */ (localResult[STORAGE_TIMESTAMP_KEY] || 0);
+                    const syncMode = syncResult[STORAGE_KEY];
+                    const localMode = localResult[STORAGE_KEY];
+                    const syncTimestamp = (syncResult[STORAGE_TIMESTAMP_KEY] || 0);
+                    const localTimestamp = (localResult[STORAGE_TIMESTAMP_KEY] || 0);
                     if (syncMode !== undefined && localMode !== undefined) {
                         if (syncTimestamp >= localTimestamp) {
                             resolve(syncMode);

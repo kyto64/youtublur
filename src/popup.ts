@@ -40,7 +40,7 @@ function initPopup() {
 
     document.querySelectorAll('input[name="bgMode"]').forEach((radio) => {
       radio.addEventListener('change', (e) => {
-        const mode = (e.target as HTMLInputElement).value;
+        const mode = (e.target as HTMLInputElement).value as BackgroundMode;
         saveModeToStorage(mode).then(() => {
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];

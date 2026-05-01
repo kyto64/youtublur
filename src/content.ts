@@ -2,7 +2,7 @@
 const BLUR_STRENGTH_PX = 40;
 
 // デバイス性能検出と動的な描画間隔の設定
-function detectDevicePerformance() {
+function detectDevicePerformance(): 'low' | 'medium' | 'high' {
   const cores = navigator.hardwareConcurrency || 4;
   const memory = navigator.deviceMemory || 4;
 
@@ -173,7 +173,7 @@ const geckoLayout = isGeckoLayoutEngine();
 let geckoVideoSnapCanvas: HTMLCanvasElement | null = null;
 let geckoVideoSnapCtx: CanvasRenderingContext2D | null = null;
 
-let currentMode = 'blur';
+let currentMode: BackgroundMode = 'blur';
 let blurCanvas: HTMLCanvasElement | null = null;
 let blurCtx: CanvasRenderingContext2D | null = null;
 let animationId: number | null = null;
@@ -247,7 +247,7 @@ function scheduleBlurInitRetryIfNeeded() {
   blurInitRetryTimer = setTimeout(attemptBlurInit, firstDelay);
 }
 
-function normalizeMode(mode: string): 'blur' | 'solid' {
+function normalizeMode(mode: string): BackgroundMode {
   return mode === 'solid' ? 'solid' : 'blur';
 }
 
@@ -735,7 +735,7 @@ if (typeof module !== 'undefined' && module.exports) {
     handleResize,
     initExtension,
     normalizeMode,
-    setMode: (m: string) => { currentMode = m; },
+    setMode: (m: BackgroundMode) => { currentMode = m; },
     getMode: () => currentMode,
     resetState: () => {
       currentMode = 'blur';
