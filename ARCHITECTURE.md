@@ -16,7 +16,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
                   ↑ DOM 操作 / 監視
                   ↓
 
-              content.js
+      content.js (compiled from src/content.ts)
   - ページの状態監視（プレイヤー、モード）
   - 背景への適用（単色/ブラー）
   - ストレージとの同期
@@ -32,7 +32,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
                   ↑ 読み取り
                   ↓
 
-           popup.js
+     popup.js (compiled from src/popup.ts)
   - UI の状態管理
   - モード切替（単色/ブラー/デフォルト）
   - カラーピッカー
@@ -51,7 +51,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 
 ### コア原則
 
-1. **グローバルスコープ**: ES modules を使用せず、グローバル変数で状態を管理
+1. **グローバルスコープ**: ES modules を使用せず、グローバル変数で状態を管理（TypeScript ソースは `src/*.ts`、`tsc` で flat script `.js` を root に出力）
 2. **最小権限**: `storage` と `activeTab` のみを使用
 3. **ブラウザ互換性**: Chrome (MV3) と Firefox (AMO) 両対応
 4. **宣言的マッチ**: マッチパターンは `*://*.youtube.com/*` のみ
@@ -66,17 +66,18 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - **キー**: `mode`, `color`, `timestamp`
 
 #### 2. ビジネスロジックレイヤー（中間）
-- **content.js**:
+- **`src/content.ts` → `content.js`**:
   - YouTube ページでのみ動作
   - プレイヤー要素の検出と監視
   - 背景へのスタイル適用（単色/ブラー）
   - ダークモード検出による自動調整
-- **storage-mode.js**:
+- **`src/storage-mode.ts` → `storage-mode.js`**:
   - ストレージ間の競合解決（sync vs local）
   - タイムスタンプベースの勝者決定
+  - `BackgroundMode = 'blur' | 'solid'` 型に基づく型安全なAPI
 
 #### 3. UI レイヤー（最上位）
-- **popup.js**:
+- **`src/popup.ts` → `popup.js`**:
   - ポップアップ UI の状態管理
   - モード切替ハンドラ
   - カラーピッカーの同期
@@ -94,10 +95,11 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 プロジェクトは外部の JavaScript ライブラリに依存せず、純粋なブラウザ拡張として動作します。
 
 開発・ビルドツール:
-- **Vite**: 開発サーバーとバンドル
+- **TypeScript**: ソースコードは `src/*.ts`（`strict: true`）。`tsc` で root の flat script `.js` に出力（マニフェスト互換）
+- **`@types/chrome`**: 拡張機能 API の型定義
+- **Vite+**: テストランナー（Vitest 互換）
 - **JSDOM**: テスト環境
 - **Playwright**: E2E テスト
-- **Vitest**: テストランナー
 
 ### ブラウザ API
 
@@ -201,13 +203,14 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 
 - 各ファイルは 150 行以内（例外あり）
 - グローバル変数の衝突を防ぐため、必要最小限のスコープを使用
-- すべての公開関数は JSDoc でドキュメント化
+- すべての公開関数は TypeScript の型注釈で契約を明示（JSDoc は補足のみ）
 - 変更時は必ずユニットテストを追加または更新
 
 ## テスト戦略
 
-- **ユニットテスト**: content.js と popup.js のコアロジック（jsdom + Vitest）
-- **統合テスト**: ストレージ同期ロジック（storage-mode.js）
+- **型チェック**: `pnpm typecheck`（`tsc --noEmit`、`strict: true`）— CI/`pretest` で自動実行
+- **ユニットテスト**: `src/content.ts` / `src/popup.ts` のコアロジック（jsdom + Vitest、コンパイル後の `.js` を読み込む）
+- **統合テスト**: ストレージ同期ロジック（`src/storage-mode.ts`）
 - **E2E テスト**: ブラウザ環境での実際の動作確認（Playwright）
 
 ## パフォーマンス考慮

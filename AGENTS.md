@@ -54,8 +54,9 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 | 項目 | 詳細 |
 |------|------|
-| 言語 | JavaScript（ES modules 不使用、グローバルスコープ） |
-| ユニットテスト | Vite+（`pnpm test`）+ jsdom |
+| 言語 | TypeScript（`src/*.ts`、`strict: true`）→ `tsc` で root に flat script `.js` を出力 |
+| ビルド | `pnpm build` (`tsc`) / `pnpm build:watch` / `pnpm typecheck` |
+| ユニットテスト | Vite+（`pnpm test`）+ jsdom（`pretest` で自動コンパイル） |
 | E2E テスト | Playwright（`pnpm run test:e2e`） |
 | Lint | `pnpm exec vp lint` |
 | パッケージ管理 | pnpm（`packageManager` フィールド固定） |
@@ -65,7 +66,9 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 | 作業 | コマンド |
 |------|----------|
-| ユニットテスト | `pnpm test` |
+| 型チェック | `pnpm typecheck` |
+| ビルド（TS → JS） | `pnpm build` / 監視モード `pnpm build:watch` |
+| ユニットテスト | `pnpm test`（pretest で自動 `tsc`） |
 | カバレッジ付きユニットテスト | `pnpm run test:coverage`（レポートは `coverage/`） |
 | E2E テスト | `pnpm run test:e2e` |
 | Lint | `pnpm exec vp lint` |
@@ -78,7 +81,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 1. **[`manifest.json`](./manifest.json)** - 権限、マッチパターン、バージョン、正確性
 2. **[browser-extension.mdc](./.cursor/rules/browser-extension.mdc)** - MV3 制約、Firefox AMO 要件
 3. **[locales.mdc](./.cursor/rules/locales.mdc)** - i18n キー追加・更新ルール
-4. **[content.js](./content.js) / [popup.js](./popup.js)** - 主要ビジネスロジック
+4. **[src/content.ts](./src/content.ts) / [src/popup.ts](./src/popup.ts) / [src/storage-mode.ts](./src/storage-mode.ts)** - 主要ビジネスロジック（root の同名 `.js` はコンパイル成果物。直接編集しない）
 5. **[docs/release.md](./docs/release.md)** - リリース手順
 
 ## ドキュメント構造
@@ -106,8 +109,12 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 | 用途 | パス |
 |------|------|
-| コンテンツロジック | [`content.js`](./content.js), [`content.test.js`](./content.test.js) |
-| ポップアップ UI | [`popup.html`](./popup.html), [`popup.js`](./popup.js), [`popup.test.js`](./popup.test.js) |
+| コンテンツロジック | [`src/content.ts`](./src/content.ts), [`content.test.js`](./content.test.js) |
+| ポップアップ UI | [`popup.html`](./popup.html), [`src/popup.ts`](./src/popup.ts), [`popup.test.js`](./popup.test.js) |
+| ストレージユーティリティ | [`src/storage-mode.ts`](./src/storage-mode.ts) |
+| 型定義（拡張グローバル / `BackgroundMode`） | [`globals.d.ts`](./globals.d.ts) |
+| TS 設定 | [`tsconfig.json`](./tsconfig.json) |
+| コンパイル成果物（編集禁止） | `content.js`, `popup.js`, `storage-mode.js`（manifest 参照先） |
 | スタイル | [`style.css`](./style.css) |
 | マニフェスト | [`manifest.json`](./manifest.json) |
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |
