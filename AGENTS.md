@@ -4,13 +4,6 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 この AGENTS.md はエージェントがリポジトリを理解するためのマップです。詳細は各ドキュメントを参照してください。
 
-## クイックスタート
-
-- **開発手順**: [AGENTS.md#開発手順](./AGENTS.md#開発手順)
-- **アーキテクチャ**: [ARCHITECTURE.md](./ARCHITECTURE.md)
-- **コーディング標準**: [.cursor/rules](./.cursor/rules/)
-- **リリース手順**: [docs/release.md](./docs/release.md)
-
 ## リポジトリ構造
 
 ```
@@ -40,13 +33,14 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 1. **ブランチ作成**: `git worktree add -b feature/<name> ../youtublur-<name> master`
 2. **依存インストール**: `cd ../youtublur-<name> && pnpm install`
 3. **実装**: コードを変更
-4. **テスト**: `pnpm test` でユニットテスト実行
-5. **Lint**: `pnpm exec vp lint` でコード品質チェック
-6. **E2E テスト（必要時）**: `pnpm run test:e2e`
-7. **コミット**: `git add -A && git commit -m "type: message"`
-8. **プッシュ**: `git push -u origin feature/branch-name`
-9. **PR 作成**: `gh pr create`
-10. **Cleanup**: `git worktree remove ../youtublur-<name>`
+4. **ドキュメント更新**: 変更に応じて関連ドキュメント（ARCHITECTURE.md、DESIGN.md、docs/ 内、または AGENTS.md）を更新
+5. **テスト**: `pnpm test` でユニットテスト実行
+6. **Lint**: `pnpm exec vp lint` でコード品質チェック
+7. **E2E テスト（必要時）**: `pnpm run test:e2e`
+8. **コミット**: `git add -A && git commit -m "type: message"`
+9. **プッシュ**: `git push -u origin feature/branch-name`
+10. **PR 作成**: `gh pr create`
+11. **Cleanup**: `git worktree remove ../youtublur-<name>`
 
 詳しくは [implementation.mdc](./.cursor/rules/implementation.mdc) を参照。
 
@@ -133,6 +127,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 - **i18n キー管理**: 全ロケール（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）でキー定義
 - **zip 同期**: リリース zip の変更は `.github/workflows/publish.yml` にも反映
 - **CLI 使用**: GitHub 操作は `gh` CLI のみ
+- **ドキュメント更新**: コード変更に合わせて関連ドキュメント（ARCHITECTURE.md、DESIGN.md、AGENTS.md など）も必ず更新する
 
 ### Don't（禁止・注意事項）
 
@@ -142,6 +137,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 - **REST API / PAT / ブラウザ操作**: `gh` CLI のみを使用
 - **description 省略不可**: i18n キーには `message` と `description` を必須
 - **E2E テスト無視**: 主要ユーザーストーリーは e2e でカバー
+- **ドキュメント更新の怠り**: コード変更時にドキュメントも更新する（実装とドキュメントの乖離を防ぐ）
 
 ## リリース手順
 
