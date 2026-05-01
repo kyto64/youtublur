@@ -108,8 +108,8 @@ function pollStorageForChanges() {
 
 ## ファイルサイズ制限
 
-- **コンテンツスクリプト（content.js）**: 200 行以内
-- **ポップアップスクリプト（popup.js）**: 200 行以内
+- **コンテンツスクリプト（`src/content.ts`）**: 800 行程度を目安（描画ロジックを含むため例外的に大きい）
+- **ポップアップスクリプト（`src/popup.ts`）**: 200 行以内
 - **ユーティリティファイル**: 150 行以内
 - **テストファイル**: 400 行以内
 
@@ -263,9 +263,10 @@ function applyBackground(mode, color, target = document.body) {
 
 | 変更箇所 | 影響を受ける可能性のあるエリア | 確認すべき事項 |
 |----------|------------------------------|----------------|
-| content.js | すべての YouTube ページ | E2E テスト、パフォーマンス、メモリリーク |
-| popup.js | 拡張機能アイクリック時の UI | UI テスト、アクセシビリティ |
-| storage-mode.js | ストレージ同期ロジック | 同期競合、データ整合性 |
+| `src/content.ts` | すべての YouTube ページ | E2E テスト、パフォーマンス、メモリリーク |
+| `src/popup.ts` | 拡張機能アイクリック時の UI | UI テスト、アクセシビリティ |
+| `src/storage-mode.ts` | ストレージ同期ロジック | 同期競合、データ整合性 |
+| `globals.d.ts` / `tsconfig.json` | 型契約 / コンパイル設定 | `pnpm typecheck` のクリーン維持 |
 | style.css | ポップアップの視覚デザイン | クロスブラウザ表示、アクセシビリティ |
 | manifest.json | 拡張機能全体 | 権限、マッチパターン、ブラウザ互換性 |
 

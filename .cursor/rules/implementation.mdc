@@ -1,8 +1,8 @@
 ---
 description: コード実装時のルール（worktree、lint、テスト、AI駆動開発）
 globs:
-  - "content.js"
-  - "popup.js"
+  - "src/**/*.ts"
+  - "globals.d.ts"
   - "popup.html"
   - "style.css"
   - "*.test.js"
@@ -80,8 +80,8 @@ alwaysApply: true
 - エラーは適切にログに記録
 
 ## ファイルサイズ制限
-- **コンテンツスクリプト（content.js）**: 原則 200 行以内
-- **ポップアップスクリプト（popup.js）**: 原則 200 行以内
+- **コンテンツスクリプト（`src/content.ts`）**: 描画ロジックを含むため 800 行程度を上限の目安
+- **ポップアップスクリプト（`src/popup.ts`）**: 原則 200 行以内
 - **ユーティリティファイル**: 原則 150 行以内
 - **テストファイル**: 原則 400 行以内
 
@@ -89,9 +89,10 @@ alwaysApply: true
 1. **worktree を作成**（master では作業しない）：`git worktree add -b feature/branch-name ../youtublur-<name> master`
 2. worktree ディレクトリに移動：`cd ../youtublur-<name>`
 3. **依存関係をインストール**：`pnpm install`
-4. コードを変更・実装
-5. `pnpm exec vp lint` を実行し、警告・エラーを解消する
-6. `pnpm test` を実行し、すべて通過することを確認
+4. コードを変更・実装（編集対象は `src/*.ts`。root の `.js` はコンパイル成果物のため直接編集しない）
+5. `pnpm typecheck` を実行し、型エラーを解消する
+6. `pnpm exec vp lint` を実行し、警告・エラーを解消する
+7. `pnpm test` を実行し、すべて通過することを確認（`pretest` で `tsc` が自動実行される）
 7. `pnpm run test:e2e` も必要に応じて実行（UI 変更時）
 8. コミット: `git add -A && git commit -m "type: message"`
 9. プッシュ: `git push -u origin feature/branch-name`

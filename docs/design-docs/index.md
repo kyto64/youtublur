@@ -26,7 +26,7 @@
 ```
 ユーザーインターフェース層 (ポップアップ)
     ↓
-ビジネスロジック層 (content.js)
+ビジネスロジック層 (src/content.ts → content.js)
     ↓
 データ永続化層 (chrome.storage)
 ```

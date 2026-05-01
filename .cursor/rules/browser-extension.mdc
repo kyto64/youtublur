@@ -2,8 +2,7 @@
 description: ブラウザ拡張（Chrome/Firefox）の制約と CI との整合
 globs:
   - "manifest.json"
-  - "content.js"
-  - "popup.js"
+  - "src/**/*.ts"
   - "popup.html"
   - "style.css"
 alwaysApply: false
@@ -21,6 +20,11 @@ alwaysApply: false
 - リリース zip: extension.zip と extension-firefox.zip の両方を生成
 
 ## 共通
-- リリース zip: .github/workflows/publish.yml のファイル一覧と一致させる
+- リリース zip: .github/workflows/publish.yml のファイル一覧と一致させる（コンパイル済 `content.js`/`popup.js`/`storage-mode.js` を含めること）
 - バージョン: manifest.json の version は手動変更せず pnpm run release に任せる
 - 権限追加時はユーザーへの説明とストア審査への影響を考慮する
+
+## TypeScript
+- ソースは `src/*.ts`、`tsc` で root に flat script `.js` を出力（manifest 互換）
+- `tsconfig.json` は `strict: true`。`pnpm typecheck` がクリーン通過すること
+- mode 関連の引数・戻り値は `BackgroundMode = 'blur' | 'solid'` を使用（`globals.d.ts` 定義）

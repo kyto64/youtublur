@@ -16,13 +16,13 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 
    ブラウザアクション (拡張機能アイコン)
   - popup.html (UI)
-  - popup.js (ロジック)
+  - popup.js (ロジック / `src/popup.ts` からコンパイル)
   - style.css (スタイル)
 
 
 
    コンテンツスクリプト (YouTubeページで動作)
-  - content.js (メインロジック)
+  - content.js (メインロジック / `src/content.ts` からコンパイル)
   - DOM操作、スタイル適用
 
 
@@ -43,7 +43,7 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 
 ### コンポーネントの責務
 
-#### 1. ポップアップ（`popup.html` + `popup.js` + `style.css`）
+#### 1. ポップアップ（`popup.html` + `src/popup.ts` → `popup.js` + `style.css`）
 
 **責務:**
 - ユーザーインターフェースの提供
@@ -61,7 +61,7 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 - 非同期操作はPromiseベースで処理
 - 同期処理はUIをブロックしない
 
-#### 2. コンテンツスクリプト（`content.js`）
+#### 2. コンテンツスクリプト（`src/content.ts` → `content.js`）
 
 **責務:**
 - YouTube視聴ページでのみ実行
