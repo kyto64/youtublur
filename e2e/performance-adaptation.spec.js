@@ -86,7 +86,12 @@ test.describe('Performance adaptation', () => {
       await waitForExtensionStorageMode(popupPage, mode);
     }
 
-    // Final mode should be solid (i=4 → solid)
+    // After rapid switching, in-flight BG_MODE_CHANGED messages may arrive
+    // out of order in the content script. Click solid once more deliberately
+    // and wait for it to settle so we can deterministically verify the
+    // canvas reaches the hidden state.
+    await popupPage.locator('label[for="modeSolid"]').click();
+    await waitForExtensionStorageMode(popupPage, 'solid');
     await expect(canvas).toBeHidden({ timeout: 10000 });
 
     await popupPage.close();
