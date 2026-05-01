@@ -472,11 +472,9 @@ describe('content.js', () => {
 
       observePlayer();
 
-      // container も video も存在しない状態でタイマーが動いていること
       await vi.advanceTimersByTimeAsync(49);
       expect(document.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
 
-      // container + video を後から挿入
       const player = document.createElement('div');
       player.id = 'movie_player';
       player.appendChild(document.createElement('video'));
@@ -495,7 +493,6 @@ describe('content.js', () => {
       document.body.innerHTML = '<div id="movie_player"></div>';
       const player = document.getElementById('movie_player');
 
-      // video が無い状態 (canvas 未生成) でも属性が先行付与される
       observePlayer();
 
       expect(player.dataset.ytLightBgMode).toBe('blur');
@@ -675,6 +672,56 @@ describe('content.js', () => {
       expect(newCanvas).not.toBeNull();
       expect(newCanvas).not.toBe(originalCanvas);
     });
+
+    test('does not re-apply mode when stored mode matches current mode (else branch coverage)', async () => {
+      setMode('blur');
+      
+      const timestamp = Date.now();
+      const syncGet = vi.fn((_keys, cb) => {
+        cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: timestamp });
+      });
+      const localGet = vi.fn((_keys, cb) => {
+        cb({});
+      });
+      const syncSet = vi.fn((_data, cb) => { if (cb) cb(); });
+      
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: syncSet },
+          local: { get: localGet, set: vi.fn() }
+        },
+        runtime: {
+          onMessage: { addListener: vi.fn() }
+        }
+      });
+
+      document.body.innerHTML = '<div id="content"><div id="movie_player"></div></div>';
+      const player = document.getElementById('movie_player');
+      player.appendChild(document.createElement('video'));
+      
+      // Mock ResizeObserver
+      const observe = vi.fn();
+      const disconnect = vi.fn();
+      function MockResizeObserver() {
+        this.observe = observe;
+        this.disconnect = disconnect;
+      }
+      vi.stubGlobal('ResizeObserver', MockResizeObserver);
+      
+      vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+      vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+      
+      initExtension();
+      await Promise.resolve();
+      
+      // Verify that sync.set was NOT called (no need to re-save same mode)
+      // The else branch in initExtension's storage callback should prevent re-application
+      expect(syncSet).not.toHaveBeenCalled();
+      expect(getMode()).toBe('blur');
+      
+      vi.restoreAllMocks();
+      vi.unstubAllGlobals();
+    });
   });
 
   describe('storage functions', () => {
@@ -772,6 +819,35 @@ describe('content.js', () => {
       );
     });
 
+    test('loadModeFromStorage returns default blur when no data exists', async () => {
+      const syncGet = vi.fn((_keys, cb) => { cb({}); });
+      const localGet = vi.fn((_keys, cb) => { cb({}); });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        }
+      });
+
+      const mode = await loadModeFromStorage();
+      expect(mode).toBe('blur');
+    });
+
+    test('loadModeFromStorage handles storage error and returns default blur', async () => {
+      const syncGet = vi.fn((_keys, _cb) => {
+        throw new Error('Storage access failed');
+      });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: vi.fn(), set: vi.fn() }
+        }
+      });
+
+      const mode = await loadModeFromStorage();
+      expect(mode).toBe('blur');
+    });
+
     test('reconcileStorageCopies converges from fresh reads (winner by timestamp)', async () => {
       const storedSync = {
         playerBackgroundMode: 'blur',
@@ -816,20 +892,6 @@ describe('content.js', () => {
         }),
         expect.any(Function)
       );
-    });
-
-    test('loadModeFromStorage returns default blur when no data exists', async () => {
-      const syncGet = vi.fn((_keys, cb) => { cb({}); });
-      const localGet = vi.fn((_keys, cb) => { cb({}); });
-      vi.stubGlobal('chrome', {
-        storage: {
-          sync: { get: syncGet, set: vi.fn() },
-          local: { get: localGet, set: vi.fn() }
-        }
-      });
-
-      const mode = await loadModeFromStorage();
-      expect(mode).toBe('blur');
     });
 
     describe('动态绘制间隔功能', () => {
@@ -987,6 +1049,107 @@ describe('content.js', () => {
           Object.defineProperty(navigator, 'hardwareConcurrency', { value: originalHardwareConcurrency, configurable: true });
           Object.defineProperty(navigator, 'deviceMemory', { value: originalDeviceMemory, configurable: true });
         }
+      });
+    });
+
+    describe('theme observer', () => {
+      test('updates solid mode background color when theme changes', async () => {
+        setMode('solid');
+        
+        document.body.innerHTML = '<div id="movie_player"></div>';
+        const player = document.getElementById('movie_player');
+        
+        vi.stubGlobal('ResizeObserver', class {
+          observe() {}
+          disconnect() {}
+        });
+        
+        // Mock getComputedStyle
+        const originalGetComputedStyle = window.getComputedStyle;
+        window.getComputedStyle = vi.fn((el) => {
+          if (el === document.documentElement) {
+            return {
+              getPropertyValue: vi.fn((prop) => {
+                if (prop === '--yt-spec-base-background') {
+                  return document.documentElement.hasAttribute('dark')
+                    ? 'rgb(24, 24, 24)'
+                    : 'rgb(241, 241, 241)';
+                }
+                return '';
+              })
+            };
+          }
+          return originalGetComputedStyle(el);
+        });
+        
+        // Start with dark theme
+        document.documentElement.setAttribute('dark', '');
+        
+        initExtension();
+        await Promise.resolve();
+        
+        // Verify dark theme color is applied
+        expect(player.style.getPropertyValue('background-color')).toBe('rgb(24, 24, 24)');
+        
+        // Switch to light theme
+        document.documentElement.removeAttribute('dark');
+        await Promise.resolve();
+        
+        // Verify light theme color is applied
+        expect(player.style.getPropertyValue('background-color')).toBe('rgb(241, 241, 241)');
+        
+        window.getComputedStyle = originalGetComputedStyle;
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
+      });
+
+      test('theme observer handles element attribute changes with theme attribute', async () => {
+        setMode('solid');
+        
+        document.body.innerHTML = '<div id="movie_player"></div>';
+        const player = document.getElementById('movie_player');
+        
+        vi.stubGlobal('ResizeObserver', class {
+          observe() {}
+          disconnect() {}
+        });
+        
+        const originalGetComputedStyle = window.getComputedStyle;
+        window.getComputedStyle = vi.fn((el) => {
+          if (el === document.documentElement) {
+            return {
+              getPropertyValue: vi.fn((prop) => {
+                if (prop === '--yt-spec-base-background') {
+                  if (document.documentElement.hasAttribute('dark') || 
+                      document.documentElement.getAttribute('theme') === 'dark') {
+                    return 'rgb(24, 24, 24)';
+                  }
+                  return 'rgb(241, 241, 241)';
+                }
+                return '';
+              })
+            };
+          }
+          return originalGetComputedStyle(el);
+        });
+        
+        // Start with theme="dark"
+        document.documentElement.setAttribute('theme', 'dark');
+        
+        initExtension();
+        await Promise.resolve();
+        
+        expect(player.style.getPropertyValue('background-color')).toBe('rgb(24, 24, 24)');
+        
+        // Switch to theme="light"
+        document.documentElement.removeAttribute('theme');
+        await Promise.resolve();
+        
+        expect(player.style.getPropertyValue('background-color')).toBe('rgb(241, 241, 241)');
+        
+        window.getComputedStyle = originalGetComputedStyle;
+        vi.restoreAllMocks();
+        vi.unstubAllGlobals();
       });
     });
   });
