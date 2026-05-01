@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.0](https://github.com/kyto64/youtublur/compare/v1.11.0...v1.12.0) (2026-05-01)
+
+
+### Features
+
+* TypeScript 完全移行 (closes [#45](https://github.com/kyto64/youtublur/issues/45)) ([#72](https://github.com/kyto64/youtublur/issues/72)) ([c597921](https://github.com/kyto64/youtublur/commit/c5979219406a76b0e4ea01d6877a4378dca882c9))
+
 ## [1.11.0](https://github.com/kyto64/youtublur/compare/v1.10.0...v1.11.0) (2026-05-01)
 
 
