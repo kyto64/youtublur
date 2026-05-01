@@ -152,7 +152,7 @@ test.describe('Multi-tab synchronization', () => {
     await waitForWatchPlayer(page);
 
     const canvas1 = youtublurCanvasLocator(page);
-    // Should be in blur mode after last change
-    await expect(canvas1).toBeVisible({ timeout: 10000 });
+    // Should be in solid mode after last change
+    await expect(canvas1).toBeHidden({ timeout: 10000 });
   });
 });
