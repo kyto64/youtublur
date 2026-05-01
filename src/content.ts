@@ -20,13 +20,14 @@ function detectDevicePerformance(): 'low' | 'medium' | 'high' {
   return 'high';
 }
 
-let currentDrawInterval = 2; // デフォルト値
-const devicePerformance = detectDevicePerformance();
-if (devicePerformance === 'low') {
-  currentDrawInterval = 3;
-} else if (devicePerformance === 'high') {
-  currentDrawInterval = 1;
+function getInitialDrawInterval(): number {
+  const perf = detectDevicePerformance();
+  if (perf === 'low') return 3;
+  if (perf === 'high') return 1;
+  return 2;
 }
+
+let currentDrawInterval = getInitialDrawInterval();
 
 // FPS監視用変数
 let lastFrameTime = 0;
@@ -349,7 +350,7 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
   const videoAspect = vw / vh;
   const canvasAspect = cw / ch;
 
-  let sx, sy, sw, sh;
+  let sx: number, sy: number, sw: number, sh: number;
   if (videoAspect > canvasAspect) {
     sh = vh;
     sw = vh * canvasAspect;
@@ -751,14 +752,7 @@ if (typeof module !== 'undefined' && module.exports) {
       frameCount = 0;
       releaseGeckoVideoSnapCanvas();
       // 動的描画間隔関連の状態をリセット - デバイス性能を再検出
-      const devicePerformance = detectDevicePerformance();
-      if (devicePerformance === 'low') {
-        currentDrawInterval = 3;
-      } else if (devicePerformance === 'high') {
-        currentDrawInterval = 1;
-      } else {
-        currentDrawInterval = 2;
-      }
+      currentDrawInterval = getInitialDrawInterval();
       lastFrameTime = 0;
       frameTimes = [];
       adjustmentCooldown = 0;

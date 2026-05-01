@@ -24,14 +24,15 @@ function detectDevicePerformance() {
         return 'medium';
     return 'high';
 }
-let currentDrawInterval = 2; // デフォルト値
-const devicePerformance = detectDevicePerformance();
-if (devicePerformance === 'low') {
-    currentDrawInterval = 3;
+function getInitialDrawInterval() {
+    const perf = detectDevicePerformance();
+    if (perf === 'low')
+        return 3;
+    if (perf === 'high')
+        return 1;
+    return 2;
 }
-else if (devicePerformance === 'high') {
-    currentDrawInterval = 1;
-}
+let currentDrawInterval = getInitialDrawInterval();
 // FPS監視用変数
 let lastFrameTime = 0;
 let frameTimes = [];
@@ -711,16 +712,7 @@ if (typeof module !== 'undefined' && module.exports) {
             frameCount = 0;
             releaseGeckoVideoSnapCanvas();
             // 動的描画間隔関連の状態をリセット - デバイス性能を再検出
-            const devicePerformance = detectDevicePerformance();
-            if (devicePerformance === 'low') {
-                currentDrawInterval = 3;
-            }
-            else if (devicePerformance === 'high') {
-                currentDrawInterval = 1;
-            }
-            else {
-                currentDrawInterval = 2;
-            }
+            currentDrawInterval = getInitialDrawInterval();
             lastFrameTime = 0;
             frameTimes = [];
             adjustmentCooldown = 0;
