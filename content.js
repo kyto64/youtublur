@@ -285,7 +285,7 @@ function releaseGeckoVideoSnapCanvas() {
     try {
       geckoVideoSnapCanvas.width = 0;
       geckoVideoSnapCanvas.height = 0;
-    } catch (_) { /* noop */ }
+    } catch { /* noop */ }
   }
   geckoVideoSnapCanvas = null;
   geckoVideoSnapCtx = null;
@@ -536,7 +536,7 @@ function teardownPlayerPageBlur() {
     try {
       blurCanvas.width = 0;
       blurCanvas.height = 0;
-    } catch (_) { /* noop */ }
+    } catch { /* noop */ }
     blurCanvas.remove();
   }
   blurCanvas = null;
@@ -616,10 +616,12 @@ function installDocumentLifecycleHooks() {
         queueMicrotask(() => observePlayer());
       }
     });
-    // Firefox の bfcache 退避時や通常のアンロード時に canvas の backing store を確実に解放する。
-    // beforeunload は Gecko で bfcache を破棄してしまうため、pagehide のみフックする。
+    // Firefox の bfcache 退避時にアイドル状態のリソースを解放してメモリリークを防ぐ。
+    // ただしページ自体はまだ生存している可能性があるため blurCanvas は残し、描画ループと
+    // Gecko 専用の snap canvas のみを解放する。pageshow 復帰時に observePlayer が再開する。
     window.addEventListener('pagehide', () => {
-      teardownPlayerPageBlur();
+      stopBlurLoop();
+      releaseGeckoVideoSnapCanvas();
     });
   }
 }
