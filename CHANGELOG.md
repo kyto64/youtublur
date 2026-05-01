@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.11.0](https://github.com/kyto64/youtublur/compare/v1.10.0...v1.11.0) (2026-05-01)
+
+
+### Features
+
+* add GitHub issue resolver skill ([#60](https://github.com/kyto64/youtublur/issues/60)) ([a4b9324](https://github.com/kyto64/youtublur/commit/a4b93241966daf45d5f31e04442e0e4e412ef408))
+* add manual /gemini-auto-fix trigger via PR comment ([#65](https://github.com/kyto64/youtublur/issues/65)) ([98de542](https://github.com/kyto64/youtublur/commit/98de5425fdf405e81c3288893f69848098b1cea5))
+* AI駆動ドキュメント整備 - OpenAI Harness Engineeringに基づくリポジトリ構造の構築 ([#67](https://github.com/kyto64/youtublur/issues/67)) ([0c8764e](https://github.com/kyto64/youtublur/commit/0c8764eda272b2d40fdcc88424a730cb29ee3a74))
+
+
+### Bug Fixes
+
+* correct convergence detection and use setup-vp in gemini-auto-fix ([#62](https://github.com/kyto64/youtublur/issues/62)) ([8ec8741](https://github.com/kyto64/youtublur/commit/8ec8741c669c1a57daa72c2fdab7d1367cd7523d))
+* Firefox の geckoVideoSnapCanvas を確実にクリーンアップ ([#41](https://github.com/kyto64/youtublur/issues/41)) ([#71](https://github.com/kyto64/youtublur/issues/71)) ([d8de43f](https://github.com/kyto64/youtublur/commit/d8de43f9d353de52c107b33aff79bb7a79a89a94))
+* improve gemini-auto-fix workflow to actually apply fixes ([#63](https://github.com/kyto64/youtublur/issues/63)) ([37a43ac](https://github.com/kyto64/youtublur/commit/37a43acd4924a603dde277ef6be338f968a1e112))
+* resolve issue [#68](https://github.com/kyto64/youtublur/issues/68) - expand E2E test coverage ([#69](https://github.com/kyto64/youtublur/issues/69)) ([fa1418c](https://github.com/kyto64/youtublur/commit/fa1418c77a98661f2a0ba1212faa1e76df6c965f))
+* use setup-vp in gemini-auto-fix workflow ([#61](https://github.com/kyto64/youtublur/issues/61)) ([c317881](https://github.com/kyto64/youtublur/commit/c317881262427fa2272dcc3963de9b8e5bdf5bc2))
+
 ## [1.10.0](https://github.com/kyto64/youtublur/compare/v1.9.0...v1.10.0) (2026-04-29)
 
 
