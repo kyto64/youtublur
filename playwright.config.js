@@ -9,8 +9,8 @@ module.exports = defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? '50%' : undefined,
-  reporter: process.env.CI ? [['blob'], ['github']] : 'html',
+  workers: process.env.CI ? '100%' : undefined,
+  reporter: process.env.CI ? [['blob'], ['github'], ['list']] : 'html',
   use: {
     actionTimeout: 0,
     trace: 'on-first-retry',
