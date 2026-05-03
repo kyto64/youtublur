@@ -738,13 +738,43 @@ describe('content.js', () => {
       vi.stubGlobal('chrome', {
         storage: {
           sync: { get: vi.fn(), set: syncSet },
-          local: { get: vi.fn(), set: vi.fn() }
-        }
+          local: { get: vi.fn(), set: vi.fn((_data, cb) => { if (cb) cb(); }) }
+        },
+        runtime: { lastError: undefined }
       });
 
       const result = await saveModeToStorage('blur');
       expect(result).toBe(true);
       expect(syncSet).toHaveBeenCalledWith(
+        expect.objectContaining({ playerBackgroundMode: 'blur' }),
+        expect.any(Function)
+      );
+    });
+
+    test('saveModeToStorage does not write local until sync callback runs', async () => {
+      let finishSync = () => {};
+      const syncSet = vi.fn((_data, cb) => {
+        finishSync = () => {
+          if (cb) cb();
+        };
+      });
+      const localSet = vi.fn((_data, cb) => {
+        if (cb) cb();
+      });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: vi.fn(), set: syncSet },
+          local: { get: vi.fn(), set: localSet }
+        },
+        runtime: { lastError: undefined }
+      });
+
+      const p = saveModeToStorage('blur');
+      await Promise.resolve();
+      expect(localSet).not.toHaveBeenCalled();
+      finishSync();
+      await p;
+      expect(localSet).toHaveBeenCalledWith(
         expect.objectContaining({ playerBackgroundMode: 'blur' }),
         expect.any(Function)
       );
@@ -757,12 +787,12 @@ describe('content.js', () => {
         storage: {
           sync: { get: vi.fn(), set: syncSet },
           local: { get: vi.fn(), set: localSet }
-        }
+        },
+        runtime: { lastError: undefined }
       });
 
       const result = await saveModeToStorage('solid');
       expect(result).toBe(false);
-      // local.set is called twice: once at start (no callback), once in catch block (with callback)
       expect(localSet).toHaveBeenCalled();
       // Check that localSet was called with the correct data (at least once)
       const calls = localSet.mock.calls;

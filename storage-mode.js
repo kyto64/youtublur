@@ -56,24 +56,38 @@ function reconcileStorageCopies() {
 function saveModeToStorage(mode) {
     const timestamp = Date.now();
     const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
-    // Always update local storage to ensure a reliable fallback is available
-    chrome.storage.local.set(data);
+    // Persist local *after* sync completes so concurrent load/reconcile never reads
+    // stale local while sync already holds the newer value (would resurrect old mode).
     return new Promise((resolve) => {
         try {
             chrome.storage.sync.set(data, () => {
-                const lastError = chrome.runtime && chrome.runtime.lastError;
-                if (lastError) {
-                    console.warn('Sync storage failed:', lastError);
-                    resolve(false);
+                const syncError = chrome.runtime && chrome.runtime.lastError;
+                if (syncError) {
+                    console.warn('Sync storage failed:', syncError);
                 }
-                else {
-                    resolve(true);
-                }
+                chrome.storage.local.set(data, () => {
+                    const localError = chrome.runtime && chrome.runtime.lastError;
+                    if (localError) {
+                        console.warn('Local storage failed:', localError);
+                    }
+                    resolve(!syncError);
+                });
             });
         }
         catch (error) {
             console.warn('Sync storage failed:', error);
-            resolve(false);
+            try {
+                chrome.storage.local.set(data, () => {
+                    if (chrome.runtime && chrome.runtime.lastError) {
+                        console.warn('Local storage failed:', chrome.runtime.lastError);
+                    }
+                    resolve(false);
+                });
+            }
+            catch (localErr) {
+                console.warn('Local storage failed:', localErr);
+                resolve(false);
+            }
         }
     });
 }
