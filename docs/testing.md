@@ -136,35 +136,44 @@ const mockChrome = {
 ```javascript
 import { test, expect } from '@playwright/test';
 
-test.describe('youyoutublur E2Eテスト', () => {
+test.describe('youtublur E2Eテスト', () => {
   test('ブラーモードに切り替える', async ({ page }) => {
     // YouTubeページに移動
     await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
     
     // 拡張機能ポップアップを開く（テスト用のトリガーを使用）
+    // 注意: このテストを動作させるには、src/content.ts に以下のリスナー実装が必要です:
+    // window.addEventListener('message', (event) => {
+    //   if (event.data.type === 'TEST_SET_MODE') {
+    //     applyMode(event.data.mode);
+    //   }
+    // });
     await page.evaluate(() => {
       window.postMessage({ type: 'TEST_SET_MODE', mode: 'blur' }, '*');
     });
     
     // 背景がブラーになることを確認
     const player = await page.$('#movie_player');
-    const hasBlurCanvas = await player.$('#yt-light-bg-blur-canvas');
-    expect(hasBlurCanvas).not.toBeNull();
+    await expect(player.locator('#yt-light-bg-blur-canvas')).toBeVisible();
   });
 
   test('単色モードに切り替える', async ({ page }) => {
     await page.goto('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
     
+    // 拡張機能ポップアップを開く（テスト用のトリガーを使用）
+    // 注意: このテストを動作させるには、src/content.ts に以下のリスナー実装が必要です:
+    // window.addEventListener('message', (event) => {
+    //   if (event.data.type === 'TEST_SET_MODE') {
+    //     applyMode(event.data.mode);
+    //   }
+    // });
     await page.evaluate(() => {
       window.postMessage({ type: 'TEST_SET_MODE', mode: 'solid' }, '*');
     });
     
     // 背景色が適用されていることを確認
     const player = await page.$('#movie_player');
-    const backgroundColor = await player.evaluate((el) => {
-      return window.getComputedStyle(el).backgroundColor;
-    });
-    expect(backgroundColor).toContain('24, 24, 24'); // #181818
+    await expect(player).toHaveCSS('background-color', 'rgb(24, 24, 24)'); // #181818
   });
 });
 ```

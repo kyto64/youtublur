@@ -273,8 +273,9 @@ git push --follow-tags origin master
 pnpm typecheck
 
 # 依存関係の再インストール
-# 警告: 実行前に重要なファイルがないか確認してください。worktreeを使用している場合は先に git worktree remove を実行してください。
-rm -rf node_modules pnpm-lock.yaml
+# 注意: pnpm-lock.yaml を削除すると依存パッケージのバージョンが意図せず変わるリスクがあります。
+# 通常は node_modules の削除だけで解決することが多いため、ロックファイルは削除しないことを推奨します。
+rm -rf node_modules
 pnpm install
 ```
 
