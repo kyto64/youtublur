@@ -34,13 +34,13 @@ pnpm test
 
 ```bash
 # 新しい機能の場合
-git worktree add -b feature/機能名 ../youtublur-機能名 master
+git worktree add -b feature/<name> ../youtublur-<name> master
 
 # 既存のブランチの場合
-git worktree add ../youtublur-機能名 ブランチ名
+git worktree add ../youtublur-<name> <branch-name>
 
 # worktree に移動
-cd ../youtublur-機能名
+cd ../youtublur-<name>
 
 # 依存関係をインストール
 pnpm install
@@ -273,6 +273,7 @@ git push --follow-tags origin master
 pnpm typecheck
 
 # 依存関係の再インストール
+# 警告: 実行前に重要なファイルがないか確認してください。worktreeを使用している場合は先に git worktree remove を実行してください。
 rm -rf node_modules pnpm-lock.yaml
 pnpm install
 ```

@@ -80,7 +80,7 @@ describe('detectYouTubeTheme', () => {
 describe('loadModeFromStorage', () => {
   it('ストレージからモードを読み込む', async () => {
     // モックの設定
-    chrome.storage.sync.get = jest.fn((keys, callback) => {
+    chrome.storage.sync.get = vi.fn((keys, callback) => {
       callback({ [STORAGE_KEY]: 'solid', [STORAGE_TIMESTAMP_KEY]: 1234567890 });
     });
 
@@ -105,22 +105,22 @@ describe('loadModeFromStorage', () => {
 const mockChrome = {
   storage: {
     sync: {
-      get: jest.fn(),
-      set: jest.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
     },
     local: {
-      get: jest.fn(),
-      set: jest.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
     },
   },
   runtime: {
     lastError: null,
     onMessage: {
-      addListener: jest.fn(),
+      addListener: vi.fn(),
     },
   },
   tabs: {
-    query: jest.fn(),
+    query: vi.fn(),
   },
 };
 ```
@@ -304,23 +304,23 @@ global.navigator = window.navigator;
 global.chrome = {
   storage: {
     sync: {
-      get: jest.fn(),
-      set: jest.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
     },
     local: {
-      get: jest.fn(),
-      set: jest.fn(),
+      get: vi.fn(),
+      set: vi.fn(),
     },
   },
   runtime: {
     lastError: null,
     onMessage: {
-      addListener: jest.fn(),
+      addListener: vi.fn(),
     },
-    sendMessage: jest.fn(),
+    sendMessage: vi.fn(),
   },
   tabs: {
-    query: jest.fn(),
+    query: vi.fn(),
   },
 };
 ```
@@ -345,7 +345,7 @@ export function createMockCanvas() {
     height: 600,
     style: {},
     getContext: () => ({
-      drawImage: jest.fn(),
+      drawImage: vi.fn(),
       filter: '',
     }),
   };
@@ -356,7 +356,7 @@ export function createMockPlayer() {
     style: {},
     dataset: {},
     querySelector: () => createMockVideo(),
-    insertBefore: jest.fn(),
+    insertBefore: vi.fn(),
     clientWidth: 1280,
     clientHeight: 720,
   };
