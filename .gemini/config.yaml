@@ -10,7 +10,8 @@ enabled_features:
 
 code_review:
   # 重要度の低い（LOW）コメントを抑制し、重要な指摘に集中させる
-  comment_severity_threshold: MEDIUM
+  # MEDIUM では主観的なスタイル指摘が多く収束しないため HIGH に変更
+  comment_severity_threshold: HIGH
   # コメントが多すぎると矛盾が生じやすいため上限を設定（必要に応じて調整）
   max_review_comments: 10
 
