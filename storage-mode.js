@@ -56,24 +56,37 @@ function reconcileStorageCopies() {
 function saveModeToStorage(mode) {
     const timestamp = Date.now();
     const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
-    // Always update local storage to ensure a reliable fallback is available
-    chrome.storage.local.set(data);
+    // Persist local *after* sync completes so concurrent load/reconcile never reads
+    // stale local while sync already holds the newer value (would resurrect old mode).
     return new Promise((resolve) => {
+        const finalize = (syncSuccess) => {
+            try {
+                chrome.storage.local.set(data, () => {
+                    const localError = chrome.runtime && chrome.runtime.lastError;
+                    if (localError) {
+                        console.warn('Local storage failed:', localError);
+                    }
+                    resolve(syncSuccess);
+                });
+            }
+            catch (err) {
+                // sync は成功していても local.set が同期的に失敗し得る。戻り値は「sync が書けたか」の契約のため syncSuccess を維持する。
+                console.warn('Local storage failed:', err);
+                resolve(syncSuccess);
+            }
+        };
         try {
             chrome.storage.sync.set(data, () => {
-                const lastError = chrome.runtime && chrome.runtime.lastError;
-                if (lastError) {
-                    console.warn('Sync storage failed:', lastError);
-                    resolve(false);
+                const syncError = chrome.runtime && chrome.runtime.lastError;
+                if (syncError) {
+                    console.warn('Sync storage failed:', syncError);
                 }
-                else {
-                    resolve(true);
-                }
+                finalize(!syncError);
             });
         }
         catch (error) {
             console.warn('Sync storage failed:', error);
-            resolve(false);
+            finalize(false);
         }
     });
 }
