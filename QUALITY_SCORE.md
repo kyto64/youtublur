@@ -4,20 +4,20 @@
 
 ## 品質メトリクス
 
-### 現在のスコア（2026年4月30日）
+### 現在のスコア（2026年5月1日）
 
 | カテゴリ | スコア | 満点 | ステータス | 評価 |
 |----------|--------|------|------------|------|
 | **テストカバレッジ** | 81% | 100% | 🟡 中 | 単体テスト充実、E2Eテスト追加 |
 | **コード品質** | 92/100 | 100 | 🟢 良好 | Lintエラーなし、構造は明確 |
-| **ドキュメント** | 65/100 | 100 | 🟡 中 | 基本は揃った、詳細不足 |
+| **ドキュメント** | 85/100 | 100 | 🟢 良好 | 開発/UI/UX/テストガイド追加、基本網羅 |
 | **アーキテクチャ** | 85/100 | 100 | 🟢 良好 | 明確な境界、拡張性あり |
 | **セキュリティ** | 95/100 | 100 | 🟢 良好 | 最小権限、XSS対策済み |
 | **保守性** | 80/100 | 100 | 🟡 中 | コードは読みやすい、一部技術的負債あり |
 | **パフォーマンス** | 88/100 | 100 | 🟢 良好 | 軽量、応答迅速 |
 | **互換性** | 90/100 | 100 | 🟢 良好 | Chrome/Firefox両対応、MV3準拠 |
 | **自動化** | 75/100 | 100 | 🟡 中 | CI/CDは動作、手動プロセスあり |
-| **全体的品質** | **84/100** | **100** | **🟢 良好** | **良好、継続的改善** |
+| **全体的品質** | **88/100** | **100** | **🟢 良好** | **良好、継続的改善** |
 
 ### 直近のトレンド
 
@@ -70,8 +70,9 @@
 - ✅ **2026-04-25**: リリースプロセスの完全自動化
 - ✅ **2026-04-28**: E2Eテストの2件追加（モード切替、保存/復元）
 - ✅ **2026-05-01**: TypeScript 型チェック導入（JSDoc + `checkJs`、`pnpm typecheck`、`@types/chrome`） — TD-005 フェーズ1
-- ✅ **2026-05-01**: TypeScript 完全移行（`src/*.ts` を tsc で root の flat script `.js` へコンパイル、`pretest` で自動ビルド） — TD-005 フェーズ2
+- ✅ **2026-05-01**: TypeScript 完全移行（`src/*.ts` を `tsc` で root の flat script `.js` へコンパイル、`pretest` で自動ビルド） — TD-005 フェーズ2
 - ✅ **2026-05-01**: `tsconfig` で `strict: true` を有効化（`noImplicitAny`/`strictNullChecks` 含む） — TD-005 フェーズ3
+- ✅ **2026-05-01**: ドキュメント拡充（開発ガイド、UI/UXガイド、テストガイドの追加） - ドキュメントスコア向上
 
 ### 最近の懸念事項
 
@@ -84,10 +85,16 @@
 ### 今後の改善ロードマップ
 
 #### Q2 2026（直近の目標）
+
 - [x] **E2Eテストの網羅**（TD-001）
   - すべての主要ユーザーストーリーをカバー
   - テスト実行時間を3分以内に抑える
-- [ ] **グローバル変数の整理**（TD-002）
+- [x] **ドキュメント拡充**（EP-2026-001）
+  - 開発ガイド（docs/development.md）の作成
+  - UI/UXガイド（docs/ui-ux.md）の作成
+  - テストガイド（docs/testing.md）の作成
+  - 既存ドキュメントの整理と更新
+- [ ] **グローバル汚染の解消**（TD-002）
   - content.jsとpopup.jsのモジュール化
   - 名前空間の導入またはIIFEの適用
 - [ ] **エラーハンドリングの強化**（TD-003）
@@ -95,6 +102,7 @@
   - ユーザーフレンドリーなエラーメッセージの追加
 
 #### Q3 2026（中期的目標）
+
 - [ ] **TypeScriptの導入**（TD-005）
   - 段階的な移行プランの策定
   - 新規コードからTypeScript適用
@@ -103,6 +111,7 @@
   - 定期的なパフォーマンスレビュー
 
 #### Q4 2026（長期的目標）
+
 - [ ] **アーキテクチャの再評価**
   - コンポーネントの分割可能性
   - マイクロフロントエンド的アプローチの検討
@@ -118,7 +127,7 @@
 [![Tests](https://github.com/kyto64/youtublur/actions/workflows/test.yml/badge.svg)](https://github.com/kyto64/youtublur/actions/workflows/test.yml)
 [![Lint](https://github.com/kyto64/youtublur/actions/workflows/lint.yml/badge.svg)](https://github.com/kyto64/youtublur/actions/workflows/lint.yml)
 [![E2E](https://github.com/kyto64/youtublur/actions/workflows/e2e.yml/badge.svg)](https://github.com/kyto64/youtublur/actions/workflows/e2e.yml)
-[![Quality Score](https://img.shields.io/badge/quality-83%2F100-yellow)](QUALITY_SCORE.md)
+[![Quality Score](https://img.shields.io/badge/quality-88%2F100-yellow)](QUALITY_SCORE.md)
 ```
 
 ### 品質ゲート
