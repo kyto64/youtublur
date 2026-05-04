@@ -266,6 +266,25 @@ describe('storage functions', () => {
     );
   });
 
+  test('saveModeToStorage returns true when sync succeeds even if local.set throws synchronously', async () => {
+    const syncSet = vi.fn((data, cb) => {
+      if (cb) cb();
+    });
+    const localSet = vi.fn(() => {
+      throw new Error('local set sync throw');
+    });
+    vi.stubGlobal('chrome', {
+      storage: {
+        sync: { get: vi.fn((keys, cb) => { if (cb) cb({}); }), set: syncSet },
+        local: { get: vi.fn((keys, cb) => { if (cb) cb({}); }), set: localSet }
+      },
+      runtime: { lastError: undefined }
+    });
+
+    const result = await saveModeToStorage('blur');
+    expect(result).toBe(true);
+  });
+
   test('saveModeToStorage falls back to local storage on sync failure', async () => {
     const syncSet = vi.fn(() => { throw new Error('sync failed'); });
     const localSet = vi.fn((data, cb) => { if (cb) cb(); });

@@ -70,8 +70,9 @@ function saveModeToStorage(mode) {
                 });
             }
             catch (err) {
+                // sync は成功していても local.set が同期的に失敗し得る。戻り値は「sync が書けたか」の契約のため syncSuccess を維持する。
                 console.warn('Local storage failed:', err);
-                resolve(false);
+                resolve(syncSuccess);
             }
         };
         try {
