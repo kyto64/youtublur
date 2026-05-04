@@ -68,33 +68,32 @@ function saveModeToStorage(mode: BackgroundMode) {
   // Persist local *after* sync completes so concurrent load/reconcile never reads
   // stale local while sync already holds the newer value (would resurrect old mode).
   return new Promise((resolve) => {
+    const finalize = (syncSuccess: boolean) => {
+      try {
+        chrome.storage.local.set(data, () => {
+          const localError = chrome.runtime && chrome.runtime.lastError;
+          if (localError) {
+            console.warn('Local storage failed:', localError);
+          }
+          resolve(syncSuccess);
+        });
+      } catch (err) {
+        console.warn('Local storage failed:', err);
+        resolve(false);
+      }
+    };
+
     try {
       chrome.storage.sync.set(data, () => {
         const syncError = chrome.runtime && chrome.runtime.lastError;
         if (syncError) {
           console.warn('Sync storage failed:', syncError);
         }
-        chrome.storage.local.set(data, () => {
-          const localError = chrome.runtime && chrome.runtime.lastError;
-          if (localError) {
-            console.warn('Local storage failed:', localError);
-          }
-          resolve(!syncError);
-        });
+        finalize(!syncError);
       });
     } catch (error) {
       console.warn('Sync storage failed:', error);
-      try {
-        chrome.storage.local.set(data, () => {
-          if (chrome.runtime && chrome.runtime.lastError) {
-            console.warn('Local storage failed:', chrome.runtime.lastError);
-          }
-          resolve(false);
-        });
-      } catch (localErr) {
-        console.warn('Local storage failed:', localErr);
-        resolve(false);
-      }
+      finalize(false);
     }
   });
 }
