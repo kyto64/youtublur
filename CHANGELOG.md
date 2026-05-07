@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.2](https://github.com/kyto64/youtublur/compare/v1.12.1...v1.12.2) (2026-05-07)
+
+
+### Bug Fixes
+
+* Gemini Code Assist の設定更新でレビュー收束性を改善 ([#83](https://github.com/kyto64/youtublur/issues/83)) ([6c78d16](https://github.com/kyto64/youtublur/commit/6c78d16564f2b867bbd008f6f8a206293a61b83e))
+* **storage:** sync完了後にlocalを書き込み、reconcile競合による設定巻き戻しを防ぐ ([#82](https://github.com/kyto64/youtublur/issues/82)) ([e858db6](https://github.com/kyto64/youtublur/commit/e858db6f0c8b5bcbf5d17b03123c5bbd573fff59))
+
 ## [1.12.1](https://github.com/kyto64/youtublur/compare/v1.12.0...v1.12.1) (2026-05-02)
 
 ## [1.12.0](https://github.com/kyto64/youtublur/compare/v1.11.0...v1.12.0) (2026-05-01)
