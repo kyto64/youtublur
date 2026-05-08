@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "やわらかなアンビエントグロー" },
   "modeSolidSub": { "message": "フラットなニュートラル背景" },
   "previewLabel": { "message": "プレビュー" },
+  "blurStrengthLabel": {
+    "message": "ブラーの強さ",
+    "description": "ポップアップ内のブラー強度スライダーのラベル。"
+  },
+  "blurStrengthSliderAria": {
+    "message": "動画背景のぼかしの強さを調整します。",
+    "description": "ブラー強度スライダーのアクセシビティ用ラベル。"
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "ブラー強さの数値の後に表示する単位。"
+  },
   "popupPhrase0": { "message": "目にやさしい YouTube を" },
   "popupPhrase1": { "message": "まぶしさを、やわらかく" },
   "popupPhrase2": { "message": "ノイズをぼかして、楽しさはそのまま" },

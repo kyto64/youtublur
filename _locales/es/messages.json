@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "Resplandor ambiental helado" },
   "modeSolidSub": { "message": "Superficie neutra plana" },
   "previewLabel": { "message": "Vista previa" },
+  "blurStrengthLabel": {
+    "message": "Intensidad del desenfoque",
+    "description": "Etiqueta del control deslizante de intensidad de desenfoque en el popup."
+  },
+  "blurStrengthSliderAria": {
+    "message": "Ajusta cuánto se desenfoca el fondo del video.",
+    "description": "Etiqueta de accesibilidad del control de rango de intensidad de desenfoque."
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "Sufijo de unidad mostrado después del valor de desenfoque."
+  },
   "popupPhrase0": { "message": "Haciendo YouTube más suave para los ojos" },
   "popupPhrase1": { "message": "Menos brillo, más calma" },
   "popupPhrase2": { "message": "Difumina el ruido, conserva la alegría" },

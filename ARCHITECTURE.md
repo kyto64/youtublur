@@ -63,7 +63,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 #### 1. ストレージレイヤー（最下位）
 - **責務**: 設定値の永続化と同期
 - **実装**: `chrome.storage.sync` と `chrome.storage.local`
-- **キー**: `mode`, `color`, `timestamp`
+- **キー**: 表示モード（`playerBackgroundMode` + タイムスタンプ）、ブラー強度（`playerBlurStrengthPx` + タイムスタンプ）
 
 #### 2. ビジネスロジックレイヤー（中間）
 - **`src/content.ts` → `content.js`**:
@@ -74,16 +74,17 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - **`src/storage-mode.ts` → `storage-mode.js`**:
   - ストレージ間の競合解決（sync vs local）
   - タイムスタンプベースの勝者決定
-  - `BackgroundMode = 'blur' | 'solid'` 型に基づく型安全なAPI
+  - `BackgroundMode = 'blur' | 'solid'` に基づくモード API（`saveModeToStorage` / `loadModeFromStorage`）
+  - ブラー強度 API（`saveBlurStrengthToStorage` / `loadBlurStrengthFromStorage`）
+  - グローバル `YOUTUBLUR_BLUR_RANGE`（スライダー min/max/step/既定値; popup と保存値の整合用）
 
 #### 3. UI レイヤー（最上位）
 - **`src/popup.ts` → `popup.js`**:
   - ポップアップ UI の状態管理
-  - モード切替ハンドラ
-  - カラーピッカーの同期
+  - モード切替とブラー強度スライダー（`BLUR_STRENGTH_CHANGED` メッセージで即時反映）
 - **popup.html**:
   - シンプルな操作インターフェース
-  - モードボタンとカラーピッカー
+  - モード選択とブラー強度スライダー
 - **style.css**:
   - ダークテーマに適した視覚デザイン
   - レスポンシブなポップアップサイズ
@@ -120,7 +121,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
    ↓
 2. content.js が注入・実行
    ↓
-3. chrome.storage から現在のモードと色を読み込み
+3. chrome.storage から現在のモードとブラー強度を読み込み
    ↓
 4. プレイヤー要素を検出
    ↓
@@ -138,7 +139,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
    ↓
 3. chrome.storage から現在の状態を読み込んで UI に反映
    ↓
-4. ユーザーがモードを変更（または色を選択）
+4. ユーザーがモードまたはブラー強度を変更
    ↓
 5. 新しい値を chrome.storage に保存（含タイムスタンプ）
    ↓

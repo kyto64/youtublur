@@ -1,6 +1,12 @@
 import { vi } from 'vitest';
 require('./storage-mode.js');
-const { initPopup, saveModeToStorage, loadModeFromStorage } = require('./popup.js');
+const {
+  initPopup,
+  saveModeToStorage,
+  loadModeFromStorage,
+  saveBlurStrengthToStorage,
+  loadBlurStrengthFromStorage
+} = require('./popup.js');
 
 describe('popup.js', () => {
   let syncGetMock;
@@ -12,6 +18,12 @@ describe('popup.js', () => {
     document.body.innerHTML = `
       <input type="radio" name="bgMode" id="modeSolid" value="solid">
       <input type="radio" name="bgMode" id="modeBlur" value="blur">
+      <div class="blur-strength-section">
+        <label id="labelBlurStrength" for="blurStrength"></label>
+        <span id="blurStrengthValue"></span>
+        <input type="range" id="blurStrength" />
+      </div>
+      <div class="preview-wrap"><div class="preview-swatch"><div class="preview-blur-overlay"></div></div></div>
     `;
 
     syncGetMock = vi.fn((keys, cb) => { if (cb) cb({}); });
@@ -128,6 +140,35 @@ describe('popup.js', () => {
     );
     expect(chrome.tabs.query).toHaveBeenCalled();
     expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'BG_MODE_CHANGED', mode: 'solid' });
+  });
+
+  test('blur strength slider saves storage and notifies active tab', async () => {
+    syncGetMock.mockImplementation((keys, cb) => {
+      cb({
+        playerBackgroundMode: 'blur',
+        playerBackgroundModeTimestamp: Date.now(),
+        playerBlurStrengthPx: 40,
+        playerBlurStrengthTimestamp: Date.now()
+      });
+    });
+
+    initPopup();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    await new Promise((resolve) => process.nextTick(resolve));
+    await new Promise((resolve) => process.nextTick(resolve));
+
+    const slider = document.getElementById('blurStrength');
+    slider.value = '56';
+    slider.dispatchEvent(new Event('input'));
+
+    await new Promise((resolve) => process.nextTick(resolve));
+    await new Promise((resolve) => process.nextTick(resolve));
+
+    expect(syncSetMock).toHaveBeenCalledWith(
+      expect.objectContaining({ playerBlurStrengthPx: 56 }),
+      expect.any(Function)
+    );
+    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'BLUR_STRENGTH_CHANGED', strength: 56 });
   });
 
   describe('reload button', () => {
@@ -365,5 +406,58 @@ describe('storage functions', () => {
 
     const mode = await loadModeFromStorage();
     expect(mode).toBe('blur');
+  });
+
+  test('saveBlurStrengthToStorage persists clamped value to sync when sync succeeds', async () => {
+    const syncSet = vi.fn((data, cb) => {
+      if (cb) cb();
+    });
+    vi.stubGlobal('chrome', {
+      storage: {
+        sync: { get: vi.fn((keys, cb) => { if (cb) cb({}); }), set: syncSet },
+        local: { get: vi.fn((keys, cb) => { if (cb) cb({}); }), set: vi.fn((data, cb) => { if (cb) cb(); }) }
+      },
+      runtime: { lastError: undefined }
+    });
+
+    const ok = await saveBlurStrengthToStorage(99);
+    expect(ok).toBe(true);
+    expect(syncSet).toHaveBeenCalledWith(
+      expect.objectContaining({ playerBlurStrengthPx: 72 }),
+      expect.any(Function)
+    );
+  });
+
+  test('loadBlurStrengthFromStorage returns default when unset', async () => {
+    const syncGet = vi.fn((keys, cb) => { if (cb) cb({}); });
+    const localGet = vi.fn((keys, cb) => { if (cb) cb({}); });
+    vi.stubGlobal('chrome', {
+      storage: {
+        sync: { get: syncGet, set: vi.fn() },
+        local: { get: localGet, set: vi.fn() }
+      }
+    });
+
+    const px = await loadBlurStrengthFromStorage();
+    expect(px).toBe(40);
+  });
+
+  test('loadBlurStrengthFromStorage prefers newer sync blur value', async () => {
+    const t = Date.now();
+    const syncGet = vi.fn((keys, cb) => {
+      if (cb) cb({ playerBlurStrengthPx: 48, playerBlurStrengthTimestamp: t });
+    });
+    const localGet = vi.fn((keys, cb) => {
+      if (cb) cb({ playerBlurStrengthPx: 24, playerBlurStrengthTimestamp: t - 1000 });
+    });
+    vi.stubGlobal('chrome', {
+      storage: {
+        sync: { get: syncGet, set: vi.fn() },
+        local: { get: localGet, set: vi.fn() }
+      }
+    });
+
+    const px = await loadBlurStrengthFromStorage();
+    expect(px).toBe(48);
   });
 });

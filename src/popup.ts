@@ -27,30 +27,88 @@ function applyLocalizedStrings() {
   if (solidSub) solidSub.textContent = chrome.i18n.getMessage('modeSolidSub');
   if (preview) preview.textContent = chrome.i18n.getMessage('previewLabel');
   if (reload) reload.textContent = chrome.i18n.getMessage('reloadButton');
+
+  const blurStrengthLabel = document.getElementById('labelBlurStrength');
+  const blurStrengthSlider = document.getElementById('blurStrength') as HTMLInputElement | null;
+  if (blurStrengthLabel) blurStrengthLabel.textContent = chrome.i18n.getMessage('blurStrengthLabel');
+  if (blurStrengthSlider) {
+    blurStrengthSlider.setAttribute('aria-label', chrome.i18n.getMessage('blurStrengthSliderAria'));
+  }
+}
+
+function formatBlurStrengthValue(px: number): string {
+  if (typeof chrome === 'undefined' || !chrome.i18n) return `${px}px`;
+  const unit = chrome.i18n.getMessage('blurStrengthUnit');
+  return `${px}\u00a0${unit}`;
+}
+
+function setPreviewBlurAmount(px: number) {
+  const overlay = document.querySelector('.preview-blur-overlay') as HTMLElement | null;
+  if (overlay) {
+    overlay.style.setProperty('--preview-blur-amount', `${px}px`);
+  }
+}
+
+function updateBlurStrengthUi(px: number) {
+  const slider = document.getElementById('blurStrength') as HTMLInputElement | null;
+  const valueEl = document.getElementById('blurStrengthValue');
+  if (slider) slider.value = String(px);
+  if (valueEl) valueEl.textContent = formatBlurStrengthValue(px);
+  setPreviewBlurAmount(px);
+}
+
+function notifyActiveTabBlurStrength(px: number) {
+  if (typeof chrome === 'undefined' || !chrome.tabs) return;
+  chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+    const tab = tabs[0];
+    if (tab?.id && tab.url?.includes('youtube.com')) {
+      chrome.tabs.sendMessage(tab.id, { type: 'BLUR_STRENGTH_CHANGED', strength: px }).catch(() => {});
+    }
+  });
 }
 
 function initPopup() {
   document.addEventListener('DOMContentLoaded', () => {
     applyLocalizedStrings();
 
-    loadModeFromStorage().then((mode) => {
+    const range = YOUTUBLUR_BLUR_RANGE;
+    const slider = document.getElementById('blurStrength') as HTMLInputElement | null;
+    if (slider) {
+      slider.min = String(range.min);
+      slider.max = String(range.max);
+      slider.step = String(range.step);
+    }
+
+    Promise.all([loadModeFromStorage(), loadBlurStrengthFromStorage()]).then(([mode, blurPx]) => {
       const radio = document.getElementById(mode === 'blur' ? 'modeBlur' : 'modeSolid') as HTMLInputElement | null;
       if (radio) radio.checked = true;
+      updateBlurStrengthUi(blurPx);
     });
 
     document.querySelectorAll('input[name="bgMode"]').forEach((radio) => {
       radio.addEventListener('change', (e) => {
-        const mode = (e.target as HTMLInputElement).value as BackgroundMode;
-        saveModeToStorage(mode).then(() => {
+        const nextMode = (e.target as HTMLInputElement).value as BackgroundMode;
+        saveModeToStorage(nextMode).then(() => {
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];
             if (tab?.id && tab.url?.includes('youtube.com')) {
-              chrome.tabs.sendMessage(tab.id, { type: 'BG_MODE_CHANGED', mode }).catch(() => {});
+              chrome.tabs.sendMessage(tab.id, { type: 'BG_MODE_CHANGED', mode: nextMode }).catch(() => {});
             }
           });
         });
       });
     });
+
+    if (slider) {
+      slider.addEventListener('input', () => {
+        const px = Number(slider.value);
+        if (!Number.isFinite(px)) return;
+        updateBlurStrengthUi(px);
+        saveBlurStrengthToStorage(px).then(() => {
+          notifyActiveTabBlurStrength(px);
+        });
+      });
+    }
 
     const reloadButton = document.getElementById('reloadButton');
     if (reloadButton) {
@@ -99,6 +157,19 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  const { STORAGE_KEY, saveModeToStorage, loadModeFromStorage } = require('./storage-mode.js');
-  module.exports = { initPopup, STORAGE_KEY, saveModeToStorage, loadModeFromStorage };
+  const {
+    STORAGE_KEY,
+    saveModeToStorage,
+    loadModeFromStorage,
+    saveBlurStrengthToStorage,
+    loadBlurStrengthFromStorage
+  } = require('./storage-mode.js');
+  module.exports = {
+    initPopup,
+    STORAGE_KEY,
+    saveModeToStorage,
+    loadModeFromStorage,
+    saveBlurStrengthToStorage,
+    loadBlurStrengthFromStorage
+  };
 }

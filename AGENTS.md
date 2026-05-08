@@ -1,6 +1,6 @@
 # Agent 向けメモ（youtublur）
 
-YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切り替えるブラウザ拡張（Chrome/Firefox、Manifest V3）。
+YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切り替えるブラウザ拡張（Chrome/Firefox、Manifest V3）。ブラー時のぼかし量はポップアップのスライダーで調整できる。
 
 この AGENTS.md はエージェントがリポジトリを理解するためのマップです。詳細は各ドキュメントを参照してください。
 

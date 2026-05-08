@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "부드러운 앰비언트 글로우" },
   "modeSolidSub": { "message": "플랫 뉴트럴 배경" },
   "previewLabel": { "message": "미리보기" },
+  "blurStrengthLabel": {
+    "message": "블러 강도",
+    "description": "팝업의 블러 강도 슬라이더 레이블."
+  },
+  "blurStrengthSliderAria": {
+    "message": "영상 배경이 얼마나 흐릿해질지 조절합니다.",
+    "description": "블러 강도 범위 입력의 접근성 레이블."
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "블러 강도 숫자 뒤에 표시하는 단위 접미사."
+  },
   "popupPhrase0": { "message": "눈이 편안한 YouTube" },
   "popupPhrase1": { "message": "눈부심은 줄이고, 여유는 늘리고" },
   "popupPhrase2": { "message": "노이즈를 블러로, 즐거움은 그대로" },

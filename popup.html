@@ -172,6 +172,39 @@
       display: block;
     }
 
+    /* === Blur strength (blur mode only) === */
+    .blur-strength-section {
+      display: none;
+      padding: 2px 16px 8px;
+    }
+    #modeBlur:checked ~ .blur-strength-section {
+      display: block;
+    }
+    .blur-strength-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .blur-strength-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sub);
+    }
+    .blur-strength-value {
+      font-size: 12px;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+      color: var(--text);
+    }
+    #blurStrength {
+      width: 100%;
+      height: 6px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
     /* === Preview swatch === */
     .preview-wrap {
       padding: 4px 16px 10px;
@@ -188,8 +221,9 @@
     .preview-blur-overlay {
       position: absolute;
       inset: 0;
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      --preview-blur-amount: 40px;
+      backdrop-filter: blur(var(--preview-blur-amount));
+      -webkit-backdrop-filter: blur(var(--preview-blur-amount));
       background: rgba(0,0,0,0.15);
     }
     .preview-label {
@@ -318,6 +352,14 @@
         </svg>
       </div>
     </label>
+  </div>
+
+  <div class="blur-strength-section" id="blurStrengthSection">
+    <div class="blur-strength-head">
+      <label id="labelBlurStrength" class="blur-strength-label" for="blurStrength"></label>
+      <span id="blurStrengthValue" class="blur-strength-value"></span>
+    </div>
+    <input type="range" id="blurStrength" name="blurStrength">
   </div>
 
   <div class="preview-wrap">

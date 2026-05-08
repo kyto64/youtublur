@@ -24,6 +24,8 @@ const {
   saveModeToStorage,
   loadModeFromStorage,
   reconcileStorageCopies,
+  setActiveBlurStrengthPx,
+  getActiveBlurStrengthPx,
   // 新增：动态绘制间隔相关函数
   detectDevicePerformance,
   updateFPS,
@@ -198,8 +200,18 @@ describe('content.js', () => {
     expect(container.querySelector('canvas')).toBeNull();
   });
 
-  test('blur strength is single value aligned with Chrome', () => {
+  test('default blur strength matches legacy fixed canvas blur', () => {
     expect(BLUR_STRENGTH_PX).toBe(40);
+    expect(getActiveBlurStrengthPx()).toBe(40);
+  });
+
+  test('setActiveBlurStrengthPx clamps to YOUTUBLUR_BLUR_RANGE', () => {
+    setActiveBlurStrengthPx(2);
+    expect(getActiveBlurStrengthPx()).toBe(8);
+    setActiveBlurStrengthPx(500);
+    expect(getActiveBlurStrengthPx()).toBe(72);
+    setActiveBlurStrengthPx(24);
+    expect(getActiveBlurStrengthPx()).toBe(24);
   });
 
   test('isGeckoLayoutEngine returns boolean', () => {
@@ -229,6 +241,31 @@ describe('content.js', () => {
     drawBlurFrame(video, canvas, ctx);
     expect(ctx.drawImage).toHaveBeenCalledTimes(1);
     expect(ctx.filter).toBe('none');
+  });
+
+  test('drawBlurFrame uses active blur strength in filter', () => {
+    setActiveBlurStrengthPx(32);
+    const filters = [];
+    const ctx = {
+      get filter() {
+        return filters.length ? filters[filters.length - 1] : '';
+      },
+      set filter(v) {
+        filters.push(v);
+      },
+      drawImage: vi.fn()
+    };
+    const video = document.createElement('video');
+    Object.defineProperty(video, 'readyState', { value: 4, configurable: true });
+    Object.defineProperty(video, 'videoWidth', { value: 1920, configurable: true });
+    Object.defineProperty(video, 'videoHeight', { value: 1080, configurable: true });
+    const canvas = document.createElement('canvas');
+    canvas.width = 800;
+    canvas.height = 450;
+
+    drawBlurFrame(video, canvas, ctx);
+    expect(filters.some((f) => f === 'blur(32px)')).toBe(true);
+    resetState();
   });
 
   test('drawBlurFrame resets filter when drawImage throws', () => {
@@ -621,8 +658,8 @@ describe('content.js', () => {
       await Promise.resolve();
       await Promise.resolve();
 
-      // init load + reconcile microtask + reload load + reconcile microtask
-      expect(syncGet).toHaveBeenCalledTimes(4);
+      // init: parallel mode+blur sync loads (2) + reconcile (1); reload: same pattern (3) → 6
+      expect(syncGet).toHaveBeenCalledTimes(6);
 
       // Canvas should be re-created after reload
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();

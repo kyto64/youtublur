@@ -6,7 +6,17 @@ type BackgroundMode = 'blur' | 'solid';
 
 declare function saveModeToStorage(mode: BackgroundMode): Promise<boolean>;
 declare function loadModeFromStorage(): Promise<BackgroundMode>;
+declare function saveBlurStrengthToStorage(px: number): Promise<boolean>;
+declare function loadBlurStrengthFromStorage(): Promise<number>;
 declare function reconcileStorageCopies(): void;
+
+/** Blur slider bounds; defined in storage-mode.js for popup + storage clamp alignment. */
+declare const YOUTUBLUR_BLUR_RANGE: {
+  readonly min: number;
+  readonly max: number;
+  readonly defaultValue: number;
+  readonly step: number;
+};
 
 interface Navigator {
   /** Non-standard but widely available; used for device-performance heuristics. */

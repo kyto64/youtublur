@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "磨砂氛围光晕" },
   "modeSolidSub": { "message": "平整中性背景" },
   "previewLabel": { "message": "预览" },
+  "blurStrengthLabel": {
+    "message": "模糊强度",
+    "description": "弹出窗口中模糊强度滑块的标签。"
+  },
+  "blurStrengthSliderAria": {
+    "message": "调整视频背景的模糊程度。",
+    "description": "模糊强度范围控件的辅助功能标签。"
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "模糊强度数字后显示的单位后缀。"
+  },
   "popupPhrase0": { "message": "让 YouTube 更护眼" },
   "popupPhrase1": { "message": "减少眩光，多一份从容" },
   "popupPhrase2": { "message": "模糊噪点，留住愉悦" },

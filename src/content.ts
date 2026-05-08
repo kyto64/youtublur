@@ -1,5 +1,13 @@
-/** Blur radius (px); same value on Chrome and Firefox (Gecko uses a two-step draw for correct filter). */
+/** Default blur radius (px); runtime value is loaded from storage and may change. */
 const BLUR_STRENGTH_PX = 40;
+let activeBlurStrengthPx = BLUR_STRENGTH_PX;
+
+function setActiveBlurStrengthPx(px: number) {
+  const min = YOUTUBLUR_BLUR_RANGE.min;
+  const max = YOUTUBLUR_BLUR_RANGE.max;
+  const n = typeof px === 'number' && Number.isFinite(px) ? Math.round(px) : BLUR_STRENGTH_PX;
+  activeBlurStrengthPx = Math.min(max, Math.max(min, n));
+}
 
 // デバイス性能検出と動的な描画間隔の設定
 function detectDevicePerformance(): 'low' | 'medium' | 'high' {
@@ -373,7 +381,7 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
         /* same-origin / decode issues as main path */
         return;
       }
-      ctx.filter = `blur(${BLUR_STRENGTH_PX}px)`;
+      ctx.filter = `blur(${activeBlurStrengthPx}px)`;
       try {
         if (geckoVideoSnapCanvas) ctx.drawImage(geckoVideoSnapCanvas, 0, 0);
       } catch {
@@ -385,7 +393,7 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
     }
   }
 
-  ctx.filter = `blur(${BLUR_STRENGTH_PX}px)`;
+  ctx.filter = `blur(${activeBlurStrengthPx}px)`;
   try {
     ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
   } catch {
@@ -664,22 +672,23 @@ function initExtension() {
     installYoutubeNavigationHooks();
     observePlayer();
 
-    // Load mode from storage with fallback support
-    loadModeFromStorage().then((saved) => {
+    Promise.all([loadModeFromStorage(), loadBlurStrengthFromStorage()]).then(([saved, blurPx]) => {
+      setActiveBlurStrengthPx(blurPx);
       const normalized = normalizeMode(saved);
       if (normalized !== currentMode) {
         applyMode(normalized, getPlayerContainer());
-      } else {
-        // observePlayer is already called above; no need to call again
       }
     });
 
-    chrome.runtime.onMessage.addListener((msg) => {
+    chrome.runtime.onMessage.addListener((msg: { type?: string; mode?: BackgroundMode; strength?: number }) => {
       if (msg.type === 'BG_MODE_CHANGED') {
-        applyMode(msg.mode, getPlayerContainer());
+        applyMode(msg.mode as BackgroundMode, getPlayerContainer());
+      } else if (msg.type === 'BLUR_STRENGTH_CHANGED' && typeof msg.strength === 'number') {
+        setActiveBlurStrengthPx(msg.strength);
       } else if (msg.type === 'RELOAD_BLUR') {
         teardownPlayerPageBlur();
-        loadModeFromStorage().then((saved) => {
+        Promise.all([loadModeFromStorage(), loadBlurStrengthFromStorage()]).then(([saved, blurPx]) => {
+          setActiveBlurStrengthPx(blurPx);
           const normalized = normalizeMode(saved);
           applyMode(normalized);
           observePlayer();
@@ -756,10 +765,15 @@ if (typeof module !== 'undefined' && module.exports) {
       lastFrameTime = 0;
       frameTimes = [];
       adjustmentCooldown = 0;
+      activeBlurStrengthPx = BLUR_STRENGTH_PX;
     },
     saveModeToStorage,
     loadModeFromStorage,
+    saveBlurStrengthToStorage,
+    loadBlurStrengthFromStorage,
     reconcileStorageCopies,
+    setActiveBlurStrengthPx,
+    getActiveBlurStrengthPx: () => activeBlurStrengthPx,
     // 追加：テスト用の動的描画間隔関連関数
     detectDevicePerformance,
     updateFPS,
