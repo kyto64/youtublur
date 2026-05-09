@@ -2,6 +2,11 @@
 
 YouTubeを、もっと目に優しく。（Chrome / Firefox 向け Manifest V3）
 
+## 配信
+
+- https://chromewebstore.google.com/detail/youtublur/npkiobfoclnkmobjhgadnjepceofjenj
+- https://addons.mozilla.org/en-US/firefox/addon/youtublur/
+
 ## 機能
 - 単色モード / ブラーモードの切替
 
