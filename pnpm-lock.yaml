@@ -23,16 +23,16 @@ importers:
         version: 4.1.5(vitest@4.1.5)
       '@voidzero-dev/vite-plus-core':
         specifier: 0.1.20
-        version: 0.1.20(typescript@6.0.3)(yaml@2.8.3)
+        version: 0.1.20(typescript@6.0.3)(yaml@2.8.4)
       '@voidzero-dev/vite-plus-test':
         specifier: 0.1.19
-        version: 0.1.19(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))(yaml@2.8.3)
+        version: 0.1.19(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4)
       chrome-webstore-upload:
         specifier: 4.0.3
         version: 4.0.3
       commit-and-tag-version:
-        specifier: 12.7.1
-        version: 12.7.1
+        specifier: 12.7.3
+        version: 12.7.3
       jsdom:
         specifier: 29.1.1
         version: 29.1.1
@@ -41,7 +41,7 @@ importers:
         version: 6.0.3
       vite-plus:
         specifier: 0.1.20
-        version: 0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))(yaml@2.8.3)
+        version: 0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4)
 
 packages:
 
@@ -957,8 +957,8 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
-  commit-and-tag-version@12.7.1:
-    resolution: {integrity: sha512-18+iV9VMPWQ5rryn1nKprvkwqFMx1eOcEwIprjgyGm8Blhsw7WnsFXgyYLIlBF4uG2fcbbps8P7fBZARvaA0VA==}
+  commit-and-tag-version@12.7.3:
+    resolution: {integrity: sha512-rbauuCDU98yEHMy/LrNNu8HLTuGv7C2kN/3GXC59L18aJGii0eiryCESb1SEHXNFem2/2ngWG/Pq6qaCqw3aCw==}
     engines: {node: '>=18'}
     hasBin: true
 
@@ -1132,8 +1132,8 @@ packages:
   fast-xml-builder@1.2.0:
     resolution: {integrity: sha512-00aAWieqff+ZJhsXA4g1g7M8k+7AYoMUUHF+/zFb5U6Uv/P0Vl4QZo84/IcufzYalLuEj9928bXN9PbbFzMF0Q==}
 
-  fast-xml-parser@5.7.2:
-    resolution: {integrity: sha512-P7oW7tLbYnhOLQk/Gv7cZgzgMPP/XN03K02/Jy6Y/NHzyIAIpxuZIM/YqAkfiXFPxA2CTm7NtCijK9EDu09u2w==}
+  fast-xml-parser@5.7.3:
+    resolution: {integrity: sha512-C0AaNuC+mscy6vrAQKAc/rMq+zAPHodfHGZu4sGVehvAQt/JLG1O5zEcYcXSY5zSqr4YVgxsB+pHXTq0i7eDlg==}
     hasBin: true
 
   fdir@6.5.0:
@@ -1257,8 +1257,8 @@ packages:
   is-arrayish@0.2.1:
     resolution: {integrity: sha512-zz06S8t0ozoDXMG+ube26zeCTNXcKIPJZJi8hBrF4idCLms4CG9QtK7qBl1boi5ODzFpjswb5JPmHCbMpjaYzg==}
 
-  is-core-module@2.16.1:
-    resolution: {integrity: sha512-UfoeMA6fIJ8wTYFEUjelnaGI67v6+N7qXJEvQuIGa99l4xsCruSYOVSQ0uPANn4dAzm8lkYPaKLrrijLq7x23w==}
+  is-core-module@2.16.2:
+    resolution: {integrity: sha512-evOr8xfXKxE6qSR0hSXL2r3sd7ALj8+7jQEUvPYcm5sgZFdJ+AYzT6yNmJenvIYQBgIGwfwz08sL8zoL7yq2BA==}
     engines: {node: '>= 0.4'}
 
   is-fullwidth-code-point@3.0.0:
@@ -1707,11 +1707,6 @@ packages:
     resolution: {integrity: sha512-cBznnQ9KjJqU67B52RMC65CMarK2600WFnbkcaiwWq3xy/5haFJlshgnpjovMVJ+Hff49d8GEn0b87C5pDQ10g==}
     hasBin: true
 
-  semver@7.7.4:
-    resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
   semver@7.8.0:
     resolution: {integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==}
     engines: {node: '>=10'}
@@ -1778,8 +1773,8 @@ packages:
     resolution: {integrity: sha512-laJTa3Jb+VQpaC6DseHhF7dXVqHTfJPCRDaEbid/drOhgitgYku/letMUqOXFoWV0zIIUbjpdH2t+tYj4bQMRQ==}
     engines: {node: '>=8'}
 
-  strnum@2.2.3:
-    resolution: {integrity: sha512-oKx6RUCuHfT3oyVjtnrmn19H1SiCqgJSg+54XqURKp5aCMbrXrhLjRN9TjuwMjiYstZ0MzDrHqkGZ5dFTKd+zg==}
+  strnum@2.3.0:
+    resolution: {integrity: sha512-ums3KNd42PGyx5xaoVTO1mjU1bH3NpY4vsrVlnv9PNGqQj8wd7rJ6nEypLrJ7z5vxK5RP0yMLo6J/Gsm62DI5Q==}
 
   supports-color@5.5.0:
     resolution: {integrity: sha512-QjVjwdXIt408MIiAqCX4oUKsgU2EqAGzs2Ppkm4aQYbjm+ZEWEcW4SfFNTr4uMNZma0ey4f5lgLrkB0aX0QMow==}
@@ -2041,8 +2036,8 @@ packages:
   yallist@4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
 
-  yaml@2.8.3:
-    resolution: {integrity: sha512-AvbaCLOO2Otw/lW5bmh9d/WEdcDFdQp2Z2ZUH3pX9U2ihyUY0nvLv7J6TrWowklRGPYbB/IuIMfYgxaCPg5Bpg==}
+  yaml@2.8.4:
+    resolution: {integrity: sha512-ml/JPOj9fOQK8RNnWojA67GbZ0ApXAUlN2UQclwv2eVgTgn7O9gg9o7paZWKMp4g0H3nTLtS9LVzhkpOFIKzog==}
     engines: {node: '>= 14.6'}
     hasBin: true
 
@@ -2423,7 +2418,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))
+      vitest: 4.1.5(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))
 
   '@vitest/expect@4.1.5':
     dependencies:
@@ -2434,13 +2429,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/mocker@4.1.5(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))':
+  '@vitest/mocker@4.1.5(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))':
     dependencies:
       '@vitest/spy': 4.1.5
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3)
+      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4)
 
   '@vitest/pretty-format@4.1.5':
     dependencies:
@@ -2466,7 +2461,7 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.0
 
-  '@voidzero-dev/vite-plus-core@0.1.19(typescript@6.0.3)(yaml@2.8.3)':
+  '@voidzero-dev/vite-plus-core@0.1.19(typescript@6.0.3)(yaml@2.8.4)':
     dependencies:
       '@oxc-project/runtime': 0.126.0
       '@oxc-project/types': 0.126.0
@@ -2475,9 +2470,9 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
       typescript: 6.0.3
-      yaml: 2.8.3
+      yaml: 2.8.4
 
-  '@voidzero-dev/vite-plus-core@0.1.20(typescript@6.0.3)(yaml@2.8.3)':
+  '@voidzero-dev/vite-plus-core@0.1.20(typescript@6.0.3)(yaml@2.8.4)':
     dependencies:
       '@oxc-project/runtime': 0.127.0
       '@oxc-project/types': 0.127.0
@@ -2486,7 +2481,7 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
       typescript: 6.0.3
-      yaml: 2.8.3
+      yaml: 2.8.4
 
   '@voidzero-dev/vite-plus-darwin-arm64@0.1.20':
     optional: true
@@ -2506,11 +2501,11 @@ snapshots:
   '@voidzero-dev/vite-plus-linux-x64-musl@0.1.20':
     optional: true
 
-  '@voidzero-dev/vite-plus-test@0.1.19(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))(yaml@2.8.3)':
+  '@voidzero-dev/vite-plus-test@0.1.19(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@types/chai': 5.2.3
-      '@voidzero-dev/vite-plus-core': 0.1.19(typescript@6.0.3)(yaml@2.8.3)
+      '@voidzero-dev/vite-plus-core': 0.1.19(typescript@6.0.3)(yaml@2.8.4)
       es-module-lexer: 1.7.0
       obug: 2.1.1
       pixelmatch: 7.1.0
@@ -2520,7 +2515,7 @@ snapshots:
       tinybench: 2.9.0
       tinyexec: 1.1.1
       tinyglobby: 0.2.16
-      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3)
+      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4)
       ws: 8.20.0
     optionalDependencies:
       '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
@@ -2546,11 +2541,11 @@ snapshots:
       - utf-8-validate
       - yaml
 
-  '@voidzero-dev/vite-plus-test@0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))(yaml@2.8.3)':
+  '@voidzero-dev/vite-plus-test@0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4)':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@types/chai': 5.2.3
-      '@voidzero-dev/vite-plus-core': 0.1.20(typescript@6.0.3)(yaml@2.8.3)
+      '@voidzero-dev/vite-plus-core': 0.1.20(typescript@6.0.3)(yaml@2.8.4)
       es-module-lexer: 1.7.0
       obug: 2.1.1
       pixelmatch: 7.2.0
@@ -2560,7 +2555,7 @@ snapshots:
       tinybench: 2.9.0
       tinyexec: 1.1.2
       tinyglobby: 0.2.16
-      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3)
+      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4)
       ws: 8.20.0
     optionalDependencies:
       '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
@@ -2681,7 +2676,7 @@ snapshots:
 
   color-name@1.1.4: {}
 
-  commit-and-tag-version@12.7.1:
+  commit-and-tag-version@12.7.3:
     dependencies:
       chalk: 2.4.2
       conventional-changelog: 4.0.0
@@ -2691,12 +2686,12 @@ snapshots:
       detect-indent: 6.1.0
       detect-newline: 3.1.0
       dotgitignore: 2.1.0
-      fast-xml-parser: 5.7.2
+      fast-xml-parser: 5.7.3
       figures: 3.2.0
       find-up: 5.0.0
       git-semver-tags: 5.0.1
-      semver: 7.7.4
-      yaml: 2.8.3
+      semver: 7.8.0
+      yaml: 2.8.4
       yargs: 17.7.2
 
   compare-func@2.0.0:
@@ -2874,12 +2869,12 @@ snapshots:
       path-expression-matcher: 1.5.0
       xml-naming: 0.1.0
 
-  fast-xml-parser@5.7.2:
+  fast-xml-parser@5.7.3:
     dependencies:
       '@nodable/entities': 2.1.0
       fast-xml-builder: 1.2.0
       path-expression-matcher: 1.5.0
-      strnum: 2.2.3
+      strnum: 2.3.0
 
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
@@ -2938,7 +2933,7 @@ snapshots:
   git-semver-tags@5.0.1:
     dependencies:
       meow: 8.1.2
-      semver: 7.7.4
+      semver: 7.8.0
 
   gitconfiglocal@1.0.0:
     dependencies:
@@ -2987,7 +2982,7 @@ snapshots:
 
   is-arrayish@0.2.1: {}
 
-  is-core-module@2.16.1:
+  is-core-module@2.16.2:
     dependencies:
       hasown: 2.0.3
 
@@ -3210,7 +3205,7 @@ snapshots:
   normalize-package-data@3.0.3:
     dependencies:
       hosted-git-info: 4.1.0
-      is-core-module: 2.16.1
+      is-core-module: 2.16.2
       semver: 7.8.0
       validate-npm-package-license: 3.0.4
 
@@ -3430,7 +3425,7 @@ snapshots:
   resolve@1.22.12:
     dependencies:
       es-errors: 1.3.0
-      is-core-module: 2.16.1
+      is-core-module: 2.16.2
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
@@ -3467,8 +3462,6 @@ snapshots:
       xmlchars: 2.2.0
 
   semver@5.7.2: {}
-
-  semver@7.7.4: {}
 
   semver@7.8.0: {}
 
@@ -3534,7 +3527,7 @@ snapshots:
     dependencies:
       min-indent: 1.0.1
 
-  strnum@2.2.3: {}
+  strnum@2.3.0: {}
 
   supports-color@5.5.0:
     dependencies:
@@ -3615,11 +3608,11 @@ snapshots:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
 
-  vite-plus@0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))(yaml@2.8.3):
+  vite-plus@0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4):
     dependencies:
       '@oxc-project/types': 0.127.0
-      '@voidzero-dev/vite-plus-core': 0.1.20(typescript@6.0.3)(yaml@2.8.3)
-      '@voidzero-dev/vite-plus-test': 0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))(yaml@2.8.3)
+      '@voidzero-dev/vite-plus-core': 0.1.20(typescript@6.0.3)(yaml@2.8.4)
+      '@voidzero-dev/vite-plus-test': 0.1.20(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4)
       oxfmt: 0.46.0
       oxlint: 1.61.0(oxlint-tsgolint@0.22.0)
       oxlint-tsgolint: 0.22.0
@@ -3662,7 +3655,7 @@ snapshots:
       - vite
       - yaml
 
-  vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3):
+  vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -3671,15 +3664,15 @@ snapshots:
       tinyglobby: 0.2.16
     optionalDependencies:
       fsevents: 2.3.3
-      yaml: 2.8.3
+      yaml: 2.8.4
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  vitest@4.1.5(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3)):
+  vitest@4.1.5(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4)):
     dependencies:
       '@vitest/expect': 4.1.5
-      '@vitest/mocker': 4.1.5(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3))
+      '@vitest/mocker': 4.1.5(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))
       '@vitest/pretty-format': 4.1.5
       '@vitest/runner': 4.1.5
       '@vitest/snapshot': 4.1.5
@@ -3696,7 +3689,7 @@ snapshots:
       tinyexec: 1.1.2
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
-      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.3)
+      vite: 8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
@@ -3747,7 +3740,7 @@ snapshots:
 
   yallist@4.0.0: {}
 
-  yaml@2.8.3: {}
+  yaml@2.8.4: {}
 
   yargs-parser@20.2.9: {}
 
