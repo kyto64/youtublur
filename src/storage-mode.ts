@@ -1,6 +1,9 @@
 const STORAGE_KEY = 'playerBackgroundMode';
 const STORAGE_TIMESTAMP_KEY = 'playerBackgroundModeTimestamp';
 
+/** Serializes saves so an older sync.set callback cannot finalize after a newer save and overwrite local/sync with stale data. */
+let storageSaveChain: Promise<void> = Promise.resolve();
+
 /**
  * Re-read both storage areas and converge them to the same mode+timestamp winner.
  * Called after load resolves so we never persist stale values captured before a concurrent save.
@@ -67,36 +70,48 @@ function saveModeToStorage(mode: BackgroundMode) {
 
   // Persist local *after* sync completes so concurrent load/reconcile never reads
   // stale local while sync already holds the newer value (would resurrect old mode).
-  return new Promise((resolve) => {
-    const finalize = (syncSuccess: boolean) => {
-      try {
-        chrome.storage.local.set(data, () => {
-          const localError = chrome.runtime && chrome.runtime.lastError;
-          if (localError) {
-            console.warn('Local storage failed:', localError);
-          }
-          resolve(syncSuccess);
-        });
-      } catch (err) {
-        // sync は成功していても local.set が同期的に失敗し得る。戻り値は「sync が書けたか」の契約のため syncSuccess を維持する。
-        console.warn('Local storage failed:', err);
-        resolve(syncSuccess);
-      }
-    };
-
-    try {
-      chrome.storage.sync.set(data, () => {
-        const syncError = chrome.runtime && chrome.runtime.lastError;
-        if (syncError) {
-          console.warn('Sync storage failed:', syncError);
-        }
-        finalize(!syncError);
-      });
-    } catch (error) {
-      console.warn('Sync storage failed:', error);
-      finalize(false);
-    }
+  let resolveSave!: (syncSuccess: boolean) => void;
+  const result = new Promise<boolean>((resolve) => {
+    resolveSave = resolve;
   });
+
+  storageSaveChain = storageSaveChain.then(
+    () =>
+      new Promise<void>((releaseNext) => {
+        const finalize = (syncSuccess: boolean) => {
+          try {
+            chrome.storage.local.set(data, () => {
+              const localError = chrome.runtime && chrome.runtime.lastError;
+              if (localError) {
+                console.warn('Local storage failed:', localError);
+              }
+              resolveSave(syncSuccess);
+              releaseNext();
+            });
+          } catch (err) {
+            // sync は成功していても local.set が同期的に失敗し得る。戻り値は「sync が書けたか」の契約のため syncSuccess を維持する。
+            console.warn('Local storage failed:', err);
+            resolveSave(syncSuccess);
+            releaseNext();
+          }
+        };
+
+        try {
+          chrome.storage.sync.set(data, () => {
+            const syncError = chrome.runtime && chrome.runtime.lastError;
+            if (syncError) {
+              console.warn('Sync storage failed:', syncError);
+            }
+            finalize(!syncError);
+          });
+        } catch (error) {
+          console.warn('Sync storage failed:', error);
+          finalize(false);
+        }
+      })
+  );
+
+  return result;
 }
 
 /**

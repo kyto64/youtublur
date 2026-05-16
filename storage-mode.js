@@ -1,6 +1,8 @@
 "use strict";
 const STORAGE_KEY = 'playerBackgroundMode';
 const STORAGE_TIMESTAMP_KEY = 'playerBackgroundModeTimestamp';
+/** Serializes saves so an older sync.set callback cannot finalize after a newer save and overwrite local/sync with stale data. */
+let storageSaveChain = Promise.resolve();
 /**
  * Re-read both storage areas and converge them to the same mode+timestamp winner.
  * Called after load resolves so we never persist stale values captured before a concurrent save.
@@ -58,7 +60,11 @@ function saveModeToStorage(mode) {
     const data = { [STORAGE_KEY]: mode, [STORAGE_TIMESTAMP_KEY]: timestamp };
     // Persist local *after* sync completes so concurrent load/reconcile never reads
     // stale local while sync already holds the newer value (would resurrect old mode).
-    return new Promise((resolve) => {
+    let resolveSave;
+    const result = new Promise((resolve) => {
+        resolveSave = resolve;
+    });
+    storageSaveChain = storageSaveChain.then(() => new Promise((releaseNext) => {
         const finalize = (syncSuccess) => {
             try {
                 chrome.storage.local.set(data, () => {
@@ -66,13 +72,15 @@ function saveModeToStorage(mode) {
                     if (localError) {
                         console.warn('Local storage failed:', localError);
                     }
-                    resolve(syncSuccess);
+                    resolveSave(syncSuccess);
+                    releaseNext();
                 });
             }
             catch (err) {
                 // sync は成功していても local.set が同期的に失敗し得る。戻り値は「sync が書けたか」の契約のため syncSuccess を維持する。
                 console.warn('Local storage failed:', err);
-                resolve(syncSuccess);
+                resolveSave(syncSuccess);
+                releaseNext();
             }
         };
         try {
@@ -88,7 +96,8 @@ function saveModeToStorage(mode) {
             console.warn('Sync storage failed:', error);
             finalize(false);
         }
-    });
+    }));
+    return result;
 }
 /**
  * Load mode from storage with fallback and latest value determination
