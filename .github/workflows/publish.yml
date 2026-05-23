@@ -21,7 +21,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/{0}', inputs.tag) || github.ref }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -57,6 +57,7 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda # v3
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
           files: |
             extension.zip
             extension-firefox.zip
@@ -81,6 +82,6 @@ jobs:
           addon-path: extension-firefox.zip
           channel: listed
           compatibility-firefox-min: '109.0'
-          release-note: 'Release ${{ github.ref_name }}. See GitHub Release for assets and notes.'
+          release-note: 'Release ${{ github.event_name == ''workflow_dispatch'' && inputs.tag || github.ref_name }}. See GitHub Release for assets and notes.'
           auth-api-issuer: ${{ secrets.AMO_JWT_ISSUER }}
           auth-api-secret: ${{ secrets.AMO_JWT_SECRET }}
