@@ -13,7 +13,7 @@
   },
   "default_locale": "en",
   "name": "__MSG_extName__",
-  "version": "1.12.5",
+  "version": "1.12.6",
   "description": "__MSG_extDescription__",
   "permissions": [
     "storage",

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.6](https://github.com/kyto64/youtublur/compare/v1.12.5...v1.12.6) (2026-05-23)
+
+
+### Bug Fixes
+
+* **ci:** checkout master on workflow_dispatch publish ([#102](https://github.com/kyto64/youtublur/issues/102)) ([53b097f](https://github.com/kyto64/youtublur/commit/53b097f7bf172ac2627241da7ab1edfa6ecdf3e9))
+* **ci:** pass CHROME_PUBLISHER_ID for chrome-webstore-upload v6 ([#100](https://github.com/kyto64/youtublur/issues/100)) ([910bc00](https://github.com/kyto64/youtublur/commit/910bc0080fae566135a4c32ebda5ead89d40f3ac))
+* **ci:** set tag_name on workflow_dispatch publish runs ([#101](https://github.com/kyto64/youtublur/issues/101)) ([622ed2f](https://github.com/kyto64/youtublur/commit/622ed2f685bd133971b5bb6e08c6a3f59dd1225f))
+
 ## [1.12.5](https://github.com/kyto64/youtublur/compare/v1.12.4...v1.12.5) (2026-05-23)
 
 ## [1.12.4](https://github.com/kyto64/youtublur/compare/v1.12.3...v1.12.4) (2026-05-16)
