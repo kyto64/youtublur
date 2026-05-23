@@ -205,7 +205,7 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 2. [Actions → Publish extensions](https://github.com/kyto64/youtublur/actions/workflows/publish.yml) を開き **Run workflow** を選ぶ。
 3. **tag** に再公開したいタグ（例: `v1.12.5`）を入力して実行する。
 
-ワークフロー定義は **default ブランチ上の最新** が使われ、チェックアウトされるソースは指定タグのコミットになる。
+ワークフロー定義は **default ブランチ上の最新** が使われ、拡張のビルドと publish スクリプトは **master の HEAD** から行う（タグ時点の古い publish スクリプトを避けるため）。GitHub Release の更新先だけ **tag** 入力で指定する。
 
 ---
 
