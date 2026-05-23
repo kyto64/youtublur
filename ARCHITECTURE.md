@@ -74,6 +74,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - **`src/storage-mode.ts` → `storage-mode.js`**:
   - ストレージ間の競合解決（sync vs local）
   - タイムスタンプベースの勝者決定
+  - `saveModeToStorage` は複数回の連続保存を内部キューで直列化し、遅延した古い `sync.set` コールバックが新しい選択より後に `local` を上書きしないようにする
   - `BackgroundMode = 'blur' | 'solid'` 型に基づく型安全なAPI
 
 #### 3. UI レイヤー（最上位）

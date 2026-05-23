@@ -780,6 +780,38 @@ describe('content.js', () => {
       );
     });
 
+    test('saveModeToStorage serializes saves so a delayed first sync cannot overwrite newer mode in local', async () => {
+      let firstSyncCb = null;
+      const syncSet = vi.fn((_data, cb) => {
+        if (syncSet.mock.calls.length === 1) {
+          firstSyncCb = cb;
+          return;
+        }
+        if (cb) cb();
+      });
+      const localSet = vi.fn((_data, cb) => {
+        if (cb) cb();
+      });
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: vi.fn((keys, cb) => { if (cb) cb({}); }), set: syncSet },
+          local: { get: vi.fn((keys, cb) => { if (cb) cb({}); }), set: localSet }
+        },
+        runtime: { lastError: undefined }
+      });
+
+      const p1 = saveModeToStorage('solid');
+      const p2 = saveModeToStorage('blur');
+      await Promise.resolve();
+      expect(syncSet).toHaveBeenCalledTimes(1);
+      expect(firstSyncCb).toBeTruthy();
+      firstSyncCb();
+      await p1;
+      await p2;
+      const lastLocal = localSet.mock.calls[localSet.mock.calls.length - 1][0];
+      expect(lastLocal.playerBackgroundMode).toBe('blur');
+    });
+
     test('saveModeToStorage returns true when sync succeeds even if local.set throws synchronously', async () => {
       const syncSet = vi.fn((_data, cb) => {
         if (cb) cb();
