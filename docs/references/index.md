@@ -95,7 +95,7 @@
 
 ### その他のツール
 
-- **chrome-webstore-upload**: v4.0.3
+- **chrome-webstore-upload**: v6.0.0（`CHROME_PUBLISHER_ID` 必須）
   - Chrome Web Storeへの自動アップロード
 
 - **commit-and-tag-version**: v12.7.1
