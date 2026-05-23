@@ -28,8 +28,8 @@ importers:
         specifier: 0.1.21
         version: 0.1.21(@vitest/coverage-v8@4.1.5)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4)
       chrome-webstore-upload:
-        specifier: 4.0.3
-        version: 4.0.3
+        specifier: 6.0.0
+        version: 6.0.0
       commit-and-tag-version:
         specifier: 12.7.3
         version: 12.7.3
@@ -936,8 +936,8 @@ packages:
     resolution: {integrity: sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==}
     engines: {node: '>=4'}
 
-  chrome-webstore-upload@4.0.3:
-    resolution: {integrity: sha512-sEMUf65BkkVygtVcMoJ/EoshcIsoJvLVUm9vrKI+RkLeMcraTyiP08Md5kAvlVhRKIoZk6pXzyi6WNQkcLRRWg==}
+  chrome-webstore-upload@6.0.0:
+    resolution: {integrity: sha512-wUPi8iwR2KPPPytHY8rstA5tbcLp2r8fMYnqMUIgci1q1A6QFYiyeiyG/aqAj35PzNuCTpZseD1VZ9y1b/Fkmw==}
     engines: {node: '>=20'}
 
   cliui@7.0.4:
@@ -2650,7 +2650,7 @@ snapshots:
       escape-string-regexp: 1.0.5
       supports-color: 5.5.0
 
-  chrome-webstore-upload@4.0.3:
+  chrome-webstore-upload@6.0.0:
     dependencies:
       junk: 4.0.1
       yazl: 3.3.1
