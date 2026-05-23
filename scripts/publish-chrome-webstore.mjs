@@ -32,6 +32,7 @@ function logFailure(context, err) {
 
 async function main() {
   const extensionId = requireEnv('CHROME_EXTENSION_ID');
+  const publisherId = requireEnv('CHROME_PUBLISHER_ID');
   const clientId = requireEnv('CHROME_CLIENT_ID');
   const refreshToken = requireEnv('CHROME_REFRESH_TOKEN');
   const clientSecret = process.env.CHROME_CLIENT_SECRET;
@@ -49,6 +50,7 @@ async function main() {
 
   const webStore = chromeWebstoreUpload({
     extensionId,
+    publisherId,
     clientId,
     clientSecret: clientSecret && clientSecret.trim() !== '' ? clientSecret : undefined,
     refreshToken

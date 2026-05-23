@@ -38,6 +38,7 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 | シークレット名 | 内容 |
 |---------------|------|
 | `CHROME_EXTENSION_ID` | [デベロッパーダッシュボード](https://chrome.google.com/webstore/devconsole/) で対象拡張を開いたときの URL 末尾などに表示される ID |
+| `CHROME_PUBLISHER_ID` | Chrome Web Store の **開発者アカウント ID**（拡張 ID とは別）。[デベロッパーダッシュボード](https://chrome.google.com/webstore/devconsole/) にログインしたときの URL に含まれる publisher ID。`chrome-webstore-upload` v6 以降で必須 |
 | `CHROME_CLIENT_ID` | Google Cloud の OAuth 2.0 クライアント ID |
 | `CHROME_CLIENT_SECRET` | 上記クライアントのクライアントシークレット |
 | `CHROME_REFRESH_TOKEN` | 下記「リフレッシュトークンの再発行」手順で取得するリフレッシュトークン |
@@ -195,6 +196,16 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 7. **（任意）** Firefox AMO への **listed** 版として `extension-firefox.zip` をアップロード（下記「AMO 自動アップロード」を有効にした場合のみ）
 
 👉 [GitHub Actions](https://github.com/kyto64/youtublur/actions) でステータスを確認する。
+
+### 公開のみやり直す（`workflow_dispatch`）
+
+タグの push 後に Chrome / AMO の公開だけ失敗した場合、修正を `master` にマージしたうえで次を実行できる。
+
+1. **Settings → Secrets** に `CHROME_PUBLISHER_ID` など不足シークレットを設定する。
+2. [Actions → Publish extensions](https://github.com/kyto64/youtublur/actions/workflows/publish.yml) を開き **Run workflow** を選ぶ。
+3. **tag** に再公開したいタグ（例: `v1.12.5`）を入力して実行する。
+
+ワークフロー定義は **default ブランチ上の最新** が使われ、チェックアウトされるソースは指定タグのコミットになる。
 
 ---
 
