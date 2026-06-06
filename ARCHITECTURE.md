@@ -147,8 +147,7 @@ YouTube のプレイヤー DOM は SPA 遷移や遅延描画で差し替わる�
 ##### SPA ナビゲーション検知（issue #107）
 
 `installYoutubeNavigationHooks()` は `popstate` と `history.pushState`/`replaceState` のラッパーに加え、
-YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish` / `yt-page-data-updated`** イベントを購読して
-`observePlayer()` を再実行する。
+YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購読して `observePlayer()` を再実行する。
 
 これが無いと、content script が**プレイヤーページ以外（例: ホーム `/`）で初期化**された後にサムネイルを
 クリックして `/watch` へ SPA 遷移しても、YouTube が自前で保持した `history.pushState` 参照経由で遷移するため
