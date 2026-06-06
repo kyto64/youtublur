@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 require('./storage-mode.js');
-const { initPopup, saveModeToStorage, loadModeFromStorage } = require('./popup.js');
+const { initPopup, sendMessageToTab, saveModeToStorage, loadModeFromStorage } = require('./popup.js');
 
 describe('popup.js', () => {
   let syncGetMock;
@@ -127,7 +127,75 @@ describe('popup.js', () => {
       expect.any(Function)
     );
     expect(chrome.tabs.query).toHaveBeenCalled();
-    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'BG_MODE_CHANGED', mode: 'solid' });
+    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+      1,
+      { type: 'BG_MODE_CHANGED', mode: 'solid' },
+      expect.any(Function)
+    );
+  });
+
+  test('sendMessageToTab tolerates callback-style sendMessage without a Promise', () => {
+    chrome.tabs.sendMessage = vi.fn((_tabId, _message, callback) => {
+      callback();
+      return undefined;
+    });
+
+    expect(() => sendMessageToTab(1, { type: 'RELOAD_BLUR' })).not.toThrow();
+    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+      1,
+      { type: 'RELOAD_BLUR' },
+      expect.any(Function)
+    );
+  });
+
+  test('sendMessageToTab reports callback delivery failure', () => {
+    chrome.runtime.lastError = { message: 'Could not establish connection' };
+    chrome.tabs.sendMessage = vi.fn((_tabId, _message, callback) => {
+      callback();
+      return undefined;
+    });
+
+    const onResult = vi.fn();
+    sendMessageToTab(1, { type: 'RELOAD_BLUR' }, onResult);
+    expect(onResult).toHaveBeenCalledWith(false);
+    delete chrome.runtime.lastError;
+  });
+
+  test('sendMessageToTab reports Promise delivery success', async () => {
+    chrome.tabs.sendMessage = vi.fn().mockResolvedValue(undefined);
+
+    const onResult = vi.fn();
+    sendMessageToTab(1, { type: 'BG_MODE_CHANGED', mode: 'blur' }, onResult);
+    await Promise.resolve();
+    expect(onResult).toHaveBeenCalledWith(true);
+  });
+
+  test('reload button clears loading state when message delivery fails', () => {
+    document.body.innerHTML = `
+      <input type="radio" name="bgMode" id="modeSolid" value="solid">
+      <input type="radio" name="bgMode" id="modeBlur" value="blur">
+      <div id="reloadButton" role="button" tabindex="0">
+        <span id="labelReload">reloadButton</span>
+      </div>
+    `;
+    chrome.runtime.lastError = { message: 'Could not establish connection' };
+    chrome.tabs.sendMessage = vi.fn((_tabId, _message, callback) => {
+      callback();
+      return undefined;
+    });
+
+    initPopup();
+    document.dispatchEvent(new Event('DOMContentLoaded'));
+    document.getElementById('reloadButton').click();
+
+    return new Promise((resolve) => {
+      process.nextTick(() => {
+        expect(document.getElementById('reloadButton').classList.contains('loading')).toBe(false);
+        expect(document.getElementById('labelReload').textContent).toBe('reloadButton');
+        delete chrome.runtime.lastError;
+        resolve();
+      });
+    });
   });
 
   describe('reload button', () => {
@@ -151,7 +219,11 @@ describe('popup.js', () => {
       return new Promise((resolve) => {
         process.nextTick(() => {
           expect(chrome.tabs.query).toHaveBeenCalled();
-          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'RELOAD_BLUR' });
+          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+            1,
+            { type: 'RELOAD_BLUR' },
+            expect.any(Function)
+          );
           resolve();
         });
       });
@@ -167,7 +239,11 @@ describe('popup.js', () => {
 
       return new Promise((resolve) => {
         process.nextTick(() => {
-          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'RELOAD_BLUR' });
+          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+            1,
+            { type: 'RELOAD_BLUR' },
+            expect.any(Function)
+          );
           resolve();
         });
       });
@@ -183,7 +259,11 @@ describe('popup.js', () => {
 
       return new Promise((resolve) => {
         process.nextTick(() => {
-          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'RELOAD_BLUR' });
+          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+            1,
+            { type: 'RELOAD_BLUR' },
+            expect.any(Function)
+          );
           resolve();
         });
       });

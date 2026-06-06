@@ -65,8 +65,54 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 | ユニットテスト | `pnpm test`（pretest で自動 `tsc`） |
 | カバレッジ付きユニットテスト | `pnpm run test:coverage`（レポートは `coverage/`） |
 | E2E テスト | `pnpm run test:e2e` |
+| AI 検証（ブラー描画） | `pnpm run verify:ai-blur`（詳細は下記「検証方法」） |
 | Lint | `pnpm exec vp lint` |
 | リリース | `pnpm run release` → `git push --follow-tags origin master` |
+
+## 検証方法（ブラー描画 / issue #107）
+
+ブラー描画は「見た目」依存のため、ユニット/E2E のアサーションだけでは不具合を見逃しやすい。
+過去に issue #107（初回ロードでブラーが反映されず、タブ切替で初めて正常化する）が
+E2E を素通りした事例があるため、以下の前提と手順で検証する。
+
+### 前提となる描画モデル
+
+- blur canvas は `#movie_player` に挿入され、毎フレーム動画フレームをぼかして描画後、
+  `clearVideoContentRect` で**動画表示矩形だけを透明にクリア**する。
+  → ブラーは「プレイヤーの余白（レターボックス/ピラーボックス帯）」にのみ視認できる。
+- 既定の watch 表示では YouTube が `#movie_player` を**動画アスペクトぴったりに合わせる**ため帯が無く、
+  ブラーは事実上見えない。帯（=ブラーが見える状態）が生じるのは**シアター/ワイドレイアウト**。
+  実機検証で帯の画素を見るときはシアターモードに切り替えること。
+- issue #107 の中核は「canvas のバッキングサイズがプレイヤー表示寸法に追従しているか」。
+  描画ループ（`syncBlurCanvasSize`）が毎フレーム自己修復するため、帯の有無に関係なく
+  **無操作の初回ロードで `canvas.width/height == #movie_player の client box` を検証**できる。
+
+### レイヤ別の検証手段
+
+1. **ユニットテスト**（`content.test.js`）— 決定的・最優先。
+   外部 resize イベントなしでループがサイズ不一致を自己修復することを検証する
+   （`syncBlurCanvasSize` / 「blur loop self-heals canvas size ...」テスト）。
+
+2. **E2E**（`e2e/blur.spec.js`）— 実 YouTube 上で検証。
+   - `assertCanvasTracksContainer()`: **無操作の初回ロード**で canvas がプレイヤー寸法に追従しているか
+     （issue #107 の回帰ガード。ユーザー操作に依存しない）。
+   - `assertAmbientBandBlurred()`: シアター切替で帯を発生させた後、帯のブラー描画と中央クリアを検証。
+   - 注意: 検証より前に `.ytp-size-button` をクリックすると、その resize が不具合を**修復してしまい**
+     検証が無意味になる。初回ロードの追従チェックは必ずクリック前に行う。
+
+3. **AI-Agentic 検証**（`e2e/ai-verify/`、`pnpm run verify:ai-blur`）— E2E が脆い/再現が難しい場合の手段。
+   無操作の初回ロードとシアターのスクリーンショット + 決定的メトリクス（canvas 追従・帯のブラー・
+   空間分散など）+ AI 判定用プロンプトを `e2e/ai-verify/artifacts/`（git 管理外）に生成する。
+   明確なメトリクス異常は終了コードで返し（0=OK / 1=メトリクス異常 / 2=採取失敗）、
+   定性判定はスクリーンショットを AI に渡して `PASS/FAIL` を得る。詳細は
+   [`e2e/ai-verify/README.md`](./e2e/ai-verify/README.md)。
+
+### サンドボックス/ヘッドレスでの注意
+
+パッケージ拡張の content script は、環境によってはヘッドレス Chrome（`--load-extension`）で
+注入されないことがある。その場合は Firefox fixture と同じ手法で `chrome` をモックし、
+`storage-mode.js` + `content.js` を `addInitScript` で**手動注入**すれば、実 YouTube DOM 上で
+content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evidence.mjs` 参照）。
 
 ## コンテキスト優先順位
 
@@ -113,6 +159,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 | マニフェスト | [`manifest.json`](./manifest.json) |
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |
 | E2E テスト | [`e2e/`](./e2e/) |
+| AI 検証ハーネス | [`e2e/ai-verify/`](./e2e/ai-verify/)（`pnpm run verify:ai-blur`、ブラー描画の証跡採取） |
 | 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token） |
 | CI/CD | [`.github/workflows/publish.yml`](./.github/workflows/publish.yml) |
 

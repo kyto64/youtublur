@@ -127,8 +127,35 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
    ↓
 5. 現在のモードに基づいて背景を適用
    ↓
-6. MutationObserver でプレイヤーの変更を監視
+6. MutationObserver / SPA navigation / visibility 復帰でプレイヤーを再評価
+   ↓
+7. 現在のプレイヤーに blur canvas が無い場合は短時間リトライして再適用
 ```
+
+#### Blur canvas ライフサイクル（content.js）
+
+YouTube のプレイヤー DOM は SPA 遷移や遅延描画で差し替わるため、blur canvas は単一のグローバル参照だけに依存しない。
+
+| 関数 | 役割 |
+|------|------|
+| `hasCurrentBlurCanvas(container)` | モジュール参照・DOM 所属・現プレイヤー内 ID の三条件を満たすか判定 |
+| `discardStaleBlurCanvas(container)` | 別プレイヤーに残った canvas や DOM 外れを検知し、ResizeObserver / rAF / Gecko snap を解放 |
+| `clearVideoContentRect(...)` | canvas を `z-index: 1` で前面に置きつつ、動画表示領域だけ毎フレームクリアして映像を鮮明に保つ |
+| `scheduleBlurInitRetryIfNeeded()` | video / canvas 未準備時に指数バックオフで再初期化（最大 25 回）。上限到達後は `blurInitRetryExhausted` で停止し、MutationObserver 等の再評価まで待つ |
+| `startBlurLoop()` | 描画 rAF。canvas が完全に欠落した場合は rAF を止め、プレイヤーセレクタ一時消失時のみ rAF を継続 |
+
+##### SPA ナビゲーション検知（issue #107）
+
+`installYoutubeNavigationHooks()` は `popstate` と `history.pushState`/`replaceState` のラッパーに加え、
+YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購読して `observePlayer()` を再実行する。
+
+これが無いと、content script が**プレイヤーページ以外（例: ホーム `/`）で初期化**された後にサムネイルを
+クリックして `/watch` へ SPA 遷移しても、YouTube が自前で保持した `history.pushState` 参照経由で遷移するため
+ラッパーで捕捉できず、`observePlayer()` が再実行されない。結果 blur canvas が生成されず、タブ切替
+（`visibilitychange`）まで反映されなかった。公式イベント購読により SPA 遷移を確実に再評価する。
+これらのイベントは page world から共有 DOM 上に発火されるため、isolated world の content script でも受け取れる。
+
+`popup.js` の `sendMessageToTab()` は callback 型と Promise 型の `chrome.tabs.sendMessage` の両方に対応する。
 
 ### ユーザー操作フロー
 

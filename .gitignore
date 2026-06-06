@@ -11,5 +11,8 @@ node_modules
 playwright-report/
 test-results/
 
+# AI-Agentic 検証ハーネスの採取物
+e2e/ai-verify/artifacts/
+
 # Vitest coverage
 coverage/

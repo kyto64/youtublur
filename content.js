@@ -181,6 +181,7 @@ const BLUR_INIT_RETRY_MAX_MS = 2000;
 const BLUR_INIT_RETRY_MAX_ATTEMPTS = 25;
 let blurInitRetryTimer = null;
 let blurInitRetryAttempt = 0;
+let blurInitRetryExhausted = false;
 function clearBlurInitRetryTimer() {
     if (blurInitRetryTimer !== null) {
         clearTimeout(blurInitRetryTimer);
@@ -190,17 +191,25 @@ function clearBlurInitRetryTimer() {
 function stopBlurInitRetryCompletely() {
     clearBlurInitRetryTimer();
     blurInitRetryAttempt = 0;
+    blurInitRetryExhausted = false;
+}
+function restartBlurInitRetryCycle() {
+    clearBlurInitRetryTimer();
+    blurInitRetryAttempt = 0;
+    blurInitRetryExhausted = false;
 }
 function scheduleBlurInitRetryIfNeeded() {
     if (currentMode !== 'blur') {
         stopBlurInitRetryCompletely();
         return;
     }
-    if (blurCanvas) {
+    const currentContainer = getPlayerContainer();
+    discardStaleBlurCanvas(currentContainer);
+    if (hasCurrentBlurCanvas(currentContainer)) {
         stopBlurInitRetryCompletely();
         return;
     }
-    if (blurInitRetryTimer !== null)
+    if (blurInitRetryExhausted || blurInitRetryTimer !== null)
         return;
     function attemptBlurInit() {
         blurInitRetryTimer = null;
@@ -209,23 +218,26 @@ function scheduleBlurInitRetryIfNeeded() {
             return;
         }
         const container = getPlayerContainer();
+        discardStaleBlurCanvas(container);
         if (container) {
             initBlurForPlayer(container);
-            if (blurCanvas) {
+            if (hasCurrentBlurCanvas(container)) {
                 stopBlurInitRetryCompletely();
                 return;
             }
         }
         blurInitRetryAttempt += 1;
         if (blurInitRetryAttempt >= BLUR_INIT_RETRY_MAX_ATTEMPTS) {
-            stopBlurInitRetryCompletely();
+            blurInitRetryExhausted = true;
+            clearBlurInitRetryTimer();
+            blurInitRetryAttempt = 0;
+            console.warn('[youtublur] blur init retry exhausted');
             return;
         }
         const delay = Math.min(BLUR_INIT_RETRY_MAX_MS, BLUR_INIT_RETRY_INITIAL_MS * 2 ** (blurInitRetryAttempt - 1));
         blurInitRetryTimer = setTimeout(attemptBlurInit, delay);
     }
-    blurInitRetryAttempt = 0;
-    const firstDelay = Math.min(BLUR_INIT_RETRY_MAX_MS, BLUR_INIT_RETRY_INITIAL_MS * 2 ** 0);
+    const firstDelay = Math.min(BLUR_INIT_RETRY_MAX_MS, BLUR_INIT_RETRY_INITIAL_MS * 2 ** blurInitRetryAttempt);
     blurInitRetryTimer = setTimeout(attemptBlurInit, firstDelay);
 }
 function normalizeMode(mode) {
@@ -240,6 +252,38 @@ function getPlayerContainer() {
 }
 function getVideoElement(container) {
     return container?.querySelector('video');
+}
+function hasCurrentBlurCanvas(container) {
+    if (!container || !blurCanvas || !blurCtx)
+        return false;
+    if (!document.contains(blurCanvas))
+        return false;
+    return container.querySelector('#yt-light-bg-blur-canvas') === blurCanvas;
+}
+function discardStaleBlurCanvas(container) {
+    if (!blurCanvas)
+        return;
+    if (!document.contains(blurCanvas)) {
+        blurCanvas = null;
+        blurCtx = null;
+        detachPlayerResizeObserver();
+        stopBlurLoop();
+        releaseGeckoVideoSnapCanvas();
+        return;
+    }
+    if (!container || hasCurrentBlurCanvas(container))
+        return;
+    try {
+        blurCanvas.width = 0;
+        blurCanvas.height = 0;
+    }
+    catch { /* noop */ }
+    blurCanvas.remove();
+    blurCanvas = null;
+    blurCtx = null;
+    detachPlayerResizeObserver();
+    stopBlurLoop();
+    releaseGeckoVideoSnapCanvas();
 }
 function ensureGeckoVideoSnapCanvas(w, h) {
     if (typeof document === 'undefined')
@@ -273,6 +317,7 @@ function releaseGeckoVideoSnapCanvas() {
 function createBlurCanvas(container) {
     if (!container)
         return null;
+    discardStaleBlurCanvas(container);
     const existing = container.querySelector('#yt-light-bg-blur-canvas');
     if (existing) {
         blurCtx = existing.getContext('2d');
@@ -296,7 +341,7 @@ function createBlurCanvas(container) {
     inset: 0;
     width: auto;
     height: auto;
-    z-index: -1;
+    z-index: 1;
     pointer-events: none;
   `;
     if (container.style.position !== 'relative' && container.style.position !== 'absolute') {
@@ -310,6 +355,33 @@ function createBlurCanvas(container) {
         return null;
     }
     return blurCanvas;
+}
+function clearVideoContentRect(video, canvas, ctx) {
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    if (cw === 0 || ch === 0 || vw === 0 || vh === 0)
+        return;
+    const videoAspect = vw / vh;
+    const canvasAspect = cw / ch;
+    let dx = 0;
+    let dy = 0;
+    let dw = cw;
+    let dh = ch;
+    if (videoAspect > canvasAspect) {
+        dh = cw / videoAspect;
+        dy = (ch - dh) / 2;
+    }
+    else {
+        dw = ch * videoAspect;
+        dx = (cw - dw) / 2;
+    }
+    const x1 = Math.floor(dx);
+    const y1 = Math.floor(dy);
+    const x2 = Math.ceil(dx + dw);
+    const y2 = Math.ceil(dy + dh);
+    ctx.clearRect(x1, y1, x2 - x1, y2 - y1);
 }
 function drawBlurFrame(video, canvas, ctx) {
     if (!video || !canvas || !ctx || video.readyState < 2)
@@ -357,6 +429,7 @@ function drawBlurFrame(video, canvas, ctx) {
             finally {
                 ctx.filter = 'none';
             }
+            clearVideoContentRect(video, canvas, ctx);
             return;
         }
     }
@@ -370,16 +443,18 @@ function drawBlurFrame(video, canvas, ctx) {
     finally {
         ctx.filter = 'none';
     }
+    clearVideoContentRect(video, canvas, ctx);
 }
 function resizeCanvas(container) {
-    if (!blurCanvas || !container)
+    if (!hasCurrentBlurCanvas(container) || !container || !blurCanvas)
         return;
+    const canvas = blurCanvas;
     const w = Math.max(1, Math.ceil(container.clientWidth));
     const h = Math.max(1, Math.ceil(container.clientHeight));
-    blurCanvas.width = w;
-    blurCanvas.height = h;
-    blurCanvas.style.width = `${w}px`;
-    blurCanvas.style.height = `${h}px`;
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
 }
 function detachPlayerResizeObserver() {
     if (playerResizeObserver) {
@@ -392,30 +467,40 @@ function attachPlayerResizeObserver(container) {
         return;
     detachPlayerResizeObserver();
     playerResizeObserver = new ResizeObserver(() => {
-        if (currentMode !== 'blur' || !blurCanvas)
+        if (currentMode !== 'blur')
             return;
         const c = getPlayerContainer();
-        if (c)
+        discardStaleBlurCanvas(c);
+        if (hasCurrentBlurCanvas(c))
             resizeCanvas(c);
     });
     playerResizeObserver.observe(container);
 }
 function startBlurLoop(container) {
     stopBlurLoop();
-    if (!blurCanvas || !blurCtx)
-        return;
     const initialContainer = container || getPlayerContainer();
-    if (!initialContainer || !getVideoElement(initialContainer))
+    if (!hasCurrentBlurCanvas(initialContainer) || !getVideoElement(initialContainer))
         return;
     // FPS監視と描画間隔調整の初期化
     lastFrameTime = 0;
     frameTimes = [];
     adjustmentCooldown = 0;
     function loop(timestamp) {
-        if (currentMode !== 'blur' || !blurCanvas)
+        if (currentMode !== 'blur') {
+            animationId = null;
             return;
-        const c = getPlayerContainer();
-        const video = c ? getVideoElement(c) : null;
+        }
+        if (!hasCurrentBlurCanvas(initialContainer)) {
+            scheduleBlurInitRetryIfNeeded();
+            animationId = null;
+            return;
+        }
+        const video = getVideoElement(initialContainer);
+        if (!video) {
+            scheduleBlurInitRetryIfNeeded();
+            animationId = null;
+            return;
+        }
         frameCount++;
         updateFPS(timestamp);
         if (video && frameCount % currentDrawInterval === 0) {
@@ -441,14 +526,17 @@ function showBlurMode(container) {
         return;
     }
     createBlurCanvas(container);
-    if (!blurCanvas) {
+    if (!hasCurrentBlurCanvas(container)) {
         scheduleBlurInitRetryIfNeeded();
         return;
     }
+    const canvas = blurCanvas;
+    if (!canvas)
+        return;
     resizeCanvas(container);
     attachPlayerResizeObserver(container);
-    blurCanvas.style.display = '';
-    blurCanvas.style.visibility = 'visible';
+    canvas.style.display = '';
+    canvas.style.visibility = 'visible';
     container.dataset.ytLightBgMode = 'blur';
     startBlurLoop(container);
 }
@@ -490,12 +578,15 @@ function initBlurForPlayer(container) {
     if (!video)
         return;
     createBlurCanvas(container);
-    if (blurCanvas) {
+    if (hasCurrentBlurCanvas(container)) {
+        const canvas = blurCanvas;
+        if (!canvas)
+            return;
         stopBlurInitRetryCompletely();
         resizeCanvas(container);
         attachPlayerResizeObserver(container);
-        blurCanvas.style.display = '';
-        blurCanvas.style.visibility = 'visible';
+        canvas.style.display = '';
+        canvas.style.visibility = 'visible';
         container.dataset.ytLightBgMode = 'blur';
         startBlurLoop(container);
     }
@@ -535,7 +626,9 @@ function observePlayer() {
     function tryInit() {
         if (typeof document === 'undefined')
             return;
+        restartBlurInitRetryCycle();
         const c = getPlayerContainer();
+        discardStaleBlurCanvas(c);
         if (c)
             initBlurForPlayer(c);
         scheduleBlurInitRetryIfNeeded();
@@ -557,15 +650,8 @@ function observePlayer() {
             const c = getPlayerContainer();
             if (!c)
                 return;
-            if (blurCanvas && !document.contains(blurCanvas)) {
-                blurCanvas = null;
-                blurCtx = null;
-                scheduleTryInit();
-                return;
-            }
-            // 初回はプレイヤーに video がまだ無く init がスキップされることがある。後から video が挿入されても
-            // blurCanvas が null のままなら従来の observer は再試行しなかった。
-            if (currentMode === 'blur' && !blurCanvas) {
+            discardStaleBlurCanvas(c);
+            if (currentMode === 'blur' && !hasCurrentBlurCanvas(c)) {
                 scheduleTryInit();
             }
         });
@@ -605,6 +691,16 @@ function installYoutubeNavigationHooks() {
     youtubeNavHooksInstalled = true;
     const onNav = () => queueMicrotask(() => observePlayer());
     window.addEventListener('popstate', onNav);
+    // YouTube (Polymer/kevlar) の SPA 遷移を確実に検知する。
+    // issue #107: content script の初期化がプレイヤーページ以外（例: ホーム /）で起きると
+    // observePlayer は監視を張らずに return する。そこからサムネイルをクリックして /watch へ
+    // SPA 遷移しても、YouTube は自前で保持した history.pushState 参照経由で遷移するため
+    // 下の pushState ラッパーでは捕捉できず、observePlayer が再実行されない。結果 blur canvas が
+    // 生成されず、タブ切替（visibilitychange）まで反映されなかった。
+    // YouTube が SPA 遷移完了時に dispatch する yt-navigate-finish を購読することで確実に再評価する。
+    // このイベントは page world から共有 DOM 上に発火されるため、isolated world の content script でも受け取れる。
+    // （遷移完了後にプレイヤー DOM が遅れて現れるケースは既存の MutationObserver + リトライが拾う）
+    window.addEventListener('yt-navigate-finish', onNav);
     function wrapHistoryMethod(method) {
         const orig = history[method];
         history[method] = function patchedHistory(...args) {
@@ -617,9 +713,10 @@ function installYoutubeNavigationHooks() {
     wrapHistoryMethod('replaceState');
 }
 function handleResize() {
-    if (currentMode === 'blur' && blurCanvas) {
+    if (currentMode === 'blur') {
         const container = getPlayerContainer();
-        if (container)
+        discardStaleBlurCanvas(container);
+        if (hasCurrentBlurCanvas(container))
             resizeCanvas(container);
     }
 }
@@ -628,14 +725,15 @@ function initExtension() {
         installYoutubeNavigationHooks();
         observePlayer();
         // Load mode from storage with fallback support
-        loadModeFromStorage().then((saved) => {
+        loadModeFromStorage()
+            .then((saved) => {
             const normalized = normalizeMode(saved);
             if (normalized !== currentMode) {
                 applyMode(normalized, getPlayerContainer());
             }
-            else {
-                // observePlayer is already called above; no need to call again
-            }
+        })
+            .catch((error) => {
+            console.warn('[youtublur] failed to load mode from storage:', error);
         });
         chrome.runtime.onMessage.addListener((msg) => {
             if (msg.type === 'BG_MODE_CHANGED') {
@@ -643,10 +741,14 @@ function initExtension() {
             }
             else if (msg.type === 'RELOAD_BLUR') {
                 teardownPlayerPageBlur();
-                loadModeFromStorage().then((saved) => {
+                loadModeFromStorage()
+                    .then((saved) => {
                     const normalized = normalizeMode(saved);
                     applyMode(normalized);
                     observePlayer();
+                })
+                    .catch((error) => {
+                    console.warn('[youtublur] failed to reload blur mode from storage:', error);
                 });
             }
         });

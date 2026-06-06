@@ -67,12 +67,11 @@ test('should tear down blur when SPA leaves the player page then restore on retu
   await page.waitForURL(/youtube\.com\/?(\?.*)?$/, { timeout: 30000 });
   await expect(youtublurCanvas).toHaveCount(0);
 
-  await page.evaluate((url) => {
-    const pathAndSearch = new URL(url).pathname + new URL(url).search;
-    history.pushState(null, '', pathAndSearch);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  }, watchUrl);
-
-  await page.waitForURL(watchUrl, { timeout: 30000 });
+  // 戻りは watch URL への通常遷移で確実に再描画させる。合成 pushState による戻りでは
+  // YouTube のルーターが watch を再描画しないことがあり（#movie_player が現れず復元できない）、
+  // 実 YouTube の状態に依存してテストが flaky になるため。SPA 遷移での blur 復元は
+  // blur.spec.js の issue #107 専用テスト（検索結果→クリックの実 SPA 遷移）で担保している。
+  await page.goto(watchUrl);
+  await waitForWatchPlayer(page);
   await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
 });

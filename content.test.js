@@ -39,7 +39,8 @@ const {
 function mock2dContext() {
   return {
     filter: '',
-    drawImage: vi.fn()
+    drawImage: vi.fn(),
+    clearRect: vi.fn()
   };
 }
 
@@ -130,6 +131,7 @@ describe('content.js', () => {
     expect(canvas).not.toBeNull();
     expect(canvas.tagName).toBe('CANVAS');
     expect(canvas.id).toBe('yt-light-bg-blur-canvas');
+    expect(canvas.style.zIndex).toBe('1');
     expect(container.style.position).toBe('relative');
   });
 
@@ -228,7 +230,39 @@ describe('content.js', () => {
 
     drawBlurFrame(video, canvas, ctx);
     expect(ctx.drawImage).toHaveBeenCalledTimes(1);
+    expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 800, 450);
     expect(ctx.filter).toBe('none');
+  });
+
+  test('drawBlurFrame clears only the displayed video content area when side bars exist', () => {
+    const ctx = mock2dContext();
+    const video = document.createElement('video');
+    Object.defineProperty(video, 'readyState', { value: 4, configurable: true });
+    Object.defineProperty(video, 'videoWidth', { value: 1920, configurable: true });
+    Object.defineProperty(video, 'videoHeight', { value: 1080, configurable: true });
+    const canvas = document.createElement('canvas');
+    canvas.width = 2048;
+    canvas.height = 931;
+
+    drawBlurFrame(video, canvas, ctx);
+
+    expect(ctx.drawImage).toHaveBeenCalledTimes(1);
+    expect(ctx.clearRect).toHaveBeenCalledWith(196, 0, 1656, 931);
+  });
+
+  test('drawBlurFrame clears fractional video bounds without leaving edge artifacts', () => {
+    const ctx = mock2dContext();
+    const video = document.createElement('video');
+    Object.defineProperty(video, 'readyState', { value: 4, configurable: true });
+    Object.defineProperty(video, 'videoWidth', { value: 1920, configurable: true });
+    Object.defineProperty(video, 'videoHeight', { value: 1080, configurable: true });
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+
+    drawBlurFrame(video, canvas, ctx);
+
+    expect(ctx.clearRect).toHaveBeenCalledWith(0, 21, 100, 58);
   });
 
   test('drawBlurFrame resets filter when drawImage throws', () => {
@@ -421,6 +455,88 @@ describe('content.js', () => {
       expect(player.dataset.ytLightBgMode).toBe('blur');
     });
 
+    test('recreates blur canvas on the current player after player container is replaced', async () => {
+      document.body.innerHTML = '<div id="movie_player"><video></video></div>';
+      const firstPlayer = document.getElementById('movie_player');
+
+      observePlayer();
+      const firstCanvas = firstPlayer.querySelector('#yt-light-bg-blur-canvas');
+      expect(firstCanvas).not.toBeNull();
+
+      firstPlayer.removeAttribute('id');
+      firstPlayer.className = 'old-html5-video-player';
+
+      const nextPlayer = document.createElement('div');
+      nextPlayer.id = 'movie_player';
+      nextPlayer.appendChild(document.createElement('video'));
+      document.body.appendChild(nextPlayer);
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const nextCanvas = nextPlayer.querySelector('#yt-light-bg-blur-canvas');
+      expect(nextCanvas).not.toBeNull();
+      expect(nextCanvas).not.toBe(firstCanvas);
+      expect(firstPlayer.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+      expect(nextPlayer.dataset.ytLightBgMode).toBe('blur');
+    });
+
+    test('recreates blur canvas when YouTube removes the current canvas', async () => {
+      document.body.innerHTML = '<div id="movie_player"><video></video></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      const firstCanvas = player.querySelector('#yt-light-bg-blur-canvas');
+      expect(firstCanvas).not.toBeNull();
+
+      firstCanvas.remove();
+
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const nextCanvas = player.querySelector('#yt-light-bg-blur-canvas');
+      expect(nextCanvas).not.toBeNull();
+      expect(nextCanvas).not.toBe(firstCanvas);
+      expect(player.dataset.ytLightBgMode).toBe('blur');
+    });
+
+    test('does not discard blur canvas when the player selector temporarily disappears', () => {
+      document.body.innerHTML = '<div id="movie_player"><video></video></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      const firstCanvas = player.querySelector('#yt-light-bg-blur-canvas');
+      expect(firstCanvas).not.toBeNull();
+
+      player.removeAttribute('id');
+      handleResize();
+
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).toBe(firstCanvas);
+    });
+
+    test('keeps the blur loop alive while the player selector is temporarily missing', () => {
+      vi.restoreAllMocks();
+      const rafCallbacks = [];
+      const requestFrame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+        rafCallbacks.push(cb);
+        return rafCallbacks.length;
+      });
+      vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+      document.body.innerHTML = '<div id="movie_player"><video></video></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      expect(rafCallbacks).toHaveLength(1);
+
+      player.removeAttribute('id');
+      requestFrame.mockClear();
+      rafCallbacks[0](16);
+
+      expect(requestFrame).toHaveBeenCalledTimes(1);
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+    });
+
     test('does not add blur canvas when mode is solid and video appears later', async () => {
       setMode('solid');
       document.body.innerHTML = '<div id="movie_player"></div>';
@@ -436,6 +552,7 @@ describe('content.js', () => {
 
     test('stops blur init retry after max attempts when video never appears', async () => {
       vi.useFakeTimers();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       vi.stubGlobal('location', { pathname: '/watch' });
       document.body.innerHTML = '<div id="content"><div id="movie_player"></div></div>';
       const player = document.getElementById('movie_player');
@@ -443,7 +560,37 @@ describe('content.js', () => {
       observePlayer();
       await vi.runAllTimersAsync();
       expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+      expect(warnSpy).toHaveBeenCalledWith('[youtublur] blur init retry exhausted');
+
+      const timersAfterExhaust = vi.getTimerCount();
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(vi.getTimerCount()).toBe(timersAfterExhaust);
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+
+      warnSpy.mockRestore();
       vi.useRealTimers();
+    });
+
+    test('stops blur loop rAF when canvas is removed from the player', () => {
+      vi.restoreAllMocks();
+      const rafCallbacks = [];
+      const requestFrame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+        rafCallbacks.push(cb);
+        return rafCallbacks.length;
+      });
+      vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+      document.body.innerHTML = '<div id="movie_player"><video></video></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      expect(rafCallbacks).toHaveLength(1);
+
+      player.querySelector('#yt-light-bg-blur-canvas').remove();
+      requestFrame.mockClear();
+      rafCallbacks[0](16);
+
+      expect(requestFrame).not.toHaveBeenCalled();
     });
 
     test('retry path creates canvas when video appears after first failed init', async () => {
@@ -535,6 +682,40 @@ describe('content.js', () => {
       const player = document.getElementById('movie_player');
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
       expect(syncGet).toHaveBeenCalled();
+    });
+
+    test('initializes blur on yt-navigate-finish after SPA navigation from a non-player page (issue #107)', async () => {
+      // content script が プレイヤーページ以外（ホーム /）で初期化されるケースを再現する。
+      vi.stubGlobal('location', { pathname: '/' });
+      document.body.innerHTML = '<div id="content"></div>';
+      const syncGet = vi.fn((_keys, cb) => cb && cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: 0 }));
+      const localGet = vi.fn((_keys, cb) => cb && cb({}));
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        },
+        runtime: { onMessage: { addListener: vi.fn() } }
+      });
+
+      initExtension();
+      await Promise.resolve();
+      await Promise.resolve();
+      // ホームではプレイヤーが無いので canvas は作られない
+      expect(document.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+
+      // サムネイルをクリック → YouTube が SPA 遷移して /watch のプレイヤーを描画する
+      vi.stubGlobal('location', { pathname: '/watch' });
+      document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
+
+      // history.pushState ラッパーでは捕捉できない遷移でも、YouTube 公式イベントで再評価される
+      window.dispatchEvent(new Event('yt-navigate-finish'));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const player = document.getElementById('movie_player');
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(player.dataset.ytLightBgMode).toBe('blur');
     });
 
     test('applies saved solid mode when storage differs from optimistic blur', async () => {

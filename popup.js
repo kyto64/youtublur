@@ -36,6 +36,27 @@ function applyLocalizedStrings() {
     if (reload)
         reload.textContent = chrome.i18n.getMessage('reloadButton');
 }
+// Supports both callback-style and Promise-returning chrome.tabs.sendMessage implementations.
+function sendMessageToTab(tabId, message, onResult) {
+    let settled = false;
+    const settle = (delivered) => {
+        if (settled)
+            return;
+        settled = true;
+        onResult?.(delivered);
+    };
+    try {
+        const maybePromise = chrome.tabs.sendMessage(tabId, message, () => {
+            settle(!chrome.runtime?.lastError);
+        });
+        if (maybePromise && typeof maybePromise.then === 'function') {
+            maybePromise.then(() => settle(true)).catch(() => settle(false));
+        }
+    }
+    catch {
+        settle(false);
+    }
+}
 function initPopup() {
     document.addEventListener('DOMContentLoaded', () => {
         applyLocalizedStrings();
@@ -51,7 +72,7 @@ function initPopup() {
                     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
                         const tab = tabs[0];
                         if (tab?.id && tab.url?.includes('youtube.com')) {
-                            chrome.tabs.sendMessage(tab.id, { type: 'BG_MODE_CHANGED', mode }).catch(() => { });
+                            sendMessageToTab(tab.id, { type: 'BG_MODE_CHANGED', mode });
                         }
                     });
                 });
@@ -72,14 +93,22 @@ function initPopup() {
                         reloadButton.classList.add('loading');
                         if (labelReload)
                             labelReload.textContent = chrome.i18n.getMessage('reloadingButton');
-                        chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => { });
-                        // リロード完了後、クラスを削除して元の状態に戻す
-                        setTimeout(() => {
-                            isReloading = false;
-                            reloadButton.classList.remove('loading');
-                            if (labelReload)
-                                labelReload.textContent = chrome.i18n.getMessage('reloadButton');
-                        }, 500);
+                        sendMessageToTab(tab.id, { type: 'RELOAD_BLUR' }, (delivered) => {
+                            if (!delivered) {
+                                isReloading = false;
+                                reloadButton.classList.remove('loading');
+                                if (labelReload)
+                                    labelReload.textContent = chrome.i18n.getMessage('reloadButton');
+                                return;
+                            }
+                            // リロード完了後、クラスを削除して元の状態に戻す
+                            setTimeout(() => {
+                                isReloading = false;
+                                reloadButton.classList.remove('loading');
+                                if (labelReload)
+                                    labelReload.textContent = chrome.i18n.getMessage('reloadButton');
+                            }, 500);
+                        });
                     }
                     else {
                         isReloading = false;
@@ -101,5 +130,5 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 }
 if (typeof module !== 'undefined' && module.exports) {
     const { STORAGE_KEY, saveModeToStorage, loadModeFromStorage } = require('./storage-mode.js');
-    module.exports = { initPopup, STORAGE_KEY, saveModeToStorage, loadModeFromStorage };
+    module.exports = { initPopup, sendMessageToTab, STORAGE_KEY, saveModeToStorage, loadModeFromStorage };
 }
