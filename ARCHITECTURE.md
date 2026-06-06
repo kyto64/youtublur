@@ -144,6 +144,18 @@ YouTube のプレイヤー DOM は SPA 遷移や遅延描画で差し替わる�
 | `scheduleBlurInitRetryIfNeeded()` | video / canvas 未準備時に指数バックオフで再初期化（最大 25 回）。上限到達後は `blurInitRetryExhausted` で停止し、MutationObserver 等の再評価まで待つ |
 | `startBlurLoop()` | 描画 rAF。canvas が完全に欠落した場合は rAF を止め、プレイヤーセレクタ一時消失時のみ rAF を継続 |
 
+##### SPA ナビゲーション検知（issue #107）
+
+`installYoutubeNavigationHooks()` は `popstate` と `history.pushState`/`replaceState` のラッパーに加え、
+YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish` / `yt-page-data-updated`** イベントを購読して
+`observePlayer()` を再実行する。
+
+これが無いと、content script が**プレイヤーページ以外（例: ホーム `/`）で初期化**された後にサムネイルを
+クリックして `/watch` へ SPA 遷移しても、YouTube が自前で保持した `history.pushState` 参照経由で遷移するため
+ラッパーで捕捉できず、`observePlayer()` が再実行されない。結果 blur canvas が生成されず、タブ切替
+（`visibilitychange`）まで反映されなかった。公式イベント購読により SPA 遷移を確実に再評価する。
+これらのイベントは page world から共有 DOM 上に発火されるため、isolated world の content script でも受け取れる。
+
 `popup.js` の `sendMessageToTab()` は callback 型と Promise 型の `chrome.tabs.sendMessage` の両方に対応する。
 
 ### ユーザー操作フロー

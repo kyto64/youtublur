@@ -727,6 +727,17 @@ function installYoutubeNavigationHooks() {
 
   window.addEventListener('popstate', onNav);
 
+  // YouTube (Polymer/kevlar) の SPA 遷移を確実に検知する。
+  // issue #107: content script の初期化がプレイヤーページ以外（例: ホーム /）で起きると
+  // observePlayer は監視を張らずに return する。そこからサムネイルをクリックして /watch へ
+  // SPA 遷移しても、YouTube は自前で保持した history.pushState 参照経由で遷移するため
+  // 下の pushState ラッパーでは捕捉できず、observePlayer が再実行されない。結果 blur canvas が
+  // 生成されず、タブ切替（visibilitychange）まで反映されなかった。
+  // YouTube が dispatch する公式ナビゲーションイベントを購読することで確実に再評価する。
+  // これらは page world から共有 DOM 上に発火されるため、isolated world の content script でも受け取れる。
+  window.addEventListener('yt-navigate-finish', onNav);
+  window.addEventListener('yt-page-data-updated', onNav);
+
   function wrapHistoryMethod(method: 'pushState' | 'replaceState') {
     const orig = history[method];
     history[method] = function patchedHistory(...args: Parameters<typeof orig>) {

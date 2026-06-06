@@ -12,6 +12,7 @@
     "pretest:coverage": "tsc",
     "test:coverage": "vp test --coverage --run",
     "test:e2e": "playwright test",
+    "verify:ai-blur": "node e2e/ai-verify/capture-blur-evidence.mjs",
     "version": "node scripts/sync-version.js && git add manifest.json",
     "release": "commit-and-tag-version"
   },

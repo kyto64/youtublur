@@ -684,6 +684,40 @@ describe('content.js', () => {
       expect(syncGet).toHaveBeenCalled();
     });
 
+    test('initializes blur on yt-navigate-finish after SPA navigation from a non-player page (issue #107)', async () => {
+      // content script が プレイヤーページ以外（ホーム /）で初期化されるケースを再現する。
+      vi.stubGlobal('location', { pathname: '/' });
+      document.body.innerHTML = '<div id="content"></div>';
+      const syncGet = vi.fn((_keys, cb) => cb && cb({ playerBackgroundMode: 'blur', playerBackgroundModeTimestamp: 0 }));
+      const localGet = vi.fn((_keys, cb) => cb && cb({}));
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: vi.fn() },
+          local: { get: localGet, set: vi.fn() }
+        },
+        runtime: { onMessage: { addListener: vi.fn() } }
+      });
+
+      initExtension();
+      await Promise.resolve();
+      await Promise.resolve();
+      // ホームではプレイヤーが無いので canvas は作られない
+      expect(document.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+
+      // サムネイルをクリック → YouTube が SPA 遷移して /watch のプレイヤーを描画する
+      vi.stubGlobal('location', { pathname: '/watch' });
+      document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
+
+      // history.pushState ラッパーでは捕捉できない遷移でも、YouTube 公式イベントで再評価される
+      window.dispatchEvent(new Event('yt-navigate-finish'));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const player = document.getElementById('movie_player');
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();
+      expect(player.dataset.ytLightBgMode).toBe('blur');
+    });
+
     test('applies saved solid mode when storage differs from optimistic blur', async () => {
       const timestamp = Date.now();
       const syncGet = vi.fn((_keys, cb) => {

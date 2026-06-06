@@ -44,6 +44,21 @@ function youtublurCanvasLocator(page) {
 }
 
 /**
+ * issue #107 の再現経路: 非プレイヤーページ（検索結果）で content script を初期化させてから、
+ * 動画をクリックして /watch へ SPA 遷移する。直接 /watch を開く（F5 相当）と不具合が出ないため、
+ * この経路を通さないと #107 を検知できない。
+ * @param {import('@playwright/test').Page} page
+ */
+async function navigateToWatchViaSpa(page) {
+  await page.goto('https://www.youtube.com/results?search_query=lofi');
+  const videoLink = page.locator('ytd-video-renderer a#video-title, ytd-video-renderer a#thumbnail').first();
+  await videoLink.waitFor({ state: 'visible', timeout: 30000 });
+  await videoLink.click();
+  await page.waitForFunction(() => location.pathname === '/watch', null, { timeout: 30000 });
+  await waitForWatchPlayer(page);
+}
+
+/**
  * Opens the extension popup in a new tab (same pattern as blur.spec.js).
  * @param {import('@playwright/test').BrowserContext} context
  * @param {string} extensionId
@@ -59,5 +74,6 @@ module.exports = {
   waitForExtensionStorageMode,
   waitForWatchPlayer,
   youtublurCanvasLocator,
+  navigateToWatchViaSpa,
   openExtensionPopup,
 };
