@@ -132,6 +132,20 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 7. 現在のプレイヤーに blur canvas が無い場合は短時間リトライして再適用
 ```
 
+#### Blur canvas ライフサイクル（content.js）
+
+YouTube のプレイヤー DOM は SPA 遷移や遅延描画で差し替わるため、blur canvas は単一のグローバル参照だけに依存しない。
+
+| 関数 | 役割 |
+|------|------|
+| `hasCurrentBlurCanvas(container)` | モジュール参照・DOM 所属・現プレイヤー内 ID の三条件を満たすか判定 |
+| `discardStaleBlurCanvas(container)` | 別プレイヤーに残った canvas や DOM 外れを検知し、ResizeObserver / rAF / Gecko snap を解放 |
+| `clearVideoContentRect(...)` | canvas を `z-index: 1` で前面に置きつつ、動画表示領域だけ毎フレームクリアして映像を鮮明に保つ |
+| `scheduleBlurInitRetryIfNeeded()` | video / canvas 未準備時に指数バックオフで再初期化（最大 25 回）。上限到達後は `blurInitRetryExhausted` で停止し、MutationObserver 等の再評価まで待つ |
+| `startBlurLoop()` | 描画 rAF。canvas が完全に欠落した場合は rAF を止め、プレイヤーセレクタ一時消失時のみ rAF を継続 |
+
+`popup.js` の `sendMessageToTab()` は callback 型と Promise 型の `chrome.tabs.sendMessage` の両方に対応する。
+
 ### ユーザー操作フロー
 
 ```

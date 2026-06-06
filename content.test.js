@@ -250,6 +250,21 @@ describe('content.js', () => {
     expect(ctx.clearRect).toHaveBeenCalledWith(196, 0, 1656, 931);
   });
 
+  test('drawBlurFrame clears fractional video bounds without leaving edge artifacts', () => {
+    const ctx = mock2dContext();
+    const video = document.createElement('video');
+    Object.defineProperty(video, 'readyState', { value: 4, configurable: true });
+    Object.defineProperty(video, 'videoWidth', { value: 1920, configurable: true });
+    Object.defineProperty(video, 'videoHeight', { value: 1080, configurable: true });
+    const canvas = document.createElement('canvas');
+    canvas.width = 100;
+    canvas.height = 100;
+
+    drawBlurFrame(video, canvas, ctx);
+
+    expect(ctx.clearRect).toHaveBeenCalledWith(0, 21, 100, 58);
+  });
+
   test('drawBlurFrame resets filter when drawImage throws', () => {
     const ctx = mock2dContext();
     ctx.drawImage = vi.fn(() => {
@@ -537,6 +552,7 @@ describe('content.js', () => {
 
     test('stops blur init retry after max attempts when video never appears', async () => {
       vi.useFakeTimers();
+      const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       vi.stubGlobal('location', { pathname: '/watch' });
       document.body.innerHTML = '<div id="content"><div id="movie_player"></div></div>';
       const player = document.getElementById('movie_player');
@@ -544,7 +560,37 @@ describe('content.js', () => {
       observePlayer();
       await vi.runAllTimersAsync();
       expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+      expect(warnSpy).toHaveBeenCalledWith('[youtublur] blur init retry exhausted');
+
+      const timersAfterExhaust = vi.getTimerCount();
+      await vi.advanceTimersByTimeAsync(5000);
+      expect(vi.getTimerCount()).toBe(timersAfterExhaust);
+      expect(player.querySelector('#yt-light-bg-blur-canvas')).toBeNull();
+
+      warnSpy.mockRestore();
       vi.useRealTimers();
+    });
+
+    test('stops blur loop rAF when canvas is removed from the player', () => {
+      vi.restoreAllMocks();
+      const rafCallbacks = [];
+      const requestFrame = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+        rafCallbacks.push(cb);
+        return rafCallbacks.length;
+      });
+      vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+      document.body.innerHTML = '<div id="movie_player"><video></video></div>';
+      const player = document.getElementById('movie_player');
+
+      observePlayer();
+      expect(rafCallbacks).toHaveLength(1);
+
+      player.querySelector('#yt-light-bg-blur-canvas').remove();
+      requestFrame.mockClear();
+      rafCallbacks[0](16);
+
+      expect(requestFrame).not.toHaveBeenCalled();
     });
 
     test('retry path creates canvas when video appears after first failed init', async () => {

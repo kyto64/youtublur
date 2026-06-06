@@ -36,19 +36,25 @@ function applyLocalizedStrings() {
     if (reload)
         reload.textContent = chrome.i18n.getMessage('reloadButton');
 }
-function sendMessageToTab(tabId, message) {
+// Supports both callback-style and Promise-returning chrome.tabs.sendMessage implementations.
+function sendMessageToTab(tabId, message, onResult) {
+    let settled = false;
+    const settle = (delivered) => {
+        if (settled)
+            return;
+        settled = true;
+        onResult?.(delivered);
+    };
     try {
         const maybePromise = chrome.tabs.sendMessage(tabId, message, () => {
-            if (chrome.runtime && chrome.runtime.lastError) {
-                // Content scripts are not present on every youtube.com URL; ignore best-effort delivery failures.
-            }
+            settle(!chrome.runtime?.lastError);
         });
-        if (maybePromise && typeof maybePromise.catch === 'function') {
-            maybePromise.catch(() => { });
+        if (maybePromise && typeof maybePromise.then === 'function') {
+            maybePromise.then(() => settle(true)).catch(() => settle(false));
         }
     }
     catch {
-        // Ignore best-effort delivery failures; the popup should remain usable.
+        settle(false);
     }
 }
 function initPopup() {
@@ -87,14 +93,22 @@ function initPopup() {
                         reloadButton.classList.add('loading');
                         if (labelReload)
                             labelReload.textContent = chrome.i18n.getMessage('reloadingButton');
-                        sendMessageToTab(tab.id, { type: 'RELOAD_BLUR' });
-                        // リロード完了後、クラスを削除して元の状態に戻す
-                        setTimeout(() => {
-                            isReloading = false;
-                            reloadButton.classList.remove('loading');
-                            if (labelReload)
-                                labelReload.textContent = chrome.i18n.getMessage('reloadButton');
-                        }, 500);
+                        sendMessageToTab(tab.id, { type: 'RELOAD_BLUR' }, (delivered) => {
+                            if (!delivered) {
+                                isReloading = false;
+                                reloadButton.classList.remove('loading');
+                                if (labelReload)
+                                    labelReload.textContent = chrome.i18n.getMessage('reloadButton');
+                                return;
+                            }
+                            // リロード完了後、クラスを削除して元の状態に戻す
+                            setTimeout(() => {
+                                isReloading = false;
+                                reloadButton.classList.remove('loading');
+                                if (labelReload)
+                                    labelReload.textContent = chrome.i18n.getMessage('reloadButton');
+                            }, 500);
+                        });
                     }
                     else {
                         isReloading = false;

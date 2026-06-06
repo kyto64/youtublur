@@ -190,6 +190,7 @@ const BLUR_INIT_RETRY_MAX_MS = 2000;
 const BLUR_INIT_RETRY_MAX_ATTEMPTS = 25;
 let blurInitRetryTimer: ReturnType<typeof setTimeout> | null = null;
 let blurInitRetryAttempt = 0;
+let blurInitRetryExhausted = false;
 
 function clearBlurInitRetryTimer() {
   if (blurInitRetryTimer !== null) {
@@ -201,6 +202,13 @@ function clearBlurInitRetryTimer() {
 function stopBlurInitRetryCompletely() {
   clearBlurInitRetryTimer();
   blurInitRetryAttempt = 0;
+  blurInitRetryExhausted = false;
+}
+
+function restartBlurInitRetryCycle() {
+  clearBlurInitRetryTimer();
+  blurInitRetryAttempt = 0;
+  blurInitRetryExhausted = false;
 }
 
 function scheduleBlurInitRetryIfNeeded() {
@@ -214,7 +222,7 @@ function scheduleBlurInitRetryIfNeeded() {
     stopBlurInitRetryCompletely();
     return;
   }
-  if (blurInitRetryTimer !== null) return;
+  if (blurInitRetryExhausted || blurInitRetryTimer !== null) return;
 
   function attemptBlurInit() {
     blurInitRetryTimer = null;
@@ -233,7 +241,10 @@ function scheduleBlurInitRetryIfNeeded() {
     }
     blurInitRetryAttempt += 1;
     if (blurInitRetryAttempt >= BLUR_INIT_RETRY_MAX_ATTEMPTS) {
-      stopBlurInitRetryCompletely();
+      blurInitRetryExhausted = true;
+      clearBlurInitRetryTimer();
+      blurInitRetryAttempt = 0;
+      console.warn('[youtublur] blur init retry exhausted');
       return;
     }
     const delay = Math.min(
@@ -243,10 +254,9 @@ function scheduleBlurInitRetryIfNeeded() {
     blurInitRetryTimer = setTimeout(attemptBlurInit, delay);
   }
 
-  blurInitRetryAttempt = 0;
   const firstDelay = Math.min(
     BLUR_INIT_RETRY_MAX_MS,
-    BLUR_INIT_RETRY_INITIAL_MS * 2 ** 0
+    BLUR_INIT_RETRY_INITIAL_MS * 2 ** blurInitRetryAttempt
   );
   blurInitRetryTimer = setTimeout(attemptBlurInit, firstDelay);
 }
@@ -394,7 +404,11 @@ function clearVideoContentRect(video: HTMLVideoElement, canvas: HTMLCanvasElemen
     dx = (cw - dw) / 2;
   }
 
-  ctx.clearRect(Math.floor(dx), Math.floor(dy), Math.ceil(dw), Math.ceil(dh));
+  const x1 = Math.floor(dx);
+  const y1 = Math.floor(dy);
+  const x2 = Math.ceil(dx + dw);
+  const y2 = Math.ceil(dy + dh);
+  ctx.clearRect(x1, y1, x2 - x1, y2 - y1);
 }
 
 function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement | null, ctx: CanvasRenderingContext2D | null) {
@@ -498,14 +512,21 @@ function startBlurLoop(container: HTMLElement | null | undefined) {
   adjustmentCooldown = 0;
 
   function loop(timestamp: number) {
-    const c = getPlayerContainer();
-    if (currentMode !== 'blur') return;
-    if (!hasCurrentBlurCanvas(c)) {
-      scheduleBlurInitRetryIfNeeded();
-      animationId = requestAnimationFrame(loop);
+    if (currentMode !== 'blur') {
+      animationId = null;
       return;
     }
-    const video = c ? getVideoElement(c) : null;
+    if (!hasCurrentBlurCanvas(initialContainer)) {
+      scheduleBlurInitRetryIfNeeded();
+      animationId = null;
+      return;
+    }
+    const video = getVideoElement(initialContainer);
+    if (!video) {
+      scheduleBlurInitRetryIfNeeded();
+      animationId = null;
+      return;
+    }
     frameCount++;
 
     updateFPS(timestamp);
@@ -637,6 +658,7 @@ function observePlayer() {
 
   function tryInit() {
     if (typeof document === 'undefined') return;
+    restartBlurInitRetryCycle();
     const c = getPlayerContainer();
     discardStaleBlurCanvas(c);
     if (c) initBlurForPlayer(c);
@@ -732,25 +754,31 @@ function initExtension() {
     observePlayer();
 
     // Load mode from storage with fallback support
-    loadModeFromStorage().then((saved) => {
-      const normalized = normalizeMode(saved);
-      if (normalized !== currentMode) {
-        applyMode(normalized, getPlayerContainer());
-      } else {
-        // observePlayer is already called above; no need to call again
-      }
-    });
+    loadModeFromStorage()
+      .then((saved) => {
+        const normalized = normalizeMode(saved);
+        if (normalized !== currentMode) {
+          applyMode(normalized, getPlayerContainer());
+        }
+      })
+      .catch((error) => {
+        console.warn('[youtublur] failed to load mode from storage:', error);
+      });
 
     chrome.runtime.onMessage.addListener((msg) => {
       if (msg.type === 'BG_MODE_CHANGED') {
         applyMode(msg.mode, getPlayerContainer());
       } else if (msg.type === 'RELOAD_BLUR') {
         teardownPlayerPageBlur();
-        loadModeFromStorage().then((saved) => {
-          const normalized = normalizeMode(saved);
-          applyMode(normalized);
-          observePlayer();
-        });
+        loadModeFromStorage()
+          .then((saved) => {
+            const normalized = normalizeMode(saved);
+            applyMode(normalized);
+            observePlayer();
+          })
+          .catch((error) => {
+            console.warn('[youtublur] failed to reload blur mode from storage:', error);
+          });
       }
     });
   }
