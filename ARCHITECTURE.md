@@ -127,7 +127,9 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
    ↓
 5. 現在のモードに基づいて背景を適用
    ↓
-6. MutationObserver でプレイヤーの変更を監視
+6. MutationObserver / SPA navigation / visibility 復帰でプレイヤーを再評価
+   ↓
+7. 現在のプレイヤーに blur canvas が無い場合は短時間リトライして再適用
 ```
 
 ### ユーザー操作フロー

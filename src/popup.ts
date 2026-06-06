@@ -29,6 +29,21 @@ function applyLocalizedStrings() {
   if (reload) reload.textContent = chrome.i18n.getMessage('reloadButton');
 }
 
+function sendMessageToTab(tabId: number, message: unknown) {
+  try {
+    const maybePromise = chrome.tabs.sendMessage(tabId, message, () => {
+      if (chrome.runtime && chrome.runtime.lastError) {
+        // Content scripts are not present on every youtube.com URL; ignore best-effort delivery failures.
+      }
+    }) as unknown;
+    if (maybePromise && typeof (maybePromise as Promise<void>).catch === 'function') {
+      (maybePromise as Promise<void>).catch(() => {});
+    }
+  } catch {
+    // Ignore best-effort delivery failures; the popup should remain usable.
+  }
+}
+
 function initPopup() {
   document.addEventListener('DOMContentLoaded', () => {
     applyLocalizedStrings();
@@ -45,7 +60,7 @@ function initPopup() {
           chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
             const tab = tabs[0];
             if (tab?.id && tab.url?.includes('youtube.com')) {
-              chrome.tabs.sendMessage(tab.id, { type: 'BG_MODE_CHANGED', mode }).catch(() => {});
+              sendMessageToTab(tab.id, { type: 'BG_MODE_CHANGED', mode });
             }
           });
         });
@@ -70,7 +85,7 @@ function initPopup() {
             reloadButton.classList.add('loading');
             if (labelReload) labelReload.textContent = chrome.i18n.getMessage('reloadingButton');
 
-            chrome.tabs.sendMessage(tab.id, { type: 'RELOAD_BLUR' }).catch(() => {});
+            sendMessageToTab(tab.id, { type: 'RELOAD_BLUR' });
 
             // リロード完了後、クラスを削除して元の状態に戻す
             setTimeout(() => {
@@ -100,5 +115,5 @@ if (typeof chrome !== 'undefined' && chrome.storage) {
 
 if (typeof module !== 'undefined' && module.exports) {
   const { STORAGE_KEY, saveModeToStorage, loadModeFromStorage } = require('./storage-mode.js');
-  module.exports = { initPopup, STORAGE_KEY, saveModeToStorage, loadModeFromStorage };
+  module.exports = { initPopup, sendMessageToTab, STORAGE_KEY, saveModeToStorage, loadModeFromStorage };
 }

@@ -196,7 +196,9 @@ function scheduleBlurInitRetryIfNeeded() {
         stopBlurInitRetryCompletely();
         return;
     }
-    if (blurCanvas) {
+    const currentContainer = getPlayerContainer();
+    discardStaleBlurCanvas(currentContainer);
+    if (hasCurrentBlurCanvas(currentContainer)) {
         stopBlurInitRetryCompletely();
         return;
     }
@@ -209,9 +211,10 @@ function scheduleBlurInitRetryIfNeeded() {
             return;
         }
         const container = getPlayerContainer();
+        discardStaleBlurCanvas(container);
         if (container) {
             initBlurForPlayer(container);
-            if (blurCanvas) {
+            if (hasCurrentBlurCanvas(container)) {
                 stopBlurInitRetryCompletely();
                 return;
             }
@@ -240,6 +243,38 @@ function getPlayerContainer() {
 }
 function getVideoElement(container) {
     return container?.querySelector('video');
+}
+function hasCurrentBlurCanvas(container) {
+    if (!container || !blurCanvas || !blurCtx)
+        return false;
+    if (!document.contains(blurCanvas))
+        return false;
+    return container.querySelector('#yt-light-bg-blur-canvas') === blurCanvas;
+}
+function discardStaleBlurCanvas(container) {
+    if (!blurCanvas)
+        return;
+    if (!document.contains(blurCanvas)) {
+        blurCanvas = null;
+        blurCtx = null;
+        detachPlayerResizeObserver();
+        stopBlurLoop();
+        releaseGeckoVideoSnapCanvas();
+        return;
+    }
+    if (!container || hasCurrentBlurCanvas(container))
+        return;
+    try {
+        blurCanvas.width = 0;
+        blurCanvas.height = 0;
+    }
+    catch { /* noop */ }
+    blurCanvas.remove();
+    blurCanvas = null;
+    blurCtx = null;
+    detachPlayerResizeObserver();
+    stopBlurLoop();
+    releaseGeckoVideoSnapCanvas();
 }
 function ensureGeckoVideoSnapCanvas(w, h) {
     if (typeof document === 'undefined')
@@ -273,6 +308,7 @@ function releaseGeckoVideoSnapCanvas() {
 function createBlurCanvas(container) {
     if (!container)
         return null;
+    discardStaleBlurCanvas(container);
     const existing = container.querySelector('#yt-light-bg-blur-canvas');
     if (existing) {
         blurCtx = existing.getContext('2d');
@@ -296,7 +332,7 @@ function createBlurCanvas(container) {
     inset: 0;
     width: auto;
     height: auto;
-    z-index: -1;
+    z-index: 1;
     pointer-events: none;
   `;
     if (container.style.position !== 'relative' && container.style.position !== 'absolute') {
@@ -310,6 +346,29 @@ function createBlurCanvas(container) {
         return null;
     }
     return blurCanvas;
+}
+function clearVideoContentRect(video, canvas, ctx) {
+    const cw = canvas.width;
+    const ch = canvas.height;
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    if (cw === 0 || ch === 0 || vw === 0 || vh === 0)
+        return;
+    const videoAspect = vw / vh;
+    const canvasAspect = cw / ch;
+    let dx = 0;
+    let dy = 0;
+    let dw = cw;
+    let dh = ch;
+    if (videoAspect > canvasAspect) {
+        dh = cw / videoAspect;
+        dy = (ch - dh) / 2;
+    }
+    else {
+        dw = ch * videoAspect;
+        dx = (cw - dw) / 2;
+    }
+    ctx.clearRect(Math.floor(dx), Math.floor(dy), Math.ceil(dw), Math.ceil(dh));
 }
 function drawBlurFrame(video, canvas, ctx) {
     if (!video || !canvas || !ctx || video.readyState < 2)
@@ -357,6 +416,7 @@ function drawBlurFrame(video, canvas, ctx) {
             finally {
                 ctx.filter = 'none';
             }
+            clearVideoContentRect(video, canvas, ctx);
             return;
         }
     }
@@ -370,16 +430,18 @@ function drawBlurFrame(video, canvas, ctx) {
     finally {
         ctx.filter = 'none';
     }
+    clearVideoContentRect(video, canvas, ctx);
 }
 function resizeCanvas(container) {
-    if (!blurCanvas || !container)
+    if (!hasCurrentBlurCanvas(container) || !container || !blurCanvas)
         return;
+    const canvas = blurCanvas;
     const w = Math.max(1, Math.ceil(container.clientWidth));
     const h = Math.max(1, Math.ceil(container.clientHeight));
-    blurCanvas.width = w;
-    blurCanvas.height = h;
-    blurCanvas.style.width = `${w}px`;
-    blurCanvas.style.height = `${h}px`;
+    canvas.width = w;
+    canvas.height = h;
+    canvas.style.width = `${w}px`;
+    canvas.style.height = `${h}px`;
 }
 function detachPlayerResizeObserver() {
     if (playerResizeObserver) {
@@ -392,29 +454,33 @@ function attachPlayerResizeObserver(container) {
         return;
     detachPlayerResizeObserver();
     playerResizeObserver = new ResizeObserver(() => {
-        if (currentMode !== 'blur' || !blurCanvas)
+        if (currentMode !== 'blur')
             return;
         const c = getPlayerContainer();
-        if (c)
+        discardStaleBlurCanvas(c);
+        if (hasCurrentBlurCanvas(c))
             resizeCanvas(c);
     });
     playerResizeObserver.observe(container);
 }
 function startBlurLoop(container) {
     stopBlurLoop();
-    if (!blurCanvas || !blurCtx)
-        return;
     const initialContainer = container || getPlayerContainer();
-    if (!initialContainer || !getVideoElement(initialContainer))
+    if (!hasCurrentBlurCanvas(initialContainer) || !getVideoElement(initialContainer))
         return;
     // FPS監視と描画間隔調整の初期化
     lastFrameTime = 0;
     frameTimes = [];
     adjustmentCooldown = 0;
     function loop(timestamp) {
-        if (currentMode !== 'blur' || !blurCanvas)
-            return;
         const c = getPlayerContainer();
+        if (currentMode !== 'blur')
+            return;
+        if (!hasCurrentBlurCanvas(c)) {
+            scheduleBlurInitRetryIfNeeded();
+            animationId = requestAnimationFrame(loop);
+            return;
+        }
         const video = c ? getVideoElement(c) : null;
         frameCount++;
         updateFPS(timestamp);
@@ -441,14 +507,17 @@ function showBlurMode(container) {
         return;
     }
     createBlurCanvas(container);
-    if (!blurCanvas) {
+    if (!hasCurrentBlurCanvas(container)) {
         scheduleBlurInitRetryIfNeeded();
         return;
     }
+    const canvas = blurCanvas;
+    if (!canvas)
+        return;
     resizeCanvas(container);
     attachPlayerResizeObserver(container);
-    blurCanvas.style.display = '';
-    blurCanvas.style.visibility = 'visible';
+    canvas.style.display = '';
+    canvas.style.visibility = 'visible';
     container.dataset.ytLightBgMode = 'blur';
     startBlurLoop(container);
 }
@@ -490,12 +559,15 @@ function initBlurForPlayer(container) {
     if (!video)
         return;
     createBlurCanvas(container);
-    if (blurCanvas) {
+    if (hasCurrentBlurCanvas(container)) {
+        const canvas = blurCanvas;
+        if (!canvas)
+            return;
         stopBlurInitRetryCompletely();
         resizeCanvas(container);
         attachPlayerResizeObserver(container);
-        blurCanvas.style.display = '';
-        blurCanvas.style.visibility = 'visible';
+        canvas.style.display = '';
+        canvas.style.visibility = 'visible';
         container.dataset.ytLightBgMode = 'blur';
         startBlurLoop(container);
     }
@@ -536,6 +608,7 @@ function observePlayer() {
         if (typeof document === 'undefined')
             return;
         const c = getPlayerContainer();
+        discardStaleBlurCanvas(c);
         if (c)
             initBlurForPlayer(c);
         scheduleBlurInitRetryIfNeeded();
@@ -557,15 +630,8 @@ function observePlayer() {
             const c = getPlayerContainer();
             if (!c)
                 return;
-            if (blurCanvas && !document.contains(blurCanvas)) {
-                blurCanvas = null;
-                blurCtx = null;
-                scheduleTryInit();
-                return;
-            }
-            // 初回はプレイヤーに video がまだ無く init がスキップされることがある。後から video が挿入されても
-            // blurCanvas が null のままなら従来の observer は再試行しなかった。
-            if (currentMode === 'blur' && !blurCanvas) {
+            discardStaleBlurCanvas(c);
+            if (currentMode === 'blur' && !hasCurrentBlurCanvas(c)) {
                 scheduleTryInit();
             }
         });
@@ -617,9 +683,10 @@ function installYoutubeNavigationHooks() {
     wrapHistoryMethod('replaceState');
 }
 function handleResize() {
-    if (currentMode === 'blur' && blurCanvas) {
+    if (currentMode === 'blur') {
         const container = getPlayerContainer();
-        if (container)
+        discardStaleBlurCanvas(container);
+        if (hasCurrentBlurCanvas(container))
             resizeCanvas(container);
     }
 }

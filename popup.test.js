@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 require('./storage-mode.js');
-const { initPopup, saveModeToStorage, loadModeFromStorage } = require('./popup.js');
+const { initPopup, sendMessageToTab, saveModeToStorage, loadModeFromStorage } = require('./popup.js');
 
 describe('popup.js', () => {
   let syncGetMock;
@@ -127,7 +127,25 @@ describe('popup.js', () => {
       expect.any(Function)
     );
     expect(chrome.tabs.query).toHaveBeenCalled();
-    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'BG_MODE_CHANGED', mode: 'solid' });
+    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+      1,
+      { type: 'BG_MODE_CHANGED', mode: 'solid' },
+      expect.any(Function)
+    );
+  });
+
+  test('sendMessageToTab tolerates callback-style sendMessage without a Promise', () => {
+    chrome.tabs.sendMessage = vi.fn((_tabId, _message, callback) => {
+      callback();
+      return undefined;
+    });
+
+    expect(() => sendMessageToTab(1, { type: 'RELOAD_BLUR' })).not.toThrow();
+    expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+      1,
+      { type: 'RELOAD_BLUR' },
+      expect.any(Function)
+    );
   });
 
   describe('reload button', () => {
@@ -151,7 +169,11 @@ describe('popup.js', () => {
       return new Promise((resolve) => {
         process.nextTick(() => {
           expect(chrome.tabs.query).toHaveBeenCalled();
-          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'RELOAD_BLUR' });
+          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+            1,
+            { type: 'RELOAD_BLUR' },
+            expect.any(Function)
+          );
           resolve();
         });
       });
@@ -167,7 +189,11 @@ describe('popup.js', () => {
 
       return new Promise((resolve) => {
         process.nextTick(() => {
-          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'RELOAD_BLUR' });
+          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+            1,
+            { type: 'RELOAD_BLUR' },
+            expect.any(Function)
+          );
           resolve();
         });
       });
@@ -183,7 +209,11 @@ describe('popup.js', () => {
 
       return new Promise((resolve) => {
         process.nextTick(() => {
-          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(1, { type: 'RELOAD_BLUR' });
+          expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+            1,
+            { type: 'RELOAD_BLUR' },
+            expect.any(Function)
+          );
           resolve();
         });
       });
