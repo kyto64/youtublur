@@ -22,8 +22,8 @@ importers:
         specifier: 4.1.8
         version: 4.1.8(vitest@4.1.8)
       '@voidzero-dev/vite-plus-core':
-        specifier: 0.1.24
-        version: 0.1.24(typescript@6.0.3)(yaml@2.8.4)
+        specifier: 0.2.1
+        version: 0.2.1(typescript@6.0.3)(yaml@2.8.4)
       '@voidzero-dev/vite-plus-test':
         specifier: 0.1.24
         version: 0.1.24(@vitest/coverage-v8@4.1.8)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.5(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)(yaml@2.8.4))(yaml@2.8.4)
@@ -1640,8 +1640,8 @@ packages:
     resolution: {integrity: sha512-Y3wQdFg2Va6etvQ5I82yUhGdsKrcYox6p7FfL1LbK2J4V01F9TGlepTIhnK24t7koZibmg82KGglhA1XK5IsLQ==}
     engines: {node: '>=10'}
 
-  nanoid@3.3.12:
-    resolution: {integrity: sha512-ZB9RH/39qpq5Vu6Y+NmUaFhQR6pp+M2Xt76XBnEwDaGcVAqhlvxrl3B2bKS5D3NH3QR76v3aSrKaF/Kiy7lEtQ==}
+  nanoid@3.3.13:
+    resolution: {integrity: sha512-sPdqC6ByMVVGvF1ynvvMo0/o+oD1VX7DaHhijt1bFgjvBkHBib4t49GoNDhf2NDta4oeUNlaGbSt5K7qjZ955Q==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
@@ -3486,7 +3486,7 @@ snapshots:
 
   mrmime@2.0.1: {}
 
-  nanoid@3.3.12: {}
+  nanoid@3.3.13: {}
 
   neo-async@2.6.2: {}
 
@@ -3650,7 +3650,7 @@ snapshots:
 
   postcss@8.5.15:
     dependencies:
-      nanoid: 3.3.12
+      nanoid: 3.3.13
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
