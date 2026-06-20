@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.10](https://github.com/kyto64/youtublur/compare/v1.12.9...v1.12.10) (2026-06-20)
+
+
+### Bug Fixes
+
+* align vitest coverage with vite-plus 0.2.x ([17d3f17](https://github.com/kyto64/youtublur/commit/17d3f17e28a504f729a6672f97631ddb4df54b79))
+* bump pinned vite and undici overrides for audit CI ([1c3323c](https://github.com/kyto64/youtublur/commit/1c3323ce36b3651abc8c6ce502c10e2bc1e05e28))
+
 ## [1.12.9](https://github.com/kyto64/youtublur/compare/v1.12.8...v1.12.9) (2026-06-13)
 
 ## [1.12.8](https://github.com/kyto64/youtublur/compare/v1.12.7...v1.12.8) (2026-06-06)
