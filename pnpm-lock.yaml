@@ -22,8 +22,8 @@ importers:
         specifier: 4.1.9
         version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
       '@voidzero-dev/vite-plus-core':
-        specifier: 0.2.2
-        version: 0.2.2(typescript@6.0.3)(yaml@2.8.4)
+        specifier: 0.2.4
+        version: 0.2.4(typescript@6.0.3)(yaml@2.8.4)
       '@voidzero-dev/vite-plus-test':
         specifier: 0.1.24
         version: 0.1.24(@vitest/coverage-v8@4.1.9)(jsdom@29.1.1)(typescript@6.0.3)(vite@8.0.16(yaml@2.8.4))(yaml@2.8.4)
@@ -728,63 +728,6 @@ packages:
       '@tsdown/css':
         optional: true
       '@tsdown/exe':
-        optional: true
-      '@types/node':
-        optional: true
-      '@vitejs/devtools':
-        optional: true
-      esbuild:
-        optional: true
-      jiti:
-        optional: true
-      less:
-        optional: true
-      publint:
-        optional: true
-      sass:
-        optional: true
-      sass-embedded:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-      tsx:
-        optional: true
-      typescript:
-        optional: true
-      unplugin-unused:
-        optional: true
-      unrun:
-        optional: true
-      yaml:
-        optional: true
-
-  '@voidzero-dev/vite-plus-core@0.2.2':
-    resolution: {integrity: sha512-yAbKexF3npOGjg1N5EtXxun+7vdM/0x6QE5jucO/dv0LFhCAIzSN3UvLVCeamJt/Bz3jt7DLqQHEgXXrjy8drA==}
-    engines: {node: ^20.19.0 || ^22.18.0 || >=24.11.0}
-    peerDependencies:
-      '@arethetypeswrong/core': ^0.18.1
-      '@types/node': ^20.19.0 || >=22.12.0
-      '@vitejs/devtools': ^0.3.0
-      esbuild: ^0.27.0 || ^0.28.0
-      jiti: '>=1.21.0'
-      less: ^4.0.0
-      publint: ^0.3.8
-      sass: ^1.70.0
-      sass-embedded: ^1.70.0
-      stylus: '>=0.54.8'
-      sugarss: ^5.0.0
-      terser: ^5.16.0
-      tsx: ^4.8.1
-      typescript: ^5.0.0 || ^6.0.0
-      unplugin-unused: ^0.5.0
-      unrun: '*'
-      yaml: ^2.4.2
-    peerDependenciesMeta:
-      '@arethetypeswrong/core':
         optional: true
       '@types/node':
         optional: true
@@ -2615,7 +2558,7 @@ snapshots:
     dependencies:
       '@testing-library/dom': 10.4.1
       '@testing-library/user-event': 14.6.1(@testing-library/dom@10.4.1)
-      '@vitest/browser': 4.1.10(vite@8.0.16(yaml@2.8.4))(vitest@4.1.9)
+      '@vitest/browser': 4.1.10(vite@8.0.16(yaml@2.8.4))(vitest@4.1.10)
       vitest: 4.1.9(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.9)(jsdom@29.1.1)(vite@8.0.16(yaml@2.8.4))
     transitivePeerDependencies:
       - bufferutil
@@ -2633,23 +2576,6 @@ snapshots:
       sirv: 3.0.2
       tinyrainbow: 3.1.0
       vitest: 4.1.10(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.9)(jsdom@29.1.1)(vite@8.0.16(yaml@2.8.4))
-      ws: 8.21.0
-    transitivePeerDependencies:
-      - bufferutil
-      - msw
-      - utf-8-validate
-      - vite
-
-  '@vitest/browser@4.1.10(vite@8.0.16(yaml@2.8.4))(vitest@4.1.9)':
-    dependencies:
-      '@blazediff/core': 1.9.1
-      '@vitest/mocker': 4.1.10(vite@8.0.16(yaml@2.8.4))
-      '@vitest/utils': 4.1.10
-      magic-string: 0.30.21
-      pngjs: 7.0.0
-      sirv: 3.0.2
-      tinyrainbow: 3.1.0
-      vitest: 4.1.9(@vitest/browser-preview@4.1.10)(@vitest/coverage-v8@4.1.9)(jsdom@29.1.1)(vite@8.0.16(yaml@2.8.4))
       ws: 8.21.0
     transitivePeerDependencies:
       - bufferutil
@@ -2777,17 +2703,6 @@ snapshots:
     dependencies:
       '@oxc-project/runtime': 0.133.0
       '@oxc-project/types': 0.133.0
-      lightningcss: 1.32.0
-      postcss: 8.5.16
-    optionalDependencies:
-      fsevents: 2.3.3
-      typescript: 6.0.3
-      yaml: 2.8.4
-
-  '@voidzero-dev/vite-plus-core@0.2.2(typescript@6.0.3)(yaml@2.8.4)':
-    dependencies:
-      '@oxc-project/runtime': 0.138.0
-      '@oxc-project/types': 0.138.0
       lightningcss: 1.32.0
       postcss: 8.5.16
     optionalDependencies:
