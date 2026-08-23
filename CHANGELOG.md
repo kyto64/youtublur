@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.17](https://github.com/kyto64/youtublur/compare/v1.12.16...v1.12.17) (2026-08-23)
+
+### Bug Fixes
+
+* **deps:** update undici to 7.29.0 ([#146](https://github.com/kyto64/youtublur/issues/146)) ([b6378ea](https://github.com/kyto64/youtublur/commit/b6378eab77a55f55c7d8db62214a37dece485cb7))
 ## [1.12.16](https://github.com/kyto64/youtublur/compare/v1.12.15...v1.12.16) (2026-08-08)
 
 ## [1.12.15](https://github.com/kyto64/youtublur/compare/v1.12.14...v1.12.15) (2026-07-25)
