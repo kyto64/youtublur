@@ -30,7 +30,7 @@
   "devDependencies": {
     "@playwright/test": "1.62.1",
     "@types/chrome": "0.2.8",
-    "@vitest/coverage-v8": "4.1.10",
+    "@vitest/coverage-v8": "4.1.11",
     "@voidzero-dev/vite-plus-core": "0.3.0",
     "@voidzero-dev/vite-plus-test": "0.1.24",
     "chrome-webstore-upload": "6.0.0",
