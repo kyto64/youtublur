@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/kyto64/youtublur#readme",
   "devDependencies": {
-    "@playwright/test": "1.62.1",
+    "@playwright/test": "1.63.0",
     "@types/chrome": "0.2.8",
     "@vitest/coverage-v8": "4.1.11",
     "@voidzero-dev/vite-plus-core": "0.3.0",
