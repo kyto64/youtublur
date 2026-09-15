@@ -12,7 +12,7 @@
 設定は [.github/dependabot.yml](.github/dependabot.yml)。
 
 - **semver major** の PR にはラベル `semver-major` が付き、`kyto64` にレビュー依頼とコメント通知される（自動マージしない）。
-- **patch / minor** は CI 合格後に [.github/workflows/dependabot-auto-merge.yml](.github/workflows/dependabot-auto-merge.yml) が承認して自動マージ（squash）する。
+- **patch / minor** は [.github/workflows/dependabot-auto-merge.yml](../.github/workflows/dependabot-auto-merge.yml) が承認し、[dependabot-merge-after-checks.yml](../.github/workflows/dependabot-merge-after-checks.yml) が `Test` / `Lint` / `E2E Tests` / `Semgrep` の全成功を確認した後に通常マージ（squash）する。GitHub のリポジトリ Auto-merge 機能は使用しない。
 - **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降に `package.json` / `pnpm-lock.yaml` の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。同日に Dependabot が複数マージしても、その日の自動実行は高々 1 回の `pnpm run release -- --release-as patch` にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
 - **major PR を手動マージしたあと**のバージョンとタグは従来どおりローカルで `pnpm run release` して push する。
 
