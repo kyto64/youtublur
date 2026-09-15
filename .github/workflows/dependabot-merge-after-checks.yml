@@ -1,0 +1,60 @@
+name: Merge Dependabot update after checks
+
+on:
+  workflow_run:
+    workflows: [Test, Lint, E2E Tests, Semgrep]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  merge:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch != 'master'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge eligible Dependabot PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          PR=$(gh pr list --repo "$REPOSITORY" --head "$HEAD_BRANCH" --state open --json number,author,body --jq 'map(select(.author.login == "dependabot[bot]"))[0]')
+          if [ -z "$PR" ] || [ "$PR" = "null" ]; then
+            echo "No open Dependabot PR found for $HEAD_BRANCH; skipping."
+            exit 0
+          fi
+
+          PR_NUMBER=$(jq -r '.number' <<<"$PR")
+          BODY=$(jq -r '.body // ""' <<<"$PR")
+
+          # Dependabot PR bodies contain the source and target versions. Do not
+          # merge major updates; those require manual review.
+          read -r OLD_MAJOR NEW_MAJOR < <(printf '%s' "$BODY" | sed -nE 's/.*from ([0-9]+)(\.[0-9]+)?(\.[0-9]+)?.*to ([0-9]+)(\.[0-9]+)?(\.[0-9]+)?.*/\1 \4/p' | head -n1)
+          if [ -z "${OLD_MAJOR:-}" ] || [ -z "${NEW_MAJOR:-}" ]; then
+            echo "Could not determine versions; skipping for safety."
+            exit 0
+          fi
+          if [ "$OLD_MAJOR" != "$NEW_MAJOR" ]; then
+            echo "Semver major update; skipping."
+            exit 0
+          fi
+
+          # A workflow_run event is emitted once per check. Merge only after
+          # every required workflow has succeeded for this exact commit.
+          for WORKFLOW in Test Lint 'E2E Tests' Semgrep; do
+            CONCLUSION=$(gh run list --repo "$REPOSITORY" --workflow "$WORKFLOW" --commit "$HEAD_SHA" --limit 1 --json conclusion --jq '.[0].conclusion // ""')
+            if [ "$CONCLUSION" != "success" ]; then
+              echo "$WORKFLOW is not successful for $HEAD_SHA ($CONCLUSION); skipping."
+              exit 0
+            fi
+          done
+
+          gh pr merge "$PR_NUMBER" \
+            --squash \
+            --match-head-commit "$HEAD_SHA" \
+            --repo "$REPOSITORY"
