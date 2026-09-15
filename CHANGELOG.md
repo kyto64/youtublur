@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.22](https://github.com/kyto64/youtublur/compare/v1.12.21...v1.12.22) (2026-09-15)
+
+### Bug Fixes
+
+* sync dependency lockfile ([1be1691](https://github.com/kyto64/youtublur/commit/1be1691a733f2e1a8df31614d662afbdf37af6bf))
 ## [1.12.21](https://github.com/kyto64/youtublur/compare/v1.12.20...v1.12.21) (2026-09-12)
 ## [1.12.20](https://github.com/kyto64/youtublur/compare/v1.12.19...v1.12.20) (2026-09-05)
 ## [1.12.19](https://github.com/kyto64/youtublur/compare/v1.12.18...v1.12.19) (2026-08-29)
