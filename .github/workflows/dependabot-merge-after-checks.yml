@@ -54,4 +54,7 @@ jobs:
             fi
           done
 
-          gh pr merge "$PR_NUMBER" --squash --repo "$REPOSITORY"
+          gh pr merge "$PR_NUMBER" \
+            --squash \
+            --match-head-commit "$HEAD_SHA" \
+            --repo "$REPOSITORY"
