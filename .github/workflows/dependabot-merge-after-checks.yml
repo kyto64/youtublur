@@ -14,6 +14,11 @@ jobs:
     if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch != 'master'
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: master
+
       - name: Merge eligible Dependabot PR
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -23,26 +28,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          PR=$(gh pr list --repo "$REPOSITORY" --head "$HEAD_BRANCH" --state open --json number,author,body --jq 'map(select(.author.login == "dependabot[bot]"))[0]')
-          if [ -z "$PR" ] || [ "$PR" = "null" ]; then
-            echo "No open Dependabot PR found for $HEAD_BRANCH; skipping."
+          PRS=$(gh pr list --repo "$REPOSITORY" --head "$HEAD_BRANCH" --state open --json number,author,body)
+          DECISION=$(printf '%s' "$PRS" | node scripts/dependabot-merge.mjs)
+          ACTION=$(jq -r '.action' <<<"$DECISION")
+          if [ "$ACTION" != "merge" ]; then
+            echo "Skipping $HEAD_BRANCH ($(jq -r '.reason' <<<"$DECISION"))."
             exit 0
           fi
 
-          PR_NUMBER=$(jq -r '.number' <<<"$PR")
-          BODY=$(jq -r '.body // ""' <<<"$PR")
-
-          # Dependabot PR bodies contain the source and target versions. Do not
-          # merge major updates; those require manual review.
-          read -r OLD_MAJOR NEW_MAJOR < <(printf '%s' "$BODY" | sed -nE 's/.*from ([0-9]+)(\.[0-9]+)?(\.[0-9]+)?.*to ([0-9]+)(\.[0-9]+)?(\.[0-9]+)?.*/\1 \4/p' | head -n1)
-          if [ -z "${OLD_MAJOR:-}" ] || [ -z "${NEW_MAJOR:-}" ]; then
-            echo "Could not determine versions; skipping for safety."
-            exit 0
-          fi
-          if [ "$OLD_MAJOR" != "$NEW_MAJOR" ]; then
-            echo "Semver major update; skipping."
-            exit 0
-          fi
+          PR_NUMBER=$(jq -r '.number' <<<"$DECISION")
 
           # A workflow_run event is emitted once per check. Merge only after
           # every required workflow has succeeded for this exact commit.

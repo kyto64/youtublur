@@ -160,7 +160,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |
 | E2E テスト | [`e2e/`](./e2e/) |
 | AI 検証ハーネス | [`e2e/ai-verify/`](./e2e/ai-verify/)（`pnpm run verify:ai-blur`、ブラー描画の証跡採取） |
-| 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token） |
+| 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token, dependabot-merge） |
 | CI/CD | [`.github/workflows/publish.yml`](./.github/workflows/publish.yml) |
 
 ## Do / Don't
@@ -198,7 +198,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 ### Dependabot 自動化
 
-- **patch / minor**: CI 合格後に自動マージ
+- **patch / minor**: CI 合格後に自動マージ（[`scripts/dependabot-merge.mjs`](./scripts/dependabot-merge.mjs) が `app/dependabot` と `dependabot[bot]` の両方を対象にする）
 - **自動パッチリリース**: 最大 1 日 1 回（UTC 15:00 cron）
 - **major**: `semver-major` ラベル付きで手動レビュー必要
 
