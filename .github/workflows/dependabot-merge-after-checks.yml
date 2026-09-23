@@ -6,6 +6,10 @@ on:
     types: [completed]
 
 permissions:
+  # Explicit permissions drop every undeclared scope. Listing Test/Lint/E2E/Semgrep
+  # runs needs actions:read; without it, gh run list returns 403 and the job fails
+  # before merge.
+  actions: read
   contents: write
   pull-requests: write
 
