@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   isDependabotLogin,
@@ -87,7 +87,7 @@ describe('selectDependabotUpdate', () => {
 
 describe('dependabot-merge CLI', () => {
   it('prints a merge decision for app/dependabot JSON on stdin', () => {
-    const script = fileURLToPath(new URL('./dependabot-merge.mjs', import.meta.url));
+    const script = join(process.cwd(), 'scripts/dependabot-merge.mjs');
     const result = spawnSync(process.execPath, [script], {
       input: JSON.stringify([
         { number: 164, author: { login: 'app/dependabot' }, body: summary },
