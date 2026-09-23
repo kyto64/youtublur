@@ -37,7 +37,7 @@
     "commit-and-tag-version": "13.2.1",
     "jsdom": "30.0.1",
     "typescript": "6.0.3",
-    "vite-plus": "0.3.1"
+    "vite-plus": "0.3.3"
   },
   "pnpm": {
     "overrides": {
