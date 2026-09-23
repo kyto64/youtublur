@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.23](https://github.com/kyto64/youtublur/compare/v1.12.22...v1.12.23) (2026-09-23)
+
+### Bug Fixes
+
+* Dependabot の自動マージが作者名の不一致で止まっていた ([#165](https://github.com/kyto64/youtublur/issues/165)) ([9029947](https://github.com/kyto64/youtublur/commit/9029947989bcd9a29062d6e06d423a19ba543e79))
+* grant actions read so Dependabot merge can see check runs ([#166](https://github.com/kyto64/youtublur/issues/166)) ([e0f0aed](https://github.com/kyto64/youtublur/commit/e0f0aed6fcda199f456b04a0b5636ce5216c3768))
+* merge Dependabot PRs after checks ([#160](https://github.com/kyto64/youtublur/issues/160)) ([3c14764](https://github.com/kyto64/youtublur/commit/3c147648ff3124b2740b4f7334ef9078ad30946e))
+
 ## [1.12.22](https://github.com/kyto64/youtublur/compare/v1.12.21...v1.12.22) (2026-09-15)
 
 ### Bug Fixes
