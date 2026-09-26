@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.24](https://github.com/kyto64/youtublur/compare/v1.12.23...v1.12.24) (2026-09-26)
+
 ## [1.12.23](https://github.com/kyto64/youtublur/compare/v1.12.22...v1.12.23) (2026-09-23)
 
 ### Bug Fixes
