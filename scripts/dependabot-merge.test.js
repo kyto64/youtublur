@@ -57,14 +57,14 @@ describe('selectDependabotUpdate', () => {
     ])).toEqual({ action: 'merge', number: 163 });
   });
 
-  it('skips semver major updates', () => {
+  it('selects semver major updates when CI can vouch', () => {
     expect(selectDependabotUpdate([
       {
         number: 9,
         author: { login: 'app/dependabot' },
         body: 'Bumps [jsdom](https://example.test) from 29.1.1 to 30.0.0.',
       },
-    ])).toEqual({ action: 'skip', reason: 'semver-major', number: 9 });
+    ])).toEqual({ action: 'merge', number: 9 });
   });
 
   it('skips when the author is not Dependabot', () => {

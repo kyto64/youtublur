@@ -198,9 +198,9 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 ### Dependabot 自動化
 
-- **patch / minor**: CI 合格後に自動マージ（[`scripts/dependabot-merge.mjs`](./scripts/dependabot-merge.mjs) が `app/dependabot` と `dependabot[bot]` の両方を対象にする）
+- **patch / minor / major**: CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）合格後に自動マージ（[`scripts/dependabot-merge.mjs`](./scripts/dependabot-merge.mjs) が `app/dependabot` と `dependabot[bot]` の両方を対象にする）。semver major も CI が担保できる更新は自動マージする。
 - **自動パッチリリース**: 最大 1 日 1 回（UTC 15:00 cron）
-- **major**: `semver-major` ラベル付きで手動レビュー必要
+- **手動対応が必要なケース**: 上記 CI が失敗する、または既存テストスイートがカバーしない変更のみ（「極めて高リスク」）
 
 ## 設計理念
 
