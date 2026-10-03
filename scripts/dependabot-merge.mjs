@@ -1,5 +1,5 @@
 /**
- * Decide whether an open pull request is a Dependabot patch or minor update.
+ * Decide whether an open pull request is an eligible Dependabot update.
  *
  * `gh pr list --json author` reports GitHub Apps as `app/dependabot`.
  * `pull_request` events and the REST API still use `dependabot[bot]`.
@@ -41,9 +41,6 @@ export function selectDependabotUpdate(pulls) {
   const majors = parseUpdateMajors(pr.body);
   if (!majors) {
     return { action: 'skip', reason: 'unknown-version', number: pr.number };
-  }
-  if (majors.oldMajor !== majors.newMajor) {
-    return { action: 'skip', reason: 'semver-major', number: pr.number };
   }
   return { action: 'merge', number: pr.number };
 }
