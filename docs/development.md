@@ -6,7 +6,7 @@
 
 ### 前提条件
 
-- Node.js 20+ 
+- Node.js 22.18 以上、24.11 以上、または 26 以上（`vite-plus` 1.0 の要件）
 - pnpm 9+
 - Git
 - Chrome または Firefox ブラウザ

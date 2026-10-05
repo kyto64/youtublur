@@ -27,6 +27,9 @@
     "url": "https://github.com/kyto64/youtublur/issues"
   },
   "homepage": "https://github.com/kyto64/youtublur#readme",
+  "engines": {
+    "node": "^22.18.0 || ^24.11.0 || >=26.0.0"
+  },
   "devDependencies": {
     "@playwright/test": "1.63.0",
     "@types/chrome": "0.3.4",
