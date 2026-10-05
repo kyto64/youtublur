@@ -1,0 +1,117 @@
+name: Request Codex review
+
+on:
+  issue_comment:
+    types: [created]
+  workflow_run:
+    workflows: [Test, Lint, E2E Tests, Semgrep]
+    types: [completed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  from-comment:
+    name: Request review from comment
+    if: |
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      github.event.comment.user.login != 'kyto64' &&
+      (
+        contains(github.event.comment.body, '/codex-review') ||
+        contains(github.event.comment.body, '@codex review') ||
+        (
+          contains(github.event.comment.body, '@codex') &&
+          endsWith(github.event.comment.user.login, '[bot]')
+        )
+      )
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post Codex review request as repository owner
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODEX_REVIEW_TOKEN: ${{ secrets.CODEX_REVIEW_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CODEX_REVIEW_TOKEN:-}" ]; then
+            echo "CODEX_REVIEW_TOKEN is not configured; skipping."
+            exit 0
+          fi
+
+          EXISTING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq '[.[] | select(.user.login == "kyto64" and (.body | contains("@codex review")))] | length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "kyto64 already requested Codex review on PR #$PR_NUMBER; skipping."
+            exit 0
+          fi
+
+          GH_TOKEN="$CODEX_REVIEW_TOKEN" gh pr comment "$PR_NUMBER" \
+            --body "@codex review" \
+            --repo "$REPOSITORY"
+
+  from-dependabot-checks:
+    name: Request review after Dependabot checks
+    if: |
+      github.event_name == 'workflow_run' &&
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_branch != 'master'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: master
+
+      - name: Post Codex review request for eligible Dependabot PR
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CODEX_REVIEW_TOKEN: ${{ secrets.CODEX_REVIEW_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${CODEX_REVIEW_TOKEN:-}" ]; then
+            echo "CODEX_REVIEW_TOKEN is not configured; skipping."
+            exit 0
+          fi
+
+          PRS=$(gh pr list --repo "$REPOSITORY" --head "$HEAD_BRANCH" --state open --json number,author)
+          PR_NUMBER=$(jq -r '.[0].number // empty' <<<"$PRS")
+          AUTHOR=$(jq -r '.[0].author.login // empty' <<<"$PRS")
+          if [ -z "$PR_NUMBER" ]; then
+            echo "No open PR for $HEAD_BRANCH; skipping."
+            exit 0
+          fi
+          if [ "$AUTHOR" != "dependabot[bot]" ] && [ "$AUTHOR" != "app/dependabot" ]; then
+            echo "PR #$PR_NUMBER is not from Dependabot ($AUTHOR); skipping."
+            exit 0
+          fi
+
+          for WORKFLOW in Test Lint 'E2E Tests' Semgrep; do
+            CONCLUSION=$(gh run list --repo "$REPOSITORY" --workflow "$WORKFLOW" --commit "$HEAD_SHA" --limit 1 --json conclusion --jq '.[0].conclusion // ""')
+            if [ "$CONCLUSION" != "success" ]; then
+              echo "$WORKFLOW is not successful for $HEAD_SHA ($CONCLUSION); skipping."
+              exit 0
+            fi
+          done
+
+          EXISTING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
+            --jq '[.[] | select(.user.login == "kyto64" and (.body | contains("@codex review")))] | length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "kyto64 already requested Codex review on PR #$PR_NUMBER; skipping."
+            exit 0
+          fi
+
+          GH_TOKEN="$CODEX_REVIEW_TOKEN" gh pr comment "$PR_NUMBER" \
+            --body "@codex review" \
+            --repo "$REPOSITORY"
