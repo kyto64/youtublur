@@ -15,7 +15,6 @@ jobs:
   from-comment:
     name: Request review from comment
     if: |
-      secrets.CODEX_REVIEW_TOKEN != '' &&
       github.event_name == 'issue_comment' &&
       github.event.issue.pull_request &&
       github.event.comment.user.login != 'kyto64' &&
@@ -38,8 +37,13 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [ -z "${CODEX_REVIEW_TOKEN:-}" ]; then
+            echo "CODEX_REVIEW_TOKEN is not configured; skipping."
+            exit 0
+          fi
+
           EXISTING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
-            --jq '[.[] | select(.user.login == "kyto64" and contains(.body, "@codex review"))] | length')
+            --jq '[.[] | select(.user.login == "kyto64" and (.body | contains("@codex review")))] | length')
           if [ "$EXISTING" -gt 0 ]; then
             echo "kyto64 already requested Codex review on PR #$PR_NUMBER; skipping."
             exit 0
@@ -52,7 +56,6 @@ jobs:
   from-dependabot-checks:
     name: Request review after Dependabot checks
     if: |
-      secrets.CODEX_REVIEW_TOKEN != '' &&
       github.event_name == 'workflow_run' &&
       github.event.workflow_run.conclusion == 'success' &&
       github.event.workflow_run.head_branch != 'master'
@@ -77,6 +80,11 @@ jobs:
         run: |
           set -euo pipefail
 
+          if [ -z "${CODEX_REVIEW_TOKEN:-}" ]; then
+            echo "CODEX_REVIEW_TOKEN is not configured; skipping."
+            exit 0
+          fi
+
           PRS=$(gh pr list --repo "$REPOSITORY" --head "$HEAD_BRANCH" --state open --json number,author)
           PR_NUMBER=$(jq -r '.[0].number // empty' <<<"$PRS")
           AUTHOR=$(jq -r '.[0].author.login // empty' <<<"$PRS")
@@ -98,7 +106,7 @@ jobs:
           done
 
           EXISTING=$(gh api "repos/$REPOSITORY/issues/$PR_NUMBER/comments" --paginate \
-            --jq '[.[] | select(.user.login == "kyto64" and contains(.body, "@codex review"))] | length')
+            --jq '[.[] | select(.user.login == "kyto64" and (.body | contains("@codex review")))] | length')
           if [ "$EXISTING" -gt 0 ]; then
             echo "kyto64 already requested Codex review on PR #$PR_NUMBER; skipping."
             exit 0
