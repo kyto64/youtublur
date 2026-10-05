@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.25](https://github.com/kyto64/youtublur/compare/v1.12.24...v1.12.25) (2026-10-03)
+
+### Bug Fixes
+
+* **deps:** bump undici override to 7.29.1 for audit CI ([#171](https://github.com/kyto64/youtublur/issues/171)) ([6a04737](https://github.com/kyto64/youtublur/commit/6a04737af57ba20e4faea94389aaf32ea1b61044))
+
 ## [1.12.24](https://github.com/kyto64/youtublur/compare/v1.12.23...v1.12.24) (2026-09-26)
 
 ## [1.12.23](https://github.com/kyto64/youtublur/compare/v1.12.22...v1.12.23) (2026-09-23)
