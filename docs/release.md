@@ -15,7 +15,7 @@
 - **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降に `package.json` / `pnpm-lock.yaml` の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。同日に Dependabot が複数マージしても、その日の自動実行は高々 1 回の `pnpm run release -- --release-as patch` にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
 - **major 依存の自動マージ後**も、日次の自動パッチリリース（`pnpm run release -- --release-as patch`）がバージョンを上げる。手動で semver を選ぶ必要がある場合は従来どおりローカルで `pnpm run release` して push する。
 
-GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグで [`publish.yml`](.github/workflows/publish.yml) が走らない。Chrome / AMO まで自動で繋げる場合は、リポジトリ Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が checkout／push に使うようにする。未設定のときは `github.token` のみでコミットとタグの push は行われるが、公開は **手動でタグを再 push する**など別途トリガーが必要。
+GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグの **push イベント**では [`publish.yml`](.github/workflows/publish.yml) が走らない。[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) は **`RELEASE_PUSH_TOKEN` 未設定時**、タグ push の直後に `publish.yml` を **`workflow_dispatch`** で起動し、作成したタグ名を `inputs.tag` に渡す（`GITHUB_TOKEN` で `actions: write` が必要）。**`RELEASE_PUSH_TOKEN` を設定した場合**は tag push が `publish.yml` を起動するため、二重公開を避けて dispatch は行わない。任意で、Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、checkout／push に使うこともできる。
 
 ### GitHub 側の確認（初回）
 
@@ -25,7 +25,7 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 | Actions による PR 承認 | **Settings → Actions → General** | **Allow GitHub Actions to create and approve pull requests** をオン（自動承認・自動マージに必要） |
 | 必須チェック | Branch protection / Rulesets | `lint` と `test` を必須にしている場合、その名前が緑になるまで自動マージは待つ |
 | `master` への push | Branch protection / Rulesets | `GITHUB_TOKEN` が push を拒否する場合は Rules で GitHub Actions の push を許可する |
-| タグ後の `publish.yml` まで自動化 | **Settings → Secrets and variables → Actions** | 任意で Secret `RELEASE_PUSH_TOKEN`。未設定ならタグは付くが `publish.yml` は自動起動しない（上記の通り） |
+| タグ後の `publish.yml` まで自動化 | **Settings → Secrets and variables → Actions** | 既定は日次ワークフローが `workflow_dispatch` で `publish.yml` を起動。任意で Secret `RELEASE_PUSH_TOKEN` を設定すると tag push でも起動し、dispatch はスキップされる |
 | 日次 cron の時刻 | [dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) の `cron` | GitHub は **UTC**。変更する場合はこの行を編集する |
 | Codex PR レビュー依頼 | **Settings → Secrets and variables → Actions** | Secret `CODEX_REVIEW_TOKEN`（下記「Codex レビュー依頼」） |
 
