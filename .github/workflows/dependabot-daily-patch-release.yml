@@ -15,6 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      actions: write
     steps:
       - name: Checkout master
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -69,6 +70,42 @@ jobs:
         if: steps.need.outputs.need_release == 'true'
         run: pnpm run release -- --release-as patch
 
+      - name: Capture release tag
+        if: steps.need.outputs.need_release == 'true'
+        id: release
+        run: |
+          set -euo pipefail
+          TAG=$(git describe --tags --abbrev=0 --match 'v*')
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "Created release tag: ${TAG}"
+
+      - name: Decide publish trigger mode
+        if: steps.need.outputs.need_release == 'true'
+        id: publish_mode
+        env:
+          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
+        run: |
+          if [ -n "${RELEASE_PUSH_TOKEN}" ]; then
+            echo "dispatch_publish=false" >> "$GITHUB_OUTPUT"
+            echo "RELEASE_PUSH_TOKEN is set; tag push should trigger publish.yml."
+          else
+            echo "dispatch_publish=true" >> "$GITHUB_OUTPUT"
+            echo "RELEASE_PUSH_TOKEN is unset; will dispatch publish.yml after push."
+          fi
+
       - name: Push release commit and tags
         if: steps.need.outputs.need_release == 'true'
         run: git push origin master --follow-tags
+
+      - name: Dispatch publish workflow
+        if: steps.need.outputs.need_release == 'true' && steps.publish_mode.outputs.dispatch_publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TAG="${{ steps.release.outputs.tag }}"
+          echo "Dispatching publish.yml for tag ${TAG}"
+          gh workflow run publish.yml \
+            --ref master \
+            -f "tag=${TAG}" \
+            -f build_from_tag=true
