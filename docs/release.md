@@ -15,7 +15,7 @@
 - **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降に `package.json` / `pnpm-lock.yaml` の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。同日に Dependabot が複数マージしても、その日の自動実行は高々 1 回の `pnpm run release -- --release-as patch` にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
 - **major 依存の自動マージ後**も、日次の自動パッチリリース（`pnpm run release -- --release-as patch`）がバージョンを上げる。手動で semver を選ぶ必要がある場合は従来どおりローカルで `pnpm run release` して push する。
 
-GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグの **push イベント**では [`publish.yml`](.github/workflows/publish.yml) が走らない。[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) は **`RELEASE_PUSH_TOKEN` 未設定時**、タグ push の直後に `publish.yml` を **`workflow_dispatch`** で起動し、作成したタグ名を `inputs.tag` に渡す（`GITHUB_TOKEN` で `actions: write` が必要）。**`RELEASE_PUSH_TOKEN` を設定した場合**は tag push が `publish.yml` を起動するため、二重公開を避けて dispatch は行わない。任意で、Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、checkout／push に使うこともできる。
+GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグの **push イベント**では [`publish.yml`](.github/workflows/publish.yml) が走らない。[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) は **`RELEASE_PUSH_TOKEN` 未設定時**、タグ push の直後に `publish.yml` を **`workflow_dispatch`** で起動し、作成したタグ名を `inputs.tag` に渡す。同時に `build_from_tag=true` を指定し、拡張は **タグ付きコミット**からビルドする（`GITHUB_TOKEN` で `actions: write` が必要）。**`RELEASE_PUSH_TOKEN` を設定した場合**は tag push が `publish.yml` を起動するため、二重公開を避けて dispatch は行わない。任意で、Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、checkout／push に使うこともできる。
 
 ### GitHub 側の確認（初回）
 
@@ -220,9 +220,9 @@ push 後、GitHub Actions の `publish.yml` が自動でトリガーされ、以
 
 1. **Settings → Secrets** に `CHROME_PUBLISHER_ID` など不足シークレットを設定する。
 2. [Actions → Publish extensions](https://github.com/kyto64/youtublur/actions/workflows/publish.yml) を開き **Run workflow** を選ぶ。
-3. **tag** に再公開したいタグ（例: `v1.12.5`）を入力して実行する。
+3. **tag** に再公開したいタグ（例: `v1.12.5`）を入力して実行する（**build_from_tag** は既定の `false` のまま）。
 
-ワークフロー定義は **default ブランチ上の最新** が使われ、拡張のビルドと publish スクリプトは **master の HEAD** から行う（タグ時点の古い publish スクリプトを避けるため）。GitHub Release の更新先だけ **tag** 入力で指定する。
+ワークフロー定義は **default ブランチ上の最新** が使われ、手動再実行では拡張のビルドと publish スクリプトは **master の HEAD** から行う（タグ時点の古い publish スクリプトを避けるため）。GitHub Release の更新先だけ **tag** 入力で指定する。日次の自動 dispatch は `build_from_tag=true` で **タグ付きコミット**からビルドする。未公開の過去タグを初めて公開する場合も `build_from_tag=true` にする。
 
 ---
 

@@ -107,4 +107,5 @@ jobs:
           echo "Dispatching publish.yml for tag ${TAG}"
           gh workflow run publish.yml \
             --ref master \
-            -f "tag=${TAG}"
+            -f "tag=${TAG}" \
+            -f build_from_tag=true
