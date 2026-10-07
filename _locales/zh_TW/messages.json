@@ -4,7 +4,7 @@
     "description": "擴充套件名稱（品牌）。"
   },
   "extDescription": {
-    "message": "僅作用於播放器周圍：跟隨影片的柔化模糊，或淺灰填滿。不是縮圖模糊。",
+    "message": "僅作用於播放器周圍：跟隨影片的柔化模糊，或隨主題的單色填滿。不是縮圖模糊。",
     "description": "Chrome Web Store 和擴充套件詳情中的簡短描述。"
   },
   "popupHeading": {

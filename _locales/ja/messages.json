@@ -4,7 +4,7 @@
     "description": "拡張機能名（ブランド）。"
   },
   "extDescription": {
-    "message": "YouTubeプレイヤーの周囲だけ。動画色のブラーか、薄いグレーで塗りつぶし。サムネぼかしではありません。",
+    "message": "YouTubeプレイヤーの周囲だけ。動画色のブラーか、テーマに合わせた塗りつぶし。サムネぼかしではありません。",
     "description": "ストア・詳細用の短い説明。"
   },
   "popupHeading": {
