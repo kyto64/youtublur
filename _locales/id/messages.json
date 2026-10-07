@@ -37,5 +37,25 @@
   "popupPhrase4": { "message": "YouTube, tapi lebih nyaman" },
   "popupPhrase5": { "message": "Suasana ambien, sesuai keinginan" },
   "popupPhrase6": { "message": "Latar belakang, diperindah" },
-  "popupPhrase7": { "message": "Kenyamanan visual Anda, ditingkatkan" }
+  "popupPhrase7": { "message": "Kenyamanan visual Anda, ditingkatkan" },
+  "reviewNudgeTitle": {
+    "message": "Sudah nyaman dengan youtublur?",
+    "description": "Judul permintaan ulasan opsional yang ditampilkan setelah sekitar seminggu pemakaian."
+  },
+  "reviewNudgeBody": {
+    "message": "Jika latar belakang pemutar yang lebih lembut ini berguna, boleh tinggalkan ulasan jujur? Ini membantu orang lain menemukan ekstensi ini. Berapa pun rating yang sesuai pengalaman Anda, kami terima kasih.",
+    "description": "Teks permintaan ulasan opsional."
+  },
+  "reviewNudgeLeaveReview": {
+    "message": "Tinggalkan ulasan",
+    "description": "Tombol utama pada permintaan ulasan."
+  },
+  "reviewNudgeNotNow": {
+    "message": "Nanti",
+    "description": "Penutupan sementara permintaan ulasan; disembunyikan selama masa tunggu."
+  },
+  "reviewNudgeDontAskAgain": {
+    "message": "Jangan tanya lagi",
+    "description": "Penutupan permanen permintaan ulasan."
+  }
 }

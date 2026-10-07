@@ -37,5 +37,25 @@
   "popupPhrase4": { "message": "讓 YouTube 更溫馨" },
   "popupPhrase5": { "message": "氛圍感背景，隨時享用" },
   "popupPhrase6": { "message": "背景，更美好" },
-  "popupPhrase7": { "message": "視覺舒適，全面升級" }
+  "popupPhrase7": { "message": "視覺舒適，全面升級" },
+  "reviewNudgeTitle": {
+    "message": "youtublur 用得還順手嗎？",
+    "description": "使用約一週後顯示的可選評價提示標題。"
+  },
+  "reviewNudgeBody": {
+    "message": "如果更柔和的播放器背景對你有幫助，願意留一則真實評價嗎？這能幫助其他人發現這款擴充功能。評分多少都可以，依你的真實體驗即可。",
+    "description": "可選評價提示的正文。"
+  },
+  "reviewNudgeLeaveReview": {
+    "message": "撰寫評論",
+    "description": "評價提示的主要按鈕。"
+  },
+  "reviewNudgeNotNow": {
+    "message": "之後再說",
+    "description": "暫時關閉評價提示；在冷卻期間不再顯示。"
+  },
+  "reviewNudgeDontAskAgain": {
+    "message": "不再顯示",
+    "description": "永久關閉評價提示。"
+  }
 }

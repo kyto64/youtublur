@@ -37,5 +37,25 @@
   "popupPhrase4": { "message": "아늑한 YouTube 만들기" },
   "popupPhrase5": { "message": "앰비언트 바이브, 원하는 대로" },
   "popupPhrase6": { "message": "배경을 아름답게" },
-  "popupPhrase7": { "message": "시각적 편안함, 업그레이드" }
+  "popupPhrase7": { "message": "시각적 편안함, 업그레이드" },
+  "reviewNudgeTitle": {
+    "message": "youtublur, 써 보니 어떠셨나요?",
+    "description": "약 1주일 사용 후 표시되는 선택적 리뷰 안내의 제목."
+  },
+  "reviewNudgeBody": {
+    "message": "플레이어 주변 배경이 도움이 되었다면 솔직한 리뷰를 남겨 주시겠어요? 다른 사용자들이 확장 프로그램을 찾는 데 도움이 됩니다. 경험에 맞는 평점이면 어떤 것이든 괜찮습니다.",
+    "description": "선택적 리뷰 안내의 본문."
+  },
+  "reviewNudgeLeaveReview": {
+    "message": "리뷰 남기기",
+    "description": "리뷰 안내의 기본 버튼."
+  },
+  "reviewNudgeNotNow": {
+    "message": "나중에",
+    "description": "리뷰 안내를 일시적으로 닫음(쿨다운 기간)."
+  },
+  "reviewNudgeDontAskAgain": {
+    "message": "다시 묻지 않기",
+    "description": "리뷰 안내를 영구적으로 닫음."
+  }
 }

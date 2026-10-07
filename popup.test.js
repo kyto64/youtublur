@@ -1,5 +1,6 @@
 import { vi } from 'vitest';
 require('./storage-mode.js');
+require('./review-nudge.js');
 const { initPopup, sendMessageToTab, saveModeToStorage, loadModeFromStorage } = require('./popup.js');
 
 describe('popup.js', () => {
@@ -195,6 +196,116 @@ describe('popup.js', () => {
         delete chrome.runtime.lastError;
         resolve();
       });
+    });
+  });
+
+  describe('review nudge', () => {
+    beforeEach(() => {
+      document.body.innerHTML = `
+        <input type="radio" name="bgMode" id="modeSolid" value="solid">
+        <input type="radio" name="bgMode" id="modeBlur" value="blur">
+        <aside id="reviewNudge" hidden>
+          <p id="reviewNudgeTitle"></p>
+          <p id="reviewNudgeBody"></p>
+          <button type="button" id="reviewNudgeLeave"></button>
+          <button type="button" id="reviewNudgeNotNow"></button>
+          <button type="button" id="reviewNudgeNever"></button>
+        </aside>
+      `;
+    });
+
+    test('shows nudge after 7 days of use', async () => {
+      const firstUse = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(document.getElementById('reviewNudge').hidden).toBe(false);
+    });
+
+    test('hides nudge before 7 days of use', async () => {
+      const firstUse = Date.now() - 2 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(document.getElementById('reviewNudge').hidden).toBe(true);
+    });
+
+    test('Leave a review marks handled and opens store tab', async () => {
+      const firstUse = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+      chrome.tabs.create = vi.fn();
+      chrome.runtime.getManifest = vi.fn(() => ({}));
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      document.getElementById('reviewNudgeLeave').click();
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(chrome.tabs.create).toHaveBeenCalled();
+      expect(localSetMock).toHaveBeenCalledWith(
+        expect.objectContaining({ reviewNudgeHandled: true }),
+        expect.any(Function)
+      );
+      expect(document.getElementById('reviewNudge').hidden).toBe(true);
+    });
+
+    test('Not now sets cooldown and hides nudge', async () => {
+      const firstUse = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      document.getElementById('reviewNudgeNotNow').click();
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(localSetMock).toHaveBeenCalledWith(
+        expect.objectContaining({ reviewNudgeCooldownUntil: expect.any(Number) }),
+        expect.any(Function)
+      );
+      expect(document.getElementById('reviewNudge').hidden).toBe(true);
+    });
+
+    test('Don\'t ask again permanently suppresses nudge', async () => {
+      const firstUse = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      document.getElementById('reviewNudgeNever').click();
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(localSetMock).toHaveBeenCalledWith(
+        expect.objectContaining({ reviewNudgeNeverAsk: true }),
+        expect.any(Function)
+      );
+      expect(document.getElementById('reviewNudge').hidden).toBe(true);
     });
   });
 

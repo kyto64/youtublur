@@ -151,10 +151,11 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 |------|------|
 | コンテンツロジック | [`src/content.ts`](./src/content.ts), [`content.test.js`](./content.test.js) |
 | ポップアップ UI | [`popup.html`](./popup.html), [`src/popup.ts`](./src/popup.ts), [`popup.test.js`](./popup.test.js) |
+| レビュー促し（ポップアップ） | [`src/review-nudge.ts`](./src/review-nudge.ts), [`review-nudge.test.js`](./review-nudge.test.js) |
 | ストレージユーティリティ | [`src/storage-mode.ts`](./src/storage-mode.ts) |
 | 型定義（拡張グローバル / `BackgroundMode`） | [`globals.d.ts`](./globals.d.ts) |
 | TS 設定 | [`tsconfig.json`](./tsconfig.json) |
-| コンパイル成果物（編集禁止） | `content.js`, `popup.js`, `storage-mode.js`（manifest 参照先） |
+| コンパイル成果物（編集禁止） | `content.js`, `popup.js`, `storage-mode.js`, `review-nudge.js`（manifest / popup 参照先） |
 | スタイル | [`style.css`](./style.css) |
 | マニフェスト | [`manifest.json`](./manifest.json) |
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |

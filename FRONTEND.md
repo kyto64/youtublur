@@ -50,6 +50,7 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 - 現在の設定値の表示
 - ユーザー操作の受け付け
 - ストレージへの設定保存
+- 任意のレビュー促し（`src/review-nudge.ts` → `review-nudge.js`）
 
 **ライフサイクル:**
 - アイコンクリック時に作成
@@ -88,7 +89,12 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 
 **利用するストレージ:**
 - `chrome.storage.sync`: メインの設定保存（アカウント同期）
-- `chrome.storage.local`: 一時的なデータ、バックアップ
+- `chrome.storage.local`: 一時的なデータ、バックアップ、レビュー促し状態（`firstUseTimestamp` など）
+
+**レビュー促し（`review-nudge.js`）:**
+- 初回ポップアップ開封で `firstUseTimestamp` を記録
+- 7 日経過後に一度だけ表示候補（「あとで」はさらに 7 日クールダウン）
+- ストア URL はランタイムの Gecko 検出で CWS / AMO を切り替え（manifest の gecko ブロックは共用のため使用しない）
 
 ### データフローと通信
 
