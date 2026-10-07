@@ -61,6 +61,10 @@ function getReviewStoreUrl(): string {
   return isFirefoxBrowser() ? STORE_URL_FIREFOX : STORE_URL_CHROME;
 }
 
+function formatReviewNudgeDelaySeconds(): number {
+  return NUDGE_DELAY_MS / 1000;
+}
+
 /**
  * Record first popup open time if missing. Returns the stored timestamp.
  */
