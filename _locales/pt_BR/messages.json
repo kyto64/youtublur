@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "Não perguntar de novo",
     "description": "Dispensa permanente do aviso de avaliação."
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "Não foi possível salvar essa escolha. O aviso fica aqui para você tentar de novo.",
+    "description": "Aviso curto quando a escolha do pedido de avaliação não pôde ser salva. O pedido permanece visível."
   }
 }

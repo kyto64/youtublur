@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "不再顯示",
     "description": "永久關閉評價提示。"
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "這個選擇沒能儲存。提示會留在這裡，方便你再試一次。",
+    "description": "評價提示的選擇未能儲存時顯示的簡短說明。提示本身保持可見。"
   }
 }

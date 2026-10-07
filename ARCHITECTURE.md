@@ -166,9 +166,13 @@ YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購�
 | ユーザー操作 | 保存キー | 効果 |
 |--------------|----------|------|
 | （初回ポップアップ） | `firstUseTimestamp` | 以降の 7 日カウント開始 |
-| **レビューを書く** | `reviewNudgeHandled = true` | ストアを新規タブで開き、再表示しない |
-| **あとで** | `reviewNudgeCooldownUntil` | 7 日間非表示 |
-| **今後表示しない** | `reviewNudgeNeverAsk = true` | 恒久非表示 |
+| **レビューを書く** | `reviewNudgeHandled = true` | 保存できたときだけストアを新規タブで開き、再表示しない |
+| **あとで** | `reviewNudgeCooldownUntil` | 保存できたとき 7 日間非表示 |
+| **今後表示しない** | `reviewNudgeNeverAsk = true` | 保存できたとき恒久非表示 |
+
+`chrome.storage.local` の読み取りが `lastError` または例外で失敗したときは促しを出さない（fail closed）。初回時刻の書き込みに失敗したときも時刻を捏造せず、促しは出さない。
+
+「あとで」「今後表示しない」「レビューを書く」の保存が失敗したときは、選択が残ったように促しを消さない。促しは表示したまま、短い案内（`reviewNudgeSaveFailed`）を出す。「レビューを書く」は保存できたときだけストアを開く。保存できないままタブだけ開くと、ユーザーは対応済みだと思って戻ったあとに同じ促しが再表示される。
 
 ストア URL は manifest の `gecko` ブロックでは判定しない（Chrome ビルドにも gecko 設定が含まれる）。`CSS.supports('-moz-appearance', 'none')` で Gecko ランタイムを検出し、Chrome Web Store / Firefox AMO を切り替える（`content.ts` の `isGeckoLayoutEngine()` と同手法）。
 

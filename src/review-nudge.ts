@@ -12,30 +12,43 @@ const STORE_URL_CHROME =
   'https://chromewebstore.google.com/detail/youtublur/npkiobfoclnkmobjhgadnjepceofjenj';
 const STORE_URL_FIREFOX = 'https://addons.mozilla.org/firefox/addon/youtublur/';
 
-function storageLocalGet(keys: string[]): Promise<Record<string, unknown>> {
+type StorageRead = { ok: true; data: Record<string, unknown> } | { ok: false };
+
+function storageLocalGet(keys: string[]): Promise<StorageRead> {
   return new Promise((resolve) => {
     try {
       chrome.storage.local.get(keys, (result) => {
-        if (chrome.runtime?.lastError) {
-          resolve({});
+        const error = chrome.runtime && chrome.runtime.lastError;
+        if (error) {
+          console.warn('Review nudge storage read failed:', error);
+          resolve({ ok: false });
           return;
         }
-        resolve(result);
+        resolve({ ok: true, data: result ?? {} });
       });
-    } catch {
-      resolve({});
+    } catch (error) {
+      console.warn('Review nudge storage read failed:', error);
+      resolve({ ok: false });
     }
   });
 }
 
-function storageLocalSet(data: Record<string, unknown>): Promise<void> {
+/** Returns false on lastError or a thrown storage API failure. Never rejects. */
+function storageLocalSet(data: Record<string, unknown>): Promise<boolean> {
   return new Promise((resolve) => {
     try {
       chrome.storage.local.set(data, () => {
-        resolve();
+        const error = chrome.runtime && chrome.runtime.lastError;
+        if (error) {
+          console.warn('Review nudge storage write failed:', error);
+          resolve(false);
+          return;
+        }
+        resolve(true);
       });
-    } catch {
-      resolve();
+    } catch (error) {
+      console.warn('Review nudge storage write failed:', error);
+      resolve(false);
     }
   });
 }
@@ -62,18 +75,24 @@ function getReviewStoreUrl(): string {
 }
 
 /**
- * Record first popup open time if missing. Returns the stored timestamp.
+ * Record first popup open time if missing.
+ * Returns the persisted timestamp, or null when the read/write failed
+ * (do not invent a timestamp that was not stored).
  */
-async function ensureFirstUseTimestamp(): Promise<number> {
-  const result = await storageLocalGet([FIRST_USE_TIMESTAMP_KEY]);
-  const existing = result[FIRST_USE_TIMESTAMP_KEY];
+async function ensureFirstUseTimestamp(): Promise<number | null> {
+  const read = await storageLocalGet([FIRST_USE_TIMESTAMP_KEY]);
+  if (!read.ok) {
+    return null;
+  }
+
+  const existing = read.data[FIRST_USE_TIMESTAMP_KEY];
   if (typeof existing === 'number' && existing > 0) {
     return existing;
   }
 
   const now = Date.now();
-  await storageLocalSet({ [FIRST_USE_TIMESTAMP_KEY]: now });
-  return now;
+  const saved = await storageLocalSet({ [FIRST_USE_TIMESTAMP_KEY]: now });
+  return saved ? now : null;
 }
 
 async function shouldShowReviewNudge(now = Date.now()): Promise<boolean> {
@@ -83,7 +102,11 @@ async function shouldShowReviewNudge(now = Date.now()): Promise<boolean> {
     REVIEW_NUDGE_NEVER_ASK_KEY,
     REVIEW_NUDGE_COOLDOWN_UNTIL_KEY
   ];
-  const result = await storageLocalGet(keys);
+  const read = await storageLocalGet(keys);
+  if (!read.ok) {
+    return false;
+  }
+  const result = read.data;
 
   if (result[REVIEW_NUDGE_HANDLED_KEY] === true || result[REVIEW_NUDGE_NEVER_ASK_KEY] === true) {
     return false;
@@ -102,18 +125,18 @@ async function shouldShowReviewNudge(now = Date.now()): Promise<boolean> {
   return now - firstUse >= NUDGE_DELAY_MS;
 }
 
-async function dismissReviewNudgeForNow(now = Date.now()): Promise<void> {
-  await storageLocalSet({
+async function dismissReviewNudgeForNow(now = Date.now()): Promise<boolean> {
+  return storageLocalSet({
     [REVIEW_NUDGE_COOLDOWN_UNTIL_KEY]: now + NUDGE_COOLDOWN_MS
   });
 }
 
-async function dismissReviewNudgePermanently(): Promise<void> {
-  await storageLocalSet({ [REVIEW_NUDGE_NEVER_ASK_KEY]: true });
+async function dismissReviewNudgePermanently(): Promise<boolean> {
+  return storageLocalSet({ [REVIEW_NUDGE_NEVER_ASK_KEY]: true });
 }
 
-async function markReviewNudgeHandled(): Promise<void> {
-  await storageLocalSet({ [REVIEW_NUDGE_HANDLED_KEY]: true });
+async function markReviewNudgeHandled(): Promise<boolean> {
+  return storageLocalSet({ [REVIEW_NUDGE_HANDLED_KEY]: true });
 }
 
 function openReviewStorePage(): void {

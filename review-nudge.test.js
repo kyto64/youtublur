@@ -126,18 +126,93 @@ describe('review-nudge.js', () => {
 
   test('dismissReviewNudgeForNow sets a 7-day cooldown', async () => {
     const now = 1_700_000_000_000;
-    await dismissReviewNudgeForNow(now);
+    await expect(dismissReviewNudgeForNow(now)).resolves.toBe(true);
     expect(localData[REVIEW_NUDGE_COOLDOWN_UNTIL_KEY]).toBe(now + NUDGE_COOLDOWN_MS);
   });
 
   test('dismissReviewNudgePermanently sets never-ask flag', async () => {
-    await dismissReviewNudgePermanently();
+    await expect(dismissReviewNudgePermanently()).resolves.toBe(true);
     expect(localData[REVIEW_NUDGE_NEVER_ASK_KEY]).toBe(true);
   });
 
   test('markReviewNudgeHandled sets handled flag', async () => {
-    await markReviewNudgeHandled();
+    await expect(markReviewNudgeHandled()).resolves.toBe(true);
     expect(localData[REVIEW_NUDGE_HANDLED_KEY]).toBe(true);
+  });
+
+  test('shouldShowReviewNudge is false when storage get reports lastError', async () => {
+    const firstUse = 1_700_000_000_000;
+    localData[FIRST_USE_TIMESTAMP_KEY] = firstUse;
+    localGetMock.mockImplementation((_keys, cb) => {
+      chrome.runtime.lastError = { message: 'Access denied' };
+      cb({});
+    });
+
+    const show = await shouldShowReviewNudge(firstUse + NUDGE_DELAY_MS);
+    expect(show).toBe(false);
+  });
+
+  test('shouldShowReviewNudge is false when storage get throws', async () => {
+    localGetMock.mockImplementation(() => {
+      throw new Error('storage unavailable');
+    });
+
+    const show = await shouldShowReviewNudge(1_700_000_000_000 + NUDGE_DELAY_MS);
+    expect(show).toBe(false);
+  });
+
+  test('dismissReviewNudgeForNow reports failure and does not persist when set reports lastError', async () => {
+    const now = 1_700_000_000_000;
+    localSetMock.mockImplementation((_data, cb) => {
+      chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+      cb();
+    });
+
+    await expect(dismissReviewNudgeForNow(now)).resolves.toBe(false);
+    expect(localData[REVIEW_NUDGE_COOLDOWN_UNTIL_KEY]).toBeUndefined();
+  });
+
+  test('dismissReviewNudgePermanently reports failure and does not persist when set throws', async () => {
+    localSetMock.mockImplementation(() => {
+      throw new Error('storage refused');
+    });
+
+    await expect(dismissReviewNudgePermanently()).resolves.toBe(false);
+    expect(localData[REVIEW_NUDGE_NEVER_ASK_KEY]).toBeUndefined();
+  });
+
+  test('markReviewNudgeHandled reports failure and does not persist when set reports lastError', async () => {
+    localSetMock.mockImplementation((_data, cb) => {
+      chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+      cb();
+    });
+
+    await expect(markReviewNudgeHandled()).resolves.toBe(false);
+    expect(localData[REVIEW_NUDGE_HANDLED_KEY]).toBeUndefined();
+  });
+
+  test('ensureFirstUseTimestamp returns null without writing when the read fails', async () => {
+    localGetMock.mockImplementation((_keys, cb) => {
+      chrome.runtime.lastError = { message: 'Access denied' };
+      cb({});
+    });
+
+    await expect(ensureFirstUseTimestamp()).resolves.toBeNull();
+    expect(localSetMock).not.toHaveBeenCalled();
+  });
+
+  test('ensureFirstUseTimestamp returns null when the first-use write fails', async () => {
+    localSetMock.mockImplementation((_data, cb) => {
+      chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+      cb();
+    });
+
+    await expect(ensureFirstUseTimestamp()).resolves.toBeNull();
+    expect(localData[FIRST_USE_TIMESTAMP_KEY]).toBeUndefined();
+
+    delete chrome.runtime.lastError;
+    const show = await shouldShowReviewNudge(Date.now() + NUDGE_DELAY_MS);
+    expect(show).toBe(false);
   });
 
   test('getReviewStoreUrl returns Chrome URL by default', () => {

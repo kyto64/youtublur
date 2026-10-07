@@ -316,6 +316,15 @@
     .review-nudge-link:hover {
       color: var(--text);
     }
+    .review-nudge-notice {
+      margin: 0;
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.4;
+    }
+    .review-nudge-notice[hidden] {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
@@ -406,6 +415,7 @@
     <aside id="reviewNudge" hidden aria-live="polite">
       <p class="review-nudge-title" id="reviewNudgeTitle"></p>
       <p class="review-nudge-body" id="reviewNudgeBody"></p>
+      <p class="review-nudge-notice" id="reviewNudgeSaveNotice" hidden></p>
       <button type="button" id="reviewNudgeLeave"></button>
       <div class="review-nudge-actions">
         <button type="button" class="review-nudge-link" id="reviewNudgeNotNow"></button>

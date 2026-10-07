@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "Jangan tanya lagi",
     "description": "Penutupan permanen permintaan ulasan."
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "Pilihan itu belum tersimpan. Pesan ini tetap di sini agar Anda bisa mencoba lagi.",
+    "description": "Pemberitahuan singkat saat pilihan permintaan ulasan gagal disimpan. Permintaan tetap tampil."
   }
 }

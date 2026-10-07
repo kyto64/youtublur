@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "Don't ask again",
     "description": "Permanent dismiss on the review prompt."
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "Couldn't save that choice. This stays here so you can try again.",
+    "description": "Shown on the review prompt when the dismiss or review choice could not be saved. The prompt stays visible."
   }
 }

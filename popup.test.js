@@ -207,6 +207,7 @@ describe('popup.js', () => {
         <aside id="reviewNudge" hidden>
           <p id="reviewNudgeTitle"></p>
           <p id="reviewNudgeBody"></p>
+          <p id="reviewNudgeSaveNotice" hidden></p>
           <button type="button" id="reviewNudgeLeave"></button>
           <button type="button" id="reviewNudgeNotNow"></button>
           <button type="button" id="reviewNudgeNever"></button>
@@ -264,6 +265,7 @@ describe('popup.js', () => {
         expect.any(Function)
       );
       expect(document.getElementById('reviewNudge').hidden).toBe(true);
+      expect(document.getElementById('reviewNudgeSaveNotice').hidden).toBe(true);
     });
 
     test('Not now sets cooldown and hides nudge', async () => {
@@ -306,6 +308,89 @@ describe('popup.js', () => {
         expect.any(Function)
       );
       expect(document.getElementById('reviewNudge').hidden).toBe(true);
+    });
+
+    test('keeps the nudge hidden when storage get fails', async () => {
+      localGetMock.mockImplementation((_keys, cb) => {
+        chrome.runtime.lastError = { message: 'Access denied' };
+        cb({ firstUseTimestamp: Date.now() - 8 * 24 * 60 * 60 * 1000 });
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(document.getElementById('reviewNudge').hidden).toBe(true);
+    });
+
+    test('Not now keeps the nudge and shows a notice when save fails', async () => {
+      const firstUse = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((_keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+      localSetMock.mockImplementation((_data, cb) => {
+        chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+        cb();
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      document.getElementById('reviewNudgeNotNow').click();
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(document.getElementById('reviewNudge').hidden).toBe(false);
+      expect(document.getElementById('reviewNudgeSaveNotice').hidden).toBe(false);
+      expect(document.getElementById('reviewNudgeSaveNotice').textContent).toBe('reviewNudgeSaveFailed');
+    });
+
+    test('Don\'t ask again keeps the nudge when save fails', async () => {
+      const firstUse = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((_keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+      localSetMock.mockImplementation((_data, cb) => {
+        chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+        cb();
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      document.getElementById('reviewNudgeNever').click();
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(document.getElementById('reviewNudge').hidden).toBe(false);
+      expect(document.getElementById('reviewNudgeSaveNotice').hidden).toBe(false);
+    });
+
+    test('Leave a review does not open the store when the handled flag cannot be saved', async () => {
+      const firstUse = Date.now() - 8 * 24 * 60 * 60 * 1000;
+      localGetMock.mockImplementation((_keys, cb) => {
+        cb({ firstUseTimestamp: firstUse });
+      });
+      localSetMock.mockImplementation((_data, cb) => {
+        chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+        cb();
+      });
+      chrome.tabs.create = vi.fn();
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      document.getElementById('reviewNudgeLeave').click();
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(chrome.tabs.create).not.toHaveBeenCalled();
+      expect(document.getElementById('reviewNudge').hidden).toBe(false);
+      expect(document.getElementById('reviewNudgeSaveNotice').hidden).toBe(false);
     });
   });
 
