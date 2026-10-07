@@ -36,7 +36,7 @@ function applyLocalizedStrings() {
   if (reviewTitle) reviewTitle.textContent = chrome.i18n.getMessage('reviewNudgeTitle');
   if (reviewBody) reviewBody.textContent = chrome.i18n.getMessage('reviewNudgeBody');
   if (reviewLeave) reviewLeave.textContent = chrome.i18n.getMessage('reviewNudgeLeaveReview');
-  if (reviewNotNow) reviewNotNow.textContent = chrome.i18n.getMessage('reviewNudgeNotNow');
+  if (reviewNotNow) reviewNotNow.textContent = 'Not now';
   if (reviewNever) reviewNever.textContent = chrome.i18n.getMessage('reviewNudgeDontAskAgain');
 }
 
