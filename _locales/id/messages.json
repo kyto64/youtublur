@@ -4,7 +4,7 @@
     "description": "Nama ekstensi (merek)."
   },
   "extDescription": {
-    "message": "YouTube yang lebih lembut: latar belakang blur halus di belakang video untuk pemutaran yang lebih mudah.",
+    "message": "Soft blur yang mengikuti video, atau abu-abu muda di sekitar pemutar—bukan blur thumbnail.",
     "description": "Deskripsi singkat untuk Chrome Web Store dan detail ekstensi."
   },
   "popupHeading": {

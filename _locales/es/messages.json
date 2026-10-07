@@ -4,7 +4,7 @@
     "description": "Nombre de la extensión (marca)."
   },
   "extDescription": {
-    "message": "Un YouTube más amable: fondo borroso suave detrás del video para una visualización más fácil.",
+    "message": "Desenfoque suave que sigue el vídeo, o un gris claro alrededor del reproductor—no es desenfoque de miniaturas.",
     "description": "Descripción corta para Chrome Web Store y detalles de la extensión."
   },
   "popupHeading": {

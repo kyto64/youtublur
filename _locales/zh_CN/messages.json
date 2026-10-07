@@ -4,7 +4,7 @@
     "description": "扩展名称（品牌）。"
   },
   "extDescription": {
-    "message": "更温和的 YouTube：视频后方的柔和模糊背景，让观看更轻松。",
+    "message": "仅作用于播放器周围：跟随视频的柔化模糊，或浅灰填充。不是缩略图模糊。",
     "description": "Chrome Web Store 和扩展详情中的简短描述。"
   },
   "popupHeading": {
