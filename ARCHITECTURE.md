@@ -63,7 +63,8 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 #### 1. ストレージレイヤー（最下位）
 - **責務**: 設定値の永続化と同期
 - **実装**: `chrome.storage.sync` と `chrome.storage.local`
-- **キー**: `mode`, `color`, `timestamp`
+- **キー（モード）**: `playerBackgroundMode`, `playerBackgroundModeTimestamp`（`storage-mode.js`）
+- **キー（レビュー促し・local のみ）**: `firstUseTimestamp`, `reviewNudgeHandled`, `reviewNudgeNeverAsk`, `reviewNudgeCooldownUntil`（`review-nudge.js`）
 
 #### 2. ビジネスロジックレイヤー（中間）
 - **`src/content.ts` → `content.js`**:
@@ -82,6 +83,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
   - ポップアップ UI の状態管理
   - モード切替ハンドラ
   - カラーピッカーの同期
+  - 任意のレビュー促し（`review-nudge.js` 経由。初回ポップアップから 7 日後に一度だけ表示候補）
 - **popup.html**:
   - シンプルな操作インターフェース
   - モードボタンとカラーピッカー
@@ -156,6 +158,19 @@ YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購�
 これらのイベントは page world から共有 DOM 上に発火されるため、isolated world の content script でも受け取れる。
 
 `popup.js` の `sendMessageToTab()` は callback 型と Promise 型の `chrome.tabs.sendMessage` の両方に対応する。
+
+#### レビュー促し（`review-nudge.js`）
+
+ポップアップ開封時に `ensureFirstUseTimestamp()` で初回利用時刻を `chrome.storage.local` に記録する。約 7 日経過後、未処理かつクールダウン外のときだけコンパクトなレビュー促しを表示する。
+
+| ユーザー操作 | 保存キー | 効果 |
+|--------------|----------|------|
+| （初回ポップアップ） | `firstUseTimestamp` | 以降の 7 日カウント開始 |
+| **レビューを書く** | `reviewNudgeHandled = true` | ストアを新規タブで開き、再表示しない |
+| **あとで** | `reviewNudgeCooldownUntil` | 7 日間非表示 |
+| **今後表示しない** | `reviewNudgeNeverAsk = true` | 恒久非表示 |
+
+ストア URL は manifest の `gecko` ブロックでは判定しない（Chrome ビルドにも gecko 設定が含まれる）。`CSS.supports('-moz-appearance', 'none')` で Gecko ランタイムを検出し、Chrome Web Store / Firefox AMO を切り替える（`content.ts` の `isGeckoLayoutEngine()` と同手法）。
 
 ### ユーザー操作フロー
 

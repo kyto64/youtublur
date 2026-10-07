@@ -40,12 +40,18 @@ function storageLocalSet(data: Record<string, unknown>): Promise<void> {
   });
 }
 
+/**
+ * Detect Firefox at runtime. Do not use manifest `browser_specific_settings.gecko`:
+ * the shared manifest includes gecko metadata on Chrome builds too.
+ * Same approach as `isGeckoLayoutEngine()` in content.ts (CSS.supports).
+ */
 function isFirefoxBrowser(): boolean {
   try {
-    const manifest = chrome.runtime.getManifest() as chrome.runtime.Manifest & {
-      browser_specific_settings?: { gecko?: unknown };
-    };
-    return Boolean(manifest.browser_specific_settings?.gecko);
+    return (
+      typeof CSS !== 'undefined' &&
+      typeof CSS.supports === 'function' &&
+      CSS.supports('-moz-appearance', 'none')
+    );
   } catch {
     return false;
   }

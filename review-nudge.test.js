@@ -25,6 +25,7 @@ describe('review-nudge.js', () => {
 
   beforeEach(() => {
     localData = {};
+    global.CSS = { supports: vi.fn(() => false) };
     localGetMock = vi.fn((keys, cb) => {
       const result = {};
       for (const key of keys) {
@@ -58,6 +59,7 @@ describe('review-nudge.js', () => {
 
   afterEach(() => {
     delete global.chrome;
+    delete global.CSS;
   });
 
   test('ensureFirstUseTimestamp records and returns a timestamp when missing', async () => {
@@ -139,13 +141,22 @@ describe('review-nudge.js', () => {
   });
 
   test('getReviewStoreUrl returns Chrome URL by default', () => {
+    global.CSS = { supports: vi.fn(() => false) };
     expect(getReviewStoreUrl()).toBe(STORE_URL_CHROME);
   });
 
-  test('getReviewStoreUrl returns Firefox URL when gecko manifest is present', () => {
+  test('getReviewStoreUrl returns Chrome URL when manifest has gecko but runtime is Chromium', () => {
     chrome.runtime.getManifest = vi.fn(() => ({
       browser_specific_settings: { gecko: { id: 'youtublur@kyto64.github.io' } }
     }));
+    global.CSS = { supports: vi.fn(() => false) };
+    expect(getReviewStoreUrl()).toBe(STORE_URL_CHROME);
+  });
+
+  test('getReviewStoreUrl returns Firefox URL when Gecko layout engine is detected', () => {
+    global.CSS = {
+      supports: vi.fn((prop) => prop === '-moz-appearance')
+    };
     expect(getReviewStoreUrl()).toBe(STORE_URL_FIREFOX);
   });
 
