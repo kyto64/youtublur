@@ -4,7 +4,7 @@
     "description": "拡張機能名（ブランド）。"
   },
   "extDescription": {
-    "message": "YouTube を、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を。",
+    "message": "YouTubeプレイヤーの周囲だけ。動画色のブラーか、テーマに合わせた塗りつぶし。サムネぼかしではありません。",
     "description": "ストア・詳細用の短い説明。"
   },
   "popupHeading": {

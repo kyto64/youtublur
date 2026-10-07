@@ -4,7 +4,7 @@
     "description": "Nome da extensão (marca)."
   },
   "extDescription": {
-    "message": "Um YouTube mais suave: fundo desfocado suave atrás do vídeo para uma visualização mais fácil.",
+    "message": "Desfoque suave que segue o vídeo, ou preenchimento sólido conforme o tema, ao redor do player—não é desfoque de miniaturas.",
     "description": "Descrição curta para a Chrome Web Store e detalhes da extensão."
   },
   "popupHeading": {
