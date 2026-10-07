@@ -38,6 +38,23 @@ function applyLocalizedStrings() {
   if (reviewLeave) reviewLeave.textContent = chrome.i18n.getMessage('reviewNudgeLeaveReview');
   if (reviewNotNow) reviewNotNow.textContent = chrome.i18n.getMessage('reviewNudgeNotNow');
   if (reviewNever) reviewNever.textContent = chrome.i18n.getMessage('reviewNudgeDontAskAgain');
+  const reviewSaveNotice = document.getElementById('reviewNudgeSaveNotice');
+  if (reviewSaveNotice) reviewSaveNotice.textContent = chrome.i18n.getMessage('reviewNudgeSaveFailed');
+}
+
+function showReviewNudgeSaveFailure() {
+  const notice = document.getElementById('reviewNudgeSaveNotice');
+  if (notice) notice.hidden = false;
+}
+
+/** Hide the nudge only after the choice is persisted. Leave it up, with a short notice, when the write fails. */
+function finishReviewNudgeChoice(saved: boolean, afterSave?: () => void) {
+  if (!saved) {
+    showReviewNudgeSaveFailure();
+    return;
+  }
+  hideReviewNudge();
+  afterSave?.();
 }
 
 function hideReviewNudge() {
@@ -64,22 +81,24 @@ function initReviewNudge() {
   });
 
   leaveBtn.addEventListener('click', () => {
-    markReviewNudgeHandled().then(() => {
-      hideReviewNudge();
-      openReviewStorePage();
-    });
+    markReviewNudgeHandled().then(
+      (saved) => finishReviewNudgeChoice(saved, openReviewStorePage),
+      () => showReviewNudgeSaveFailure()
+    );
   });
 
   notNowBtn.addEventListener('click', () => {
-    dismissReviewNudgeForNow().then(() => {
-      hideReviewNudge();
-    });
+    dismissReviewNudgeForNow().then(
+      (saved) => finishReviewNudgeChoice(saved),
+      () => showReviewNudgeSaveFailure()
+    );
   });
 
   neverBtn.addEventListener('click', () => {
-    dismissReviewNudgePermanently().then(() => {
-      hideReviewNudge();
-    });
+    dismissReviewNudgePermanently().then(
+      (saved) => finishReviewNudgeChoice(saved),
+      () => showReviewNudgeSaveFailure()
+    );
   });
 }
 

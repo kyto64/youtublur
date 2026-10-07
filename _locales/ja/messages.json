@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "今後表示しない",
     "description": "レビュー促しの恒久的な非表示。"
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "選択を保存できませんでした。もう一度試せるよう、この表示は残します。",
+    "description": "レビュー促しの選択を保存できなかったときに表示する短い案内。促し自体は残す。"
   }
 }

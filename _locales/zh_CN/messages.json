@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "不再提示",
     "description": "永久关闭评价提示。"
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "这个选择没能保存。提示会留在这里，方便你再试一次。",
+    "description": "评价提示的选择未能保存时显示的简短说明。提示本身保持可见。"
   }
 }

@@ -8,11 +8,11 @@ declare function saveModeToStorage(mode: BackgroundMode): Promise<boolean>;
 declare function loadModeFromStorage(): Promise<BackgroundMode>;
 declare function reconcileStorageCopies(): void;
 
-declare function ensureFirstUseTimestamp(): Promise<number>;
+declare function ensureFirstUseTimestamp(): Promise<number | null>;
 declare function shouldShowReviewNudge(now?: number): Promise<boolean>;
-declare function dismissReviewNudgeForNow(now?: number): Promise<void>;
-declare function dismissReviewNudgePermanently(): Promise<void>;
-declare function markReviewNudgeHandled(): Promise<void>;
+declare function dismissReviewNudgeForNow(now?: number): Promise<boolean>;
+declare function dismissReviewNudgePermanently(): Promise<boolean>;
+declare function markReviewNudgeHandled(): Promise<boolean>;
 declare function getReviewStoreUrl(): string;
 declare function openReviewStorePage(): void;
 

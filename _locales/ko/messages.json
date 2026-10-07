@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "다시 묻지 않기",
     "description": "리뷰 안내를 영구적으로 닫음."
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "선택을 저장하지 못했습니다. 다시 시도할 수 있도록 이 안내를 남겨 둡니다.",
+    "description": "리뷰 안내의 선택을 저장하지 못했을 때 표시하는 짧은 안내. 안내는 그대로 둔다."
   }
 }

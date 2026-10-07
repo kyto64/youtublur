@@ -57,5 +57,9 @@
   "reviewNudgeDontAskAgain": {
     "message": "No volver a preguntar",
     "description": "Descarte permanente del aviso de reseña."
+  },
+  "reviewNudgeSaveFailed": {
+    "message": "No se pudo guardar esa elección. El aviso se queda aquí para que puedas intentarlo de nuevo.",
+    "description": "Aviso breve cuando no se pudo guardar la elección del aviso de reseña. El aviso permanece visible."
   }
 }
