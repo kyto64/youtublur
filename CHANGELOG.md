@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.28](https://github.com/kyto64/youtublur/compare/v1.12.27...v1.12.28) (2026-10-07)
+
+### Features
+
+* optional soft review nudge in popup after 7 days ([#177](https://github.com/kyto64/youtublur/issues/177)) ([d2e1178](https://github.com/kyto64/youtublur/commit/d2e1178c6554670106f82a70e4d0705495b1646b))
+
+### Bug Fixes
+
+* レビュー促しのストレージ失敗を黙って成功扱いにしない ([#180](https://github.com/kyto64/youtublur/issues/180)) ([e540c49](https://github.com/kyto64/youtublur/commit/e540c498648a69491554d185ea1ff96ff3fb615b))
+
 ## [1.12.27](https://github.com/kyto64/youtublur/compare/v1.12.26...v1.12.27) (2026-10-07)
 
 ### Bug Fixes
