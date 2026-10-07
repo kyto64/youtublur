@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.27](https://github.com/kyto64/youtublur/compare/v1.12.26...v1.12.27) (2026-10-07)
+
+### Bug Fixes
+
+* **ci:** dispatch publish.yml after daily patch release without RELEASE_PUSH_TOKEN ([#175](https://github.com/kyto64/youtublur/issues/175)) ([5fcf630](https://github.com/kyto64/youtublur/commit/5fcf6308623225c6e5b27fd01e0e7b49e4a547c7)), references [#102](https://github.com/kyto64/youtublur/issues/102)
+
+### Documentation
+
+* Update Chrome Web Store short descriptions (`extDescription`) in all locales to describe theme-matched solid fill instead of thumbnail blur ([#176](https://github.com/kyto64/youtublur/issues/176)) ([186c366](https://github.com/kyto64/youtublur/commit/186c366))
+
 ## [1.12.26](https://github.com/kyto64/youtublur/compare/v1.12.25...v1.12.26) (2026-10-05)
 
 ## [1.12.25](https://github.com/kyto64/youtublur/compare/v1.12.24...v1.12.25) (2026-10-03)
