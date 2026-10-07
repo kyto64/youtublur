@@ -8,6 +8,14 @@ declare function saveModeToStorage(mode: BackgroundMode): Promise<boolean>;
 declare function loadModeFromStorage(): Promise<BackgroundMode>;
 declare function reconcileStorageCopies(): void;
 
+declare function ensureFirstUseTimestamp(): Promise<number>;
+declare function shouldShowReviewNudge(now?: number): Promise<boolean>;
+declare function dismissReviewNudgeForNow(now?: number): Promise<void>;
+declare function dismissReviewNudgePermanently(): Promise<void>;
+declare function markReviewNudgeHandled(): Promise<void>;
+declare function getReviewStoreUrl(): string;
+declare function openReviewStorePage(): void;
+
 interface Navigator {
   /** Non-standard but widely available; used for device-performance heuristics. */
   deviceMemory?: number;

@@ -37,5 +37,25 @@
   "popupPhrase4": { "message": "YouTube, but make it cozy" },
   "popupPhrase5": { "message": "Ambient vibes, on demand" },
   "popupPhrase6": { "message": "Background, beautified" },
-  "popupPhrase7": { "message": "Your visual comfort, upgraded" }
+  "popupPhrase7": { "message": "Your visual comfort, upgraded" },
+  "reviewNudgeTitle": {
+    "message": "Settling in with youtublur?",
+    "description": "Title for the optional review prompt shown after about a week of use."
+  },
+  "reviewNudgeBody": {
+    "message": "If the softer player background has been useful, would you mind leaving an honest review? It helps other people find the extension. Any rating that matches your experience is welcome.",
+    "description": "Body copy for the optional review prompt."
+  },
+  "reviewNudgeLeaveReview": {
+    "message": "Leave a review",
+    "description": "Primary button on the review prompt."
+  },
+  "reviewNudgeNotNow": {
+    "message": "Not now",
+    "description": "Secondary dismiss on the review prompt; hides it for a cooldown period."
+  },
+  "reviewNudgeDontAskAgain": {
+    "message": "Don't ask again",
+    "description": "Permanent dismiss on the review prompt."
+  }
 }

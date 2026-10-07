@@ -55,6 +55,7 @@ jobs:
             style.css \
             popup.html \
             popup.js \
+            review-nudge.js \
             _locales/ \
             icons/
           cp extension.zip extension-firefox.zip

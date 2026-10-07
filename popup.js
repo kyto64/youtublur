@@ -35,6 +35,61 @@ function applyLocalizedStrings() {
         preview.textContent = chrome.i18n.getMessage('previewLabel');
     if (reload)
         reload.textContent = chrome.i18n.getMessage('reloadButton');
+    const reviewTitle = document.getElementById('reviewNudgeTitle');
+    const reviewBody = document.getElementById('reviewNudgeBody');
+    const reviewLeave = document.getElementById('reviewNudgeLeave');
+    const reviewNotNow = document.getElementById('reviewNudgeNotNow');
+    const reviewNever = document.getElementById('reviewNudgeNever');
+    if (reviewTitle)
+        reviewTitle.textContent = chrome.i18n.getMessage('reviewNudgeTitle');
+    if (reviewBody)
+        reviewBody.textContent = chrome.i18n.getMessage('reviewNudgeBody');
+    if (reviewLeave)
+        reviewLeave.textContent = chrome.i18n.getMessage('reviewNudgeLeaveReview');
+    if (reviewNotNow)
+        reviewNotNow.textContent = chrome.i18n.getMessage('reviewNudgeNotNow');
+    if (reviewNever)
+        reviewNever.textContent = chrome.i18n.getMessage('reviewNudgeDontAskAgain');
+}
+function hideReviewNudge() {
+    const nudge = document.getElementById('reviewNudge');
+    if (nudge)
+        nudge.hidden = true;
+}
+function showReviewNudge() {
+    const nudge = document.getElementById('reviewNudge');
+    if (nudge)
+        nudge.hidden = false;
+}
+function initReviewNudge() {
+    const nudge = document.getElementById('reviewNudge');
+    const leaveBtn = document.getElementById('reviewNudgeLeave');
+    const notNowBtn = document.getElementById('reviewNudgeNotNow');
+    const neverBtn = document.getElementById('reviewNudgeNever');
+    if (!nudge || !leaveBtn || !notNowBtn || !neverBtn)
+        return;
+    ensureFirstUseTimestamp().then(() => {
+        shouldShowReviewNudge().then((show) => {
+            if (show)
+                showReviewNudge();
+        });
+    });
+    leaveBtn.addEventListener('click', () => {
+        markReviewNudgeHandled().then(() => {
+            hideReviewNudge();
+            openReviewStorePage();
+        });
+    });
+    notNowBtn.addEventListener('click', () => {
+        dismissReviewNudgeForNow().then(() => {
+            hideReviewNudge();
+        });
+    });
+    neverBtn.addEventListener('click', () => {
+        dismissReviewNudgePermanently().then(() => {
+            hideReviewNudge();
+        });
+    });
 }
 // Supports both callback-style and Promise-returning chrome.tabs.sendMessage implementations.
 function sendMessageToTab(tabId, message, onResult) {
@@ -60,6 +115,7 @@ function sendMessageToTab(tabId, message, onResult) {
 function initPopup() {
     document.addEventListener('DOMContentLoaded', () => {
         applyLocalizedStrings();
+        initReviewNudge();
         loadModeFromStorage().then((mode) => {
             const radio = document.getElementById(mode === 'blur' ? 'modeBlur' : 'modeSolid');
             if (radio)
