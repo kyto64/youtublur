@@ -35,6 +35,13 @@ function applyLocalizedStrings() {
         preview.textContent = chrome.i18n.getMessage('previewLabel');
     if (reload)
         reload.textContent = chrome.i18n.getMessage('reloadButton');
+    const blurStrengthLabel = document.getElementById('labelBlurStrength');
+    const blurStrengthSlider = document.getElementById('blurStrength');
+    if (blurStrengthLabel)
+        blurStrengthLabel.textContent = chrome.i18n.getMessage('blurStrengthLabel');
+    if (blurStrengthSlider) {
+        blurStrengthSlider.setAttribute('aria-label', chrome.i18n.getMessage('blurStrengthSliderAria'));
+    }
     const reviewTitle = document.getElementById('reviewNudgeTitle');
     const reviewBody = document.getElementById('reviewNudgeBody');
     const reviewLeave = document.getElementById('reviewNudgeLeave');
@@ -67,6 +74,116 @@ function finishReviewNudgeChoice(saved, afterSave) {
     }
     hideReviewNudge();
     afterSave?.();
+}
+function formatBlurStrengthValue(px) {
+    const unit = chrome.i18n?.getMessage('blurStrengthUnit') || 'px';
+    return `${px}\u00a0${unit}`;
+}
+function previewBlurCssPx(strengthPx) {
+    // The swatch is much smaller than the player. Keep the historical 14px look at the 40px default.
+    const ratio = strengthPx / YOUTUBLUR_BLUR_RANGE.defaultValue;
+    return Math.max(1, Math.round(ratio * 14));
+}
+function updateBlurStrengthUi(px) {
+    const slider = document.getElementById('blurStrength');
+    const valueEl = document.getElementById('blurStrengthValue');
+    const overlay = document.querySelector('.preview-blur-overlay');
+    if (slider && slider.value !== String(px))
+        slider.value = String(px);
+    if (valueEl)
+        valueEl.textContent = formatBlurStrengthValue(px);
+    if (slider)
+        slider.setAttribute('aria-valuetext', formatBlurStrengthValue(px));
+    if (overlay)
+        overlay.style.setProperty('--preview-blur-amount', `${previewBlurCssPx(px)}px`);
+}
+function notifyActiveYouTubeTab(message) {
+    if (typeof chrome === 'undefined' || !chrome.tabs)
+        return;
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+        const tab = tabs[0];
+        if (tab?.id && tab.url?.includes('youtube.com')) {
+            sendMessageToTab(tab.id, message);
+        }
+    });
+}
+const BLUR_SAVE_DEBOUNCE_MS = 200;
+let blurSaveTimer = null;
+let pendingBlurPx = null;
+let lastPersistedBlurPx = null;
+let lastNotifiedBlurPx = null;
+let blurStrengthTouched = false;
+let blurPagehideWired = false;
+function flushBlurStrengthSave() {
+    if (blurSaveTimer !== null) {
+        clearTimeout(blurSaveTimer);
+        blurSaveTimer = null;
+    }
+    if (pendingBlurPx === null || pendingBlurPx === lastPersistedBlurPx) {
+        pendingBlurPx = null;
+        return;
+    }
+    const px = pendingBlurPx;
+    pendingBlurPx = null;
+    lastPersistedBlurPx = px;
+    saveBlurStrengthToStorage(px);
+}
+function scheduleBlurStrengthSave(px) {
+    pendingBlurPx = px;
+    if (blurSaveTimer !== null)
+        clearTimeout(blurSaveTimer);
+    blurSaveTimer = setTimeout(flushBlurStrengthSave, BLUR_SAVE_DEBOUNCE_MS);
+}
+function publishBlurStrength(px, save) {
+    blurStrengthTouched = true;
+    const clamped = clampBlurStrengthPx(px);
+    updateBlurStrengthUi(clamped);
+    if (clamped !== lastNotifiedBlurPx) {
+        lastNotifiedBlurPx = clamped;
+        notifyActiveYouTubeTab({ type: 'BLUR_STRENGTH_CHANGED', strength: clamped });
+    }
+    if (save === 'now') {
+        pendingBlurPx = clamped;
+        flushBlurStrengthSave();
+    }
+    else {
+        scheduleBlurStrengthSave(clamped);
+    }
+}
+function wireBlurStrengthControl() {
+    const slider = document.getElementById('blurStrength');
+    if (!slider)
+        return;
+    if (blurSaveTimer !== null) {
+        clearTimeout(blurSaveTimer);
+        blurSaveTimer = null;
+    }
+    pendingBlurPx = null;
+    lastPersistedBlurPx = null;
+    lastNotifiedBlurPx = null;
+    blurStrengthTouched = false;
+    const range = YOUTUBLUR_BLUR_RANGE;
+    slider.min = String(range.min);
+    slider.max = String(range.max);
+    slider.step = String(range.step);
+    slider.addEventListener('input', () => publishBlurStrength(Number(slider.value), 'debounce'));
+    slider.addEventListener('change', () => publishBlurStrength(Number(slider.value), 'now'));
+    if (!blurPagehideWired) {
+        blurPagehideWired = true;
+        const flushIfLeaving = () => flushBlurStrengthSave();
+        window.addEventListener('pagehide', flushIfLeaving);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'hidden')
+                flushBlurStrengthSave();
+        });
+    }
+    loadBlurStrengthFromStorage().then((px) => {
+        if (blurStrengthTouched)
+            return;
+        lastPersistedBlurPx = px;
+        lastNotifiedBlurPx = px;
+        updateBlurStrengthUi(px);
+    });
 }
 function hideReviewNudge() {
     const nudge = document.getElementById('reviewNudge');
@@ -126,6 +243,7 @@ function initPopup() {
     document.addEventListener('DOMContentLoaded', () => {
         applyLocalizedStrings();
         initReviewNudge();
+        wireBlurStrengthControl();
         loadModeFromStorage().then((mode) => {
             const radio = document.getElementById(mode === 'blur' ? 'modeBlur' : 'modeSolid');
             if (radio)
@@ -135,12 +253,7 @@ function initPopup() {
             radio.addEventListener('change', (e) => {
                 const mode = e.target.value;
                 saveModeToStorage(mode).then(() => {
-                    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-                        const tab = tabs[0];
-                        if (tab?.id && tab.url?.includes('youtube.com')) {
-                            sendMessageToTab(tab.id, { type: 'BG_MODE_CHANGED', mode });
-                        }
-                    });
+                    notifyActiveYouTubeTab({ type: 'BG_MODE_CHANGED', mode });
                 });
             });
         });

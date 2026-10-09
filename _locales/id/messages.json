@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "Cahaya ambien beku" },
   "modeSolidSub": { "message": "Permukaan netral datar" },
   "previewLabel": { "message": "Pratinjau" },
+  "blurStrengthLabel": {
+    "message": "Kekuatan blur",
+    "description": "Label penggeser kekuatan blur. Hanya tampil saat mode blur dipilih."
+  },
+  "blurStrengthSliderAria": {
+    "message": "Sesuaikan kekuatan blur",
+    "description": "Nama aksesibel untuk penggeser kekuatan blur."
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "Satuan di samping angka kekuatan blur."
+  },
   "popupPhrase0": { "message": "Membuat YouTube lebih nyaman di mata" },
   "popupPhrase1": { "message": "Kurangi silau, tambah ketenangan" },
   "popupPhrase2": { "message": "Kaburkan kebisingan, jaga kesenangan" },

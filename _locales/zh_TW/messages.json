@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "磨砂氛圍光暈" },
   "modeSolidSub": { "message": "平整中性背景" },
   "previewLabel": { "message": "預覽" },
+  "blurStrengthLabel": {
+    "message": "模糊強度",
+    "description": "模糊強度滑桿的標籤。只在模糊模式時顯示。"
+  },
+  "blurStrengthSliderAria": {
+    "message": "調整模糊強度",
+    "description": "模糊強度滑桿的無障礙名稱。"
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "顯示在模糊強度數字旁邊的單位。"
+  },
   "popupPhrase0": { "message": "讓 YouTube 更護眼" },
   "popupPhrase1": { "message": "減少眩光，多一份從容" },
   "popupPhrase2": { "message": "模糊雜訊，留住愉悅" },

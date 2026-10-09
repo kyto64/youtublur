@@ -1,6 +1,15 @@
 "use strict";
-/** Blur radius (px); same value on Chrome and Firefox (Gecko uses a two-step draw for correct filter). */
+/** Default blur radius (px). Stored values override this; unset storage keeps 40 so existing users see no change. */
 const BLUR_STRENGTH_PX = 40;
+let activeBlurStrengthPx = BLUR_STRENGTH_PX;
+/**
+ * Local slider command. Storage writes stamped before this time are echoes of an
+ * older drag and are ignored. A newer timestamp (another tab) still applies.
+ */
+let commandedBlurAt = null;
+let commandedBlurTimer = null;
+let blurCommandGeneration = 0;
+let blurStrengthStorageListenerInstalled = false;
 // デバイス性能検出と動的な描画間隔の設定
 function detectDevicePerformance() {
     const cores = navigator.hardwareConcurrency || 4;
@@ -169,6 +178,83 @@ let geckoVideoSnapCtx = null;
 let currentMode = 'blur';
 let blurCanvas = null;
 let blurCtx = null;
+function stampActiveBlurStrength() {
+    if (!blurCanvas)
+        return;
+    blurCanvas.dataset.ytBlurStrength = String(activeBlurStrengthPx);
+}
+function setActiveBlurStrengthPx(px) {
+    activeBlurStrengthPx = clampBlurStrengthPx(px);
+    stampActiveBlurStrength();
+}
+/** Drop a storage read that started before a newer local slider command. */
+function applyLoadedBlurStrength(px, generation) {
+    if (generation !== blurCommandGeneration)
+        return;
+    setActiveBlurStrengthPx(px);
+}
+function clearCommandedBlurStrength() {
+    blurCommandGeneration += 1;
+    commandedBlurAt = null;
+    if (commandedBlurTimer !== null) {
+        clearTimeout(commandedBlurTimer);
+        commandedBlurTimer = null;
+    }
+}
+function rememberCommandedBlurStrength() {
+    const generation = ++blurCommandGeneration;
+    commandedBlurAt = Date.now();
+    if (commandedBlurTimer !== null)
+        clearTimeout(commandedBlurTimer);
+    // Debounced saves can echo an older radius. After 2s, re-read and apply only
+    // a write stamped at or after this command (another tab, or our own save).
+    commandedBlurTimer = setTimeout(() => {
+        if (generation !== blurCommandGeneration)
+            return;
+        commandedBlurTimer = null;
+        const commandedAt = commandedBlurAt;
+        loadBlurStrengthRecordFromStorage()
+            .then((record) => {
+            if (generation !== blurCommandGeneration)
+                return;
+            commandedBlurAt = null;
+            if (commandedAt !== null && record.timestamp < commandedAt)
+                return;
+            setActiveBlurStrengthPx(record.px);
+        })
+            .catch((error) => {
+            if (generation === blurCommandGeneration)
+                commandedBlurAt = null;
+            console.warn('[youtublur] failed to refresh blur strength after slider command:', error);
+        });
+    }, 2000);
+}
+function applyStoredBlurStrength(px, storedAt) {
+    if (commandedBlurAt !== null && storedAt < commandedBlurAt)
+        return;
+    clearCommandedBlurStrength();
+    setActiveBlurStrengthPx(px);
+}
+function installBlurStrengthStorageListener() {
+    if (blurStrengthStorageListenerInstalled)
+        return;
+    const onChanged = chrome.storage.onChanged;
+    if (!onChanged || typeof onChanged.addListener !== 'function')
+        return;
+    blurStrengthStorageListenerInstalled = true;
+    onChanged.addListener((changes, areaName) => {
+        if (areaName !== 'sync' && areaName !== 'local')
+            return;
+        if (!changes[STORAGE_BLUR_KEY])
+            return;
+        // Re-read both areas so a late echo of an older write cannot clobber a newer radius.
+        loadBlurStrengthRecordFromStorage()
+            .then((record) => applyStoredBlurStrength(record.px, record.timestamp))
+            .catch((error) => {
+            console.warn('[youtublur] failed to apply stored blur strength:', error);
+        });
+    });
+}
 let animationId = null;
 let frameCount = 0;
 let playerDomObserver = null;
@@ -323,6 +409,7 @@ function createBlurCanvas(container) {
         blurCtx = existing.getContext('2d');
         if (blurCtx) {
             blurCanvas = existing;
+            stampActiveBlurStrength();
             return blurCanvas;
         }
         existing.remove();
@@ -354,6 +441,7 @@ function createBlurCanvas(container) {
         blurCanvas = null;
         return null;
     }
+    stampActiveBlurStrength();
     return blurCanvas;
 }
 function clearVideoContentRect(video, canvas, ctx) {
@@ -418,7 +506,7 @@ function drawBlurFrame(video, canvas, ctx) {
                 /* same-origin / decode issues as main path */
                 return;
             }
-            ctx.filter = `blur(${BLUR_STRENGTH_PX}px)`;
+            ctx.filter = `blur(${activeBlurStrengthPx}px)`;
             try {
                 if (geckoVideoSnapCanvas)
                     ctx.drawImage(geckoVideoSnapCanvas, 0, 0);
@@ -433,7 +521,8 @@ function drawBlurFrame(video, canvas, ctx) {
             return;
         }
     }
-    ctx.filter = `blur(${BLUR_STRENGTH_PX}px)`;
+    // Next frame picks up the slider. The loop is not restarted; a larger radius only changes this filter.
+    ctx.filter = `blur(${activeBlurStrengthPx}px)`;
     try {
         ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
     }
@@ -735,12 +824,30 @@ function initExtension() {
             .catch((error) => {
             console.warn('[youtublur] failed to load mode from storage:', error);
         });
+        const initialBlurGeneration = blurCommandGeneration;
+        loadBlurStrengthFromStorage()
+            .then((px) => applyLoadedBlurStrength(px, initialBlurGeneration))
+            .catch((error) => {
+            console.warn('[youtublur] failed to load blur strength from storage:', error);
+        });
+        installBlurStrengthStorageListener();
         chrome.runtime.onMessage.addListener((msg) => {
             if (msg.type === 'BG_MODE_CHANGED') {
                 applyMode(msg.mode, getPlayerContainer());
             }
+            else if (msg.type === 'BLUR_STRENGTH_CHANGED' && typeof msg.strength === 'number') {
+                const px = clampBlurStrengthPx(msg.strength);
+                rememberCommandedBlurStrength();
+                setActiveBlurStrengthPx(px);
+            }
             else if (msg.type === 'RELOAD_BLUR') {
                 teardownPlayerPageBlur();
+                const reloadGeneration = blurCommandGeneration;
+                loadBlurStrengthFromStorage()
+                    .then((px) => applyLoadedBlurStrength(px, reloadGeneration))
+                    .catch((error) => {
+                    console.warn('[youtublur] failed to reload blur strength from storage:', error);
+                });
                 loadModeFromStorage()
                     .then((saved) => {
                     const normalized = normalizeMode(saved);
@@ -778,6 +885,9 @@ initExtension();
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         BLUR_STRENGTH_PX,
+        setActiveBlurStrengthPx,
+        getActiveBlurStrengthPx: () => activeBlurStrengthPx,
+        applyStoredBlurStrength,
         isGeckoLayoutEngine,
         detectYouTubeTheme,
         getSolidModeBackgroundColor,
@@ -810,6 +920,9 @@ if (typeof module !== 'undefined' && module.exports) {
             }
             blurCanvas = null;
             blurCtx = null;
+            activeBlurStrengthPx = BLUR_STRENGTH_PX;
+            clearCommandedBlurStrength();
+            blurStrengthStorageListenerInstalled = false;
             stopBlurLoop();
             frameCount = 0;
             releaseGeckoVideoSnapCanvas();
