@@ -29,24 +29,14 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 | `master` への push | Branch protection / Rulesets | `GITHUB_TOKEN` が push を拒否する場合は Rules で GitHub Actions の push を許可する |
 | タグ後の `publish.yml` まで自動化 | **Settings → Secrets and variables → Actions** | 既定は日次ワークフローが `workflow_dispatch` で `publish.yml` を起動。任意で Secret `RELEASE_PUSH_TOKEN` を設定すると tag push でも起動し、dispatch はスキップされる |
 | 日次 cron の時刻 | [dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) の `cron` | GitHub は **UTC**。変更する場合はこの行を編集する |
-| Codex PR レビュー依頼 | **Settings → Secrets and variables → Actions** | Secret `CODEX_REVIEW_TOKEN`（下記「Codex レビュー依頼」） |
 
-### Codex レビュー依頼
+### Bugbot（PR レビュー）
 
-[Request Codex review](.github/workflows/codex-review.yml) は、リポジトリオーナー `kyto64` として PR に `@codex review` を投稿し、Codex の本番レビューを起動する。`cursor[bot]` など他アカウントからの `@codex` ではセットアップ返信しか返らないため、オーナー本人のコメントを Actions で代行する。
+PR レビューは Cursor Bugbot が行う。レビュー基準は [`.cursor/BUGBOT.md`](../.cursor/BUGBOT.md)。kyto の設定は手動トリガーのみで、push では自動実行しない。
 
-| 項目 | 内容 |
-|------|------|
-| Secret 名 | `CODEX_REVIEW_TOKEN` |
-| トークン所有者 | `kyto64` |
-| 必要な権限 | **Pull requests: Read and write**（この private リポジトリ `kyto64/youtublur` に限定した fine-grained PAT を推奨） |
-
-**トリガー**
-
-1. **コメント** — `kyto64` 以外が PR に `/codex-review`、`@codex review`、またはボット（`[bot]` サフィックス）からの `@codex` を投稿したとき。
-2. **Dependabot + CI 全成功** — 開いている Dependabot PR で `Test` / `Lint` / `E2E Tests` / `Semgrep` が同一コミットですべて成功したとき（`dependabot-merge-after-checks.yml` と同じ 4 ワークフロー判定）。マージポリシーは変更しない。
-
-**スキップ** — `kyto64` が既に `@codex review` を含むコメントを投稿している PR では再投稿しない。Secret 未設定のときも各ステップ内でスキップする（ワークフロー定義の `if` では Secret を参照しない）。
+- 実行するのは、PR に `bugbot run` とコメントしたときだけ。レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびにコメントしない（1 回ごとに費用がかかる）。
+- 結果は GitHub のチェック run `Cursor Bugbot`。`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー。
+- Dependabot の PR は Bugbot ではレビューしない。自動マージは CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）のみを条件にする。
 
 ---
 

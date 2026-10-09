@@ -6,10 +6,10 @@ on:
   pull_request:
     branches: [ "master" ]
 
-# Workflow name stays "Test". dependabot-merge-after-checks.yml and
-# codex-review.yml trigger on that name and read the run conclusion via
-# `gh run list --workflow Test`. A matrix is still one run: the conclusion
-# is success only when every job succeeds, so every Node leg must pass.
+# Workflow name stays "Test". dependabot-merge-after-checks.yml triggers
+# on that name and reads the run conclusion via `gh run list --workflow Test`.
+# A matrix is still one run: the conclusion is success only when every job
+# succeeds, so every Node leg must pass.
 jobs:
   unit:
     name: Node ${{ matrix.node-version }}

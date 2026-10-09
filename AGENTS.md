@@ -190,8 +190,15 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 ## Code Review Rules
 
+PR レビューは Cursor Bugbot が行う。指摘の言語、重大度、レビュー方針は [`.cursor/BUGBOT.md`](./.cursor/BUGBOT.md) が正。Bugbot は `.cursor/rules/*.mdc` を適用しない。
+
+- kyto の設定は手動トリガーのみ。push では自動実行しない。PR に `bugbot run` とコメントしたときだけ走る。
+- コメントは、PR がレビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびにはコメントしない（1 回ごとに費用がかかる）。
+- 結果はチェック run `Cursor Bugbot`。`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー。
+- Dependabot の PR は Bugbot ではレビューしない。自動マージは CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）のみ。
+
 ### レビューコメントの言語
-- PR 上のレビュー指摘・提案・説明はすべて日本語で書くこと。
+- PR 上のレビュー指摘・提案・説明・要約はすべて日本語で書くこと。
 - コード識別子・コマンド・ファイルパス・エラー原文・API 名はそのまま残すこと。
 
 ## リリース手順
