@@ -152,7 +152,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 | コンテンツロジック | [`src/content.ts`](./src/content.ts), [`content.test.js`](./content.test.js) |
 | ポップアップ UI | [`popup.html`](./popup.html), [`src/popup.ts`](./src/popup.ts), [`popup.test.js`](./popup.test.js) |
 | レビュー促し（ポップアップ） | [`src/review-nudge.ts`](./src/review-nudge.ts), [`review-nudge.test.js`](./review-nudge.test.js)。読めないときは非表示。選択は保存できたときだけ閉じ、「レビューを書く」もそのときだけストアを開く |
-| ストレージユーティリティ | [`src/storage-mode.ts`](./src/storage-mode.ts) |
+| ストレージユーティリティ | [`src/storage-mode.ts`](./src/storage-mode.ts)（モードとブラー強度。強度の既定は 40px） |
 | 型定義（拡張グローバル / `BackgroundMode`） | [`globals.d.ts`](./globals.d.ts) |
 | TS 設定 | [`tsconfig.json`](./tsconfig.json) |
 | コンパイル成果物（編集禁止） | `content.js`, `popup.js`, `storage-mode.js`, `review-nudge.js`（manifest / popup 参照先） |

@@ -802,8 +802,8 @@ describe('content.js', () => {
       await Promise.resolve();
       await Promise.resolve();
 
-      // init load + reconcile microtask + reload load + reconcile microtask
-      expect(syncGet).toHaveBeenCalledTimes(4);
+      // init mode + init blur + reconcile, then reload blur + reload mode + reconcile
+      expect(syncGet).toHaveBeenCalledTimes(6);
 
       // Canvas should be re-created after reload
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();

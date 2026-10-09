@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "Brilho ambiente gelado" },
   "modeSolidSub": { "message": "Superfície neutra plana" },
   "previewLabel": { "message": "Pré-visualização" },
+  "blurStrengthLabel": {
+    "message": "Intensidade do desfoque",
+    "description": "Rótulo do controle de intensidade. Só aparece no modo desfocado."
+  },
+  "blurStrengthSliderAria": {
+    "message": "Ajustar a intensidade do desfoque",
+    "description": "Nome acessível do controle de intensidade do desfoque."
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "Unidade exibida ao lado do número de intensidade."
+  },
   "popupPhrase0": { "message": "Tornando o YouTube mais suave para os olhos" },
   "popupPhrase1": { "message": "Menos brilho, mais tranquilidade" },
   "popupPhrase2": { "message": "Desfoque o ruído, mantenha a alegria" },

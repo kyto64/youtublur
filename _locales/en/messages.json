@@ -30,6 +30,18 @@
   "modeBlurSub": { "message": "Frosted ambient glow" },
   "modeSolidSub": { "message": "Flat neutral surface" },
   "previewLabel": { "message": "Preview" },
+  "blurStrengthLabel": {
+    "message": "Blur strength",
+    "description": "Label for the blur-strength slider. Shown only while blur mode is selected."
+  },
+  "blurStrengthSliderAria": {
+    "message": "Adjust blur strength",
+    "description": "Accessible name for the blur-strength slider."
+  },
+  "blurStrengthUnit": {
+    "message": "px",
+    "description": "Unit shown beside the blur-strength number."
+  },
   "popupPhrase0": { "message": "Making YouTube easier on the eyes" },
   "popupPhrase1": { "message": "Less glare, more chill" },
   "popupPhrase2": { "message": "Blur the noise, keep the joy" },

@@ -167,6 +167,10 @@
 | `mode` | string | 背景モード (`default`, `solid`, `blur`) | `default` |
 | `color` | string | 16進数カラーコード | `333333` |
 | `timestamp` | number | 最終更新時刻（競合解決用） | `0` |
+| `playerBlurStrengthPx` | number | ブラー半径（px）。8〜72、4px 刻み。単色モードでは使わない | `40` |
+| `playerBlurStrengthPxTimestamp` | number | ブラー強度の最終更新時刻（sync / local の競合解決） | `0` |
+
+ブラー強度はポップアップのスライダーで変える。未設定のときは 40px で、以前の固定値と同じ見え方になる。単色モードではスライダーを出さない。変更は開いている YouTube タブへ再読み込みなしで反映される。
 
 ## 非機能要件
 

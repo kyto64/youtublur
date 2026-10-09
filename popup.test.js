@@ -465,6 +465,160 @@ describe('popup.js', () => {
       });
     });
 
+    test('blur slider restores stored strength and previews it', async () => {
+      document.body.innerHTML = `
+        <input type="radio" name="bgMode" id="modeBlur" value="blur" checked>
+        <input type="radio" name="bgMode" id="modeSolid" value="solid">
+        <label id="labelBlurStrength" for="blurStrength"></label>
+        <span id="blurStrengthValue"></span>
+        <input type="range" id="blurStrength" value="40">
+        <div class="preview-blur-overlay"></div>
+      `;
+      syncGetMock.mockImplementation((_keys, cb) => {
+        cb({
+          playerBackgroundMode: 'blur',
+          playerBackgroundModeTimestamp: 5,
+          playerBlurStrengthPx: 56,
+          playerBlurStrengthPxTimestamp: 5
+        });
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      const slider = document.getElementById('blurStrength');
+      expect(slider.min).toBe('8');
+      expect(slider.max).toBe('72');
+      expect(slider.step).toBe('4');
+      expect(slider.value).toBe('56');
+      expect(slider.getAttribute('aria-label')).toBe('blurStrengthSliderAria');
+      expect(document.getElementById('labelBlurStrength').textContent).toBe('blurStrengthLabel');
+      expect(document.getElementById('blurStrengthValue').textContent).toContain('56');
+      expect(document.querySelector('.preview-blur-overlay').style.getPropertyValue('--preview-blur-amount')).toBe('20px');
+      expect(syncSetMock).not.toHaveBeenCalled();
+    });
+
+    test('slider change snaps, saves, and messages the active YouTube tab', async () => {
+      document.body.innerHTML = `
+        <input type="radio" name="bgMode" id="modeBlur" value="blur" checked>
+        <input type="radio" name="bgMode" id="modeSolid" value="solid">
+        <span id="blurStrengthValue"></span>
+        <input type="range" id="blurStrength" value="40">
+      `;
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+      syncSetMock.mockClear();
+      chrome.tabs.sendMessage.mockClear();
+
+      const slider = document.getElementById('blurStrength');
+      slider.value = '100';
+      slider.dispatchEvent(new Event('change'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(slider.value).toBe('72');
+      expect(syncSetMock).toHaveBeenCalledWith(
+        expect.objectContaining({ playerBlurStrengthPx: 72 }),
+        expect.any(Function)
+      );
+      expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+        1,
+        { type: 'BLUR_STRENGTH_CHANGED', strength: 72 },
+        expect.any(Function)
+      );
+    });
+
+    test('slider input messages immediately and debounces the storage write', async () => {
+      document.body.innerHTML = `
+        <input type="radio" name="bgMode" id="modeBlur" value="blur" checked>
+        <input type="radio" name="bgMode" id="modeSolid" value="solid">
+        <span id="blurStrengthValue"></span>
+        <input type="range" id="blurStrength" value="40">
+      `;
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+      syncSetMock.mockClear();
+      chrome.tabs.sendMessage.mockClear();
+
+      vi.useFakeTimers();
+      try {
+        const slider = document.getElementById('blurStrength');
+        slider.value = '16';
+        slider.dispatchEvent(new Event('input'));
+        expect(chrome.tabs.sendMessage).toHaveBeenCalledWith(
+          1,
+          { type: 'BLUR_STRENGTH_CHANGED', strength: 16 },
+          expect.any(Function)
+        );
+        expect(syncSetMock).not.toHaveBeenCalled();
+        await vi.advanceTimersByTimeAsync(200);
+        expect(syncSetMock).toHaveBeenCalledWith(
+          expect.objectContaining({ playerBlurStrengthPx: 16 }),
+          expect.any(Function)
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    test('hiding the popup flushes a debounced blur-strength save', async () => {
+      document.body.innerHTML = `
+        <input type="radio" name="bgMode" id="modeBlur" value="blur" checked>
+        <input type="radio" name="bgMode" id="modeSolid" value="solid">
+        <input type="range" id="blurStrength" value="40">
+      `;
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+      syncSetMock.mockClear();
+      expect(document.getElementById('blurStrength').min).toBe('8');
+
+      vi.useFakeTimers();
+      try {
+        const slider = document.getElementById('blurStrength');
+        slider.value = '24';
+        slider.dispatchEvent(new Event('input'));
+        expect(syncSetMock).not.toHaveBeenCalled();
+        Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+        document.dispatchEvent(new Event('visibilitychange'));
+        await new Promise((resolve) => process.nextTick(resolve));
+        expect(syncSetMock).toHaveBeenCalledWith(
+          expect.objectContaining({ playerBlurStrengthPx: 24 }),
+          expect.any(Function)
+        );
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    test('slider does not message a non-YouTube tab', async () => {
+      chrome.tabs.query = vi.fn((_query, callback) =>
+        callback([{ id: 1, url: 'https://example.com/' }])
+      );
+      document.body.innerHTML = `
+        <input type="radio" name="bgMode" id="modeBlur" value="blur" checked>
+        <input type="radio" name="bgMode" id="modeSolid" value="solid">
+        <input type="range" id="blurStrength" value="40">
+      `;
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      await new Promise((resolve) => process.nextTick(resolve));
+
+      const slider = document.getElementById('blurStrength');
+      slider.value = '16';
+      slider.dispatchEvent(new Event('change'));
+      await new Promise((resolve) => process.nextTick(resolve));
+      expect(chrome.tabs.sendMessage).not.toHaveBeenCalled();
+    });
+
     test('does not send RELOAD_BLUR when active tab is not YouTube', () => {
       chrome.tabs.query = vi.fn((query, callback) =>
         callback([{ id: 1, url: 'https://example.com/' }])
