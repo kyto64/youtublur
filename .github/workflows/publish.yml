@@ -26,6 +26,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Daily dispatch passes build_from_tag=true. The UI sends a boolean and
+          # `gh workflow run -f` sends the string "true"; both are truthy, so this
+          # checks out refs/tags/<tag>. Comparing with == true would treat the
+          # string "true" as false and build master HEAD instead.
           ref: ${{ github.event_name == 'workflow_dispatch' && (inputs.build_from_tag && format('refs/tags/{0}', inputs.tag) || 'refs/heads/master') || github.ref }}
 
       - name: Setup pnpm
