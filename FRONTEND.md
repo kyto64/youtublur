@@ -28,7 +28,7 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 
 
    バックグラウンド (Service Worker / Firefox はイベントページ)
-  - manifest commands の受信（モード切替、ブラー強度 ±4px）
+  - manifest commands の受信（モード切替、ブラー強度 ±4px、再読み込み）
   - 開いている YouTube タブへ既存メッセージを配信
   - 常時起動せず、コマンド時に起動
 

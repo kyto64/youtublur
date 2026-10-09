@@ -100,6 +100,14 @@
   },
   "shortcutManageHint": {
     "message": "브라우저의 확장 프로그램 단축키 설정에서 변경할 수 있습니다.",
-    "description": "단축키 목록 아래의 안내. Chrome은 chrome://extensions/shortcuts, Firefox는 부가 기능 관리자."
+    "description": "단축키 목록 아래의 안내. Chrome은 chrome://extensions/shortcuts, Firefox는 commands.openShortcutSettings."
+  },
+  "commandOpenPopup": {
+    "message": "youtublur 열기",
+    "description": "예약 명령 _execute_action 설명. 도구 모음 팝업을 연다. 제안 키는 Alt+Shift+U."
+  },
+  "commandReloadEffect": {
+    "message": "플레이어 배경 다시 적용",
+    "description": "플레이어 배경을 다시 적용하는 명령 설명. 제안 키는 없다."
   }
 }

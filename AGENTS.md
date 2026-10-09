@@ -152,7 +152,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 |------|------|
 | コンテンツロジック | [`src/content.ts`](./src/content.ts), [`content.test.js`](./content.test.js) |
 | ポップアップ UI | [`popup.html`](./popup.html), [`src/popup.ts`](./src/popup.ts), [`popup.test.js`](./popup.test.js) |
-| キーボードショートカット | [`manifest.json`](./manifest.json) の `commands`。決定は [`src/shortcut-actions.ts`](./src/shortcut-actions.ts)、配信は [`src/background.ts`](./src/background.ts)、ポップアップ表示は [`src/popup-shortcuts.ts`](./src/popup-shortcuts.ts)。テストは [`shortcuts.test.js`](./shortcuts.test.js) と [`e2e/shortcuts.spec.js`](./e2e/shortcuts.spec.js)。既定は Alt+Shift+Y（モード切替）、Alt+Shift+Period / Comma（ブラー強度 ±4px） |
+| キーボードショートカット | [`manifest.json`](./manifest.json) の `commands`。決定は [`src/shortcut-actions.ts`](./src/shortcut-actions.ts)、配信は [`src/background.ts`](./src/background.ts)（読み取りから保存まで直列）、ポップアップ表示は [`src/popup-shortcuts.ts`](./src/popup-shortcuts.ts)。テストは [`shortcuts.test.js`](./shortcuts.test.js) と [`e2e/shortcuts.spec.js`](./e2e/shortcuts.spec.js)。既定は Alt+Shift+Y（モード切替）、Alt+Shift+Period / Comma（ブラー強度 ±4px）、Alt+Shift+U（ポップアップ）。再読み込みは未割り当て |
 | レビュー促し（ポップアップ） | [`src/review-nudge.ts`](./src/review-nudge.ts), [`review-nudge.test.js`](./review-nudge.test.js)。読めないときは非表示。選択は保存できたときだけ閉じ、「レビューを書く」もそのときだけストアを開く |
 | ストレージユーティリティ | [`src/storage-mode.ts`](./src/storage-mode.ts)（モードとブラー強度。強度の既定は 40px） |
 | 型定義（拡張グローバル / `BackgroundMode`） | [`globals.d.ts`](./globals.d.ts) |

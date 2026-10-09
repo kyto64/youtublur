@@ -1,7 +1,6 @@
 "use strict";
 // Shows manifest command bindings in the popup. Loaded after shortcut-actions.js.
 const CHROME_SHORTCUT_SETTINGS_URL = 'chrome://extensions/shortcuts';
-const FIREFOX_SHORTCUT_SETTINGS_URL = 'about:addons';
 function isFirefoxForShortcuts() {
     try {
         return (typeof CSS !== 'undefined' &&
@@ -13,7 +12,7 @@ function isFirefoxForShortcuts() {
     }
 }
 function shortcutSettingsUrl() {
-    return isFirefoxForShortcuts() ? FIREFOX_SHORTCUT_SETTINGS_URL : CHROME_SHORTCUT_SETTINGS_URL;
+    return CHROME_SHORTCUT_SETTINGS_URL;
 }
 function readRegisteredCommands() {
     return new Promise((resolve) => {
@@ -74,11 +73,32 @@ function renderShortcutList(commands) {
     }
 }
 function openShortcutSettings() {
+    const commandsApi = (typeof chrome !== 'undefined' ? chrome.commands : undefined);
+    // Firefox rejects privileged about: URLs from tabs.create. openShortcutSettings is the supported path.
+    // Do not fall through to tabs.create on Firefox when that method is missing.
+    if (isFirefoxForShortcuts()) {
+        if (commandsApi && typeof commandsApi.openShortcutSettings === 'function') {
+            try {
+                const maybe = commandsApi.openShortcutSettings();
+                if (maybe && typeof maybe.catch === 'function') {
+                    maybe.catch((error) => {
+                        console.warn('[youtublur] could not open shortcut settings:', error);
+                    });
+                }
+            }
+            catch (error) {
+                console.warn('[youtublur] could not open shortcut settings:', error);
+            }
+        }
+        else {
+            console.warn('[youtublur] commands.openShortcutSettings is unavailable');
+        }
+        return;
+    }
     if (typeof chrome === 'undefined' || !chrome.tabs || typeof chrome.tabs.create !== 'function')
         return;
-    const url = shortcutSettingsUrl();
     try {
-        chrome.tabs.create({ url }, () => {
+        chrome.tabs.create({ url: CHROME_SHORTCUT_SETTINGS_URL }, () => {
             const err = chrome.runtime && chrome.runtime.lastError;
             if (err)
                 console.warn('[youtublur] could not open shortcut settings:', err);

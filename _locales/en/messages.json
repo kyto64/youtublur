@@ -100,6 +100,14 @@
   },
   "shortcutManageHint": {
     "message": "Rebind these in the browser's extension shortcut settings.",
-    "description": "Hint under the shortcut list. Chrome uses chrome://extensions/shortcuts; Firefox uses the Add-ons manager."
+    "description": "Hint under the shortcut list. Chrome uses chrome://extensions/shortcuts; Firefox uses commands.openShortcutSettings."
+  },
+  "commandOpenPopup": {
+    "message": "Open youtublur",
+    "description": "Description for the reserved _execute_action command. Opens the toolbar popup. Suggested key is Alt+Shift+U."
+  },
+  "commandReloadEffect": {
+    "message": "Reload player background",
+    "description": "Description for the reload command. It reapplies the player background. No suggested key is set."
   }
 }

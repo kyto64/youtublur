@@ -100,6 +100,14 @@
   },
   "shortcutManageHint": {
     "message": "ブラウザの拡張機能ショートカット設定で変更できます。",
-    "description": "ショートカット一覧の下の補足。Chrome は chrome://extensions/shortcuts、Firefox はアドオンマネージャー。"
+    "description": "ショートカット一覧の下の補足。Chrome は chrome://extensions/shortcuts、Firefox は commands.openShortcutSettings。"
+  },
+  "commandOpenPopup": {
+    "message": "youtublur を開く",
+    "description": "予約コマンド _execute_action の説明。ツールバーのポップアップを開く。提案キーは Alt+Shift+U。"
+  },
+  "commandReloadEffect": {
+    "message": "プレイヤー背景を再読み込み",
+    "description": "プレイヤー背景を再適用するコマンドの説明。提案キーは付けない。"
   }
 }

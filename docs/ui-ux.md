@@ -237,7 +237,9 @@ transition: color 140ms ease;
 
 ポップアップに「Shortcuts」セクションを出す。各コマンドの現在のキー（未設定ならその旨）と、ブラウザのショートカット設定を開くボタンを表示する。文字列は i18n。キー名は `chrome.commands.getAll()` の `shortcut` をそのまま出す（ユーザーが割り当てを変えた結果がそのまま見える）。
 
-既定は Alt+Shift+Y（ブラーと単色の切替）、Alt+Shift+Period（強く）、Alt+Shift+Comma（弱く）。YouTube の単キーショートカットや、ブラウザの Ctrl 系とは重ねない。
+既定は Alt+Shift+Y（ブラーと単色の切替）、Alt+Shift+Period（強く）、Alt+Shift+Comma（弱く）、Alt+Shift+U（ポップアップを開く）。再読み込みコマンドは提案キーなし。YouTube の単キーや、ブラウザの Ctrl+Shift+B / Ctrl+Shift+R とは重ねない。
+
+ポップアップのタブ順は、選択中のモード、ブラー強度スライダー（ブラーのときだけ）、再読み込み、ショートカット設定。ラジオは矢印キーで移動して選択され、Space はフォーカス中のラジオを選ぶ。スライダーの矢印は 4px。フォーカスはアクセント色の枠で見える。ショートカット設定ボタンは Enter で開く。
 
 ### 画面リーダー対応
 

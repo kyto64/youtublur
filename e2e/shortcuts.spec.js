@@ -25,11 +25,59 @@ test('popup lists rebindable shortcuts', async ({ context, extensionId, browserN
   const popup = await openExtensionPopup(context, extensionId);
   await expect(popup.locator('#shortcutSectionTitle')).toHaveText('Shortcuts');
   const rows = popup.locator('#shortcutList li');
-  await expect(rows).toHaveCount(3);
+  await expect(rows).toHaveCount(5);
   await expect(rows.nth(0).locator('kbd')).toHaveText('Alt+Shift+Y');
   await expect(rows.nth(1).locator('kbd')).toHaveText('Alt+Shift+Period');
   await expect(rows.nth(2).locator('kbd')).toHaveText('Alt+Shift+Comma');
+  await expect(rows.nth(3).locator('kbd')).toHaveText('Not set');
+  await expect(rows.nth(4).locator('kbd')).toHaveText('Alt+Shift+U');
   await expect(popup.locator('#shortcutManage')).toHaveText('Manage shortcuts');
+  await popup.close();
+});
+
+test('popup controls are operable from the keyboard in visual order', async ({
+  context,
+  extensionId,
+  browserName,
+}) => {
+  test.skip(
+    browserName === 'firefox',
+    'Firefox E2E uses a chrome API mock; the real popup is not available.'
+  );
+
+  const popup = await openExtensionPopup(context, extensionId);
+  await expect(popup.locator('#shortcutList li')).toHaveCount(5);
+
+  await popup.keyboard.press('Tab');
+  await expect(popup.locator('#modeBlur')).toBeFocused();
+  await expect(popup.locator('#modeBlur')).toBeChecked();
+  await expect
+    .poll(() => popup.locator('label[for="modeBlur"]').evaluate((el) => getComputedStyle(el).outlineStyle))
+    .toBe('solid');
+
+  await popup.keyboard.press('ArrowDown');
+  await expect(popup.locator('#modeSolid')).toBeChecked();
+  await popup.keyboard.press('ArrowUp');
+  await expect(popup.locator('#modeBlur')).toBeChecked();
+
+  await popup.keyboard.press('Tab');
+  await expect(popup.locator('#blurStrength')).toBeFocused();
+  await expect(popup.locator('#blurStrength')).toHaveValue('40');
+  await popup.keyboard.press('ArrowRight');
+  await expect(popup.locator('#blurStrength')).toHaveValue('44');
+
+  await popup.keyboard.press('Tab');
+  await expect(popup.locator('#reloadButton')).toBeFocused();
+  await expect
+    .poll(() => popup.locator('#reloadButton').evaluate((el) => getComputedStyle(el).outlineStyle))
+    .toBe('solid');
+
+  await popup.keyboard.press('Tab');
+  await expect(popup.locator('#shortcutManage')).toBeFocused();
+  const settingsPromise = context.waitForEvent('page');
+  await popup.keyboard.press('Enter');
+  const settings = await settingsPromise;
+  await expect(settings).toHaveURL(/chrome:\/\/extensions\/shortcuts/);
   await popup.close();
 });
 

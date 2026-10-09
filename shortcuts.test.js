@@ -77,8 +77,12 @@ describe('applyShortcutCommand', () => {
     expect(SHORTCUT_COMMAND_ORDER).toEqual([
       'toggle-mode',
       'increase-blur-strength',
-      'decrease-blur-strength'
+      'decrease-blur-strength',
+      'reload-effect',
+      '_execute_action'
     ]);
+    expect(applyShortcutCommand('reload-effect', { mode: 'blur', blurPx: 40 })).toEqual({ kind: 'none' });
+    expect(applyShortcutCommand('_execute_action', { mode: 'blur', blurPx: 40 })).toEqual({ kind: 'none' });
   });
 });
 
@@ -165,6 +169,25 @@ describe('background shortcut commands', () => {
     expect(sendMessage).not.toHaveBeenCalled();
   });
 
+  test('applies two fast blur increases in order instead of both writing 44', async () => {
+    areas.syncData.playerBlurStrengthPx = 40;
+    areas.syncData.playerBlurStrengthPxTimestamp = 1;
+
+    await Promise.all([
+      runShortcutCommand('increase-blur-strength'),
+      runShortcutCommand('increase-blur-strength')
+    ]);
+
+    expect(areas.syncData.playerBlurStrengthPx).toBe(48);
+  });
+
+  test('reload reuses RELOAD_BLUR and does not write mode storage', async () => {
+    await runShortcutCommand('reload-effect');
+    expect(sendMessage).toHaveBeenCalledWith(11, { type: 'RELOAD_BLUR' }, expect.any(Function));
+    expect(areas.syncData.playerBackgroundMode).toBeUndefined();
+    expect(areas.syncData.playerBlurStrengthPx).toBeUndefined();
+  });
+
   test('logs and skips messaging when the tab query fails', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     global.chrome.runtime.lastError = { message: 'query failed' };
@@ -213,7 +236,8 @@ describe('popup shortcut list', () => {
             { name: 'toggle-mode', description: 'Switch blur and solid', shortcut: 'Alt+Shift+Y' },
             { name: 'increase-blur-strength', description: '<img src=x>', shortcut: '' },
             { name: 'decrease-blur-strength', description: 'Decrease blur strength', shortcut: 'Alt+Shift+Comma' },
-            { name: '_execute_action', description: 'Activate', shortcut: '' }
+            { name: 'reload-effect', description: 'Reload player background', shortcut: '' },
+            { name: '_execute_action', description: 'Open youtublur', shortcut: 'Alt+Shift+U' }
           ]);
         })
       },
@@ -235,7 +259,7 @@ describe('popup shortcut list', () => {
     delete global.chrome;
   });
 
-  test('lists the three commands in order and escapes descriptions', async () => {
+  test('lists commands in order and escapes descriptions', async () => {
     initPopupShortcuts();
     await new Promise((resolve) => setTimeout(resolve, 0));
 
@@ -245,17 +269,21 @@ describe('popup shortcut list', () => {
     expect(items.map((item) => item.querySelector('.shortcut-label').textContent)).toEqual([
       'Switch blur and solid',
       '<img src=x>',
-      'Decrease blur strength'
+      'Decrease blur strength',
+      'Reload player background',
+      'Open youtublur'
     ]);
     expect(document.querySelector('#shortcutList img')).toBeNull();
     expect(items.map((item) => item.querySelector('kbd').textContent)).toEqual([
       'Alt+Shift+Y',
       'Not set',
-      'Alt+Shift+Comma'
+      'Alt+Shift+Comma',
+      'Not set',
+      'Alt+Shift+U'
     ]);
   });
 
-  test('opens Chrome shortcut settings, and Firefox Add-ons when -moz-appearance is supported', () => {
+  test('opens Chrome shortcut settings, and Firefox uses commands.openShortcutSettings', () => {
     expect(shortcutSettingsUrl()).toBe('chrome://extensions/shortcuts');
     openShortcutSettings();
     expect(global.chrome.tabs.create).toHaveBeenCalledWith(
@@ -265,8 +293,20 @@ describe('popup shortcut list', () => {
 
     const originalSupports = CSS.supports;
     CSS.supports = (prop) => prop === '-moz-appearance';
+    const openShortcutSettingsApi = vi.fn(() => Promise.resolve());
+    global.chrome.commands.openShortcutSettings = openShortcutSettingsApi;
+    global.chrome.tabs.create.mockClear();
     try {
-      expect(shortcutSettingsUrl()).toBe('about:addons');
+      openShortcutSettings();
+      expect(openShortcutSettingsApi).toHaveBeenCalledTimes(1);
+      expect(global.chrome.tabs.create).not.toHaveBeenCalled();
+
+      delete global.chrome.commands.openShortcutSettings;
+      const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+      openShortcutSettings();
+      expect(global.chrome.tabs.create).not.toHaveBeenCalled();
+      expect(warn).toHaveBeenCalled();
+      warn.mockRestore();
     } finally {
       CSS.supports = originalSupports;
     }

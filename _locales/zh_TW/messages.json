@@ -100,6 +100,14 @@
   },
   "shortcutManageHint": {
     "message": "可在瀏覽器的擴充功能快速鍵設定中變更。",
-    "description": "快速鍵清單下方的說明。Chrome 使用 chrome://extensions/shortcuts；Firefox 使用附加元件管理員。"
+    "description": "快速鍵清單下方的說明。Chrome 使用 chrome://extensions/shortcuts；Firefox 使用 commands.openShortcutSettings。"
+  },
+  "commandOpenPopup": {
+    "message": "開啟 youtublur",
+    "description": "保留指令 _execute_action 的說明。開啟工具列彈出視窗。建議快速鍵是 Alt+Shift+U。"
+  },
+  "commandReloadEffect": {
+    "message": "重新套用播放器背景",
+    "description": "重新套用播放器背景的指令說明。不設定建議快速鍵。"
   }
 }

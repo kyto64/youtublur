@@ -248,7 +248,7 @@ YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購�
 2. **サイト別設定**: 他の動画サイトへの対応（manifest.json の matches 拡張 + content.js の調整）
 3. **スケジューリング**: 時刻ベースの自動モード切り替え
 
-キーボードショートカットは実装済み。`manifest.json` の `commands`（`toggle-mode`、`increase-blur-strength`、`decrease-blur-strength`）を使い、ユーザーは `chrome://extensions/shortcuts` または Firefox のアドオンマネージャーで割り当てを変えられる。決定は `src/shortcut-actions.ts`、保存とタブへの配信は `src/background.ts`。
+キーボードショートカットは実装済み。`manifest.json` の `commands`（`toggle-mode`、`increase-blur-strength`、`decrease-blur-strength`、提案キーなしの `reload-effect`、ポップアップを開く `_execute_action`）を使う。Chrome は `chrome://extensions/shortcuts`、Firefox は `commands.openShortcutSettings()` で割り当てを変える。決定は `src/shortcut-actions.ts`。保存とタブへの配信は `src/background.ts` が読み取りから保存まで直列に行う。
 
 アーキテクチャ変更が必要な機能:
 

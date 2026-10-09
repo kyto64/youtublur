@@ -7,7 +7,9 @@
 const SHORTCUT_COMMAND_ORDER = Object.freeze([
     'toggle-mode',
     'increase-blur-strength',
-    'decrease-blur-strength'
+    'decrease-blur-strength',
+    'reload-effect',
+    '_execute_action'
 ]);
 function applyShortcutCommand(command, state) {
     if (command === 'toggle-mode') {

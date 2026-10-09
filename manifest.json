@@ -51,6 +51,15 @@
         "default": "Alt+Shift+Comma"
       },
       "description": "__MSG_commandDecreaseBlur__"
+    },
+    "reload-effect": {
+      "description": "__MSG_commandReloadEffect__"
+    },
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+U"
+      },
+      "description": "__MSG_commandOpenPopup__"
     }
   },
   "background": {

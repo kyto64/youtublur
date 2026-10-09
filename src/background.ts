@@ -68,7 +68,15 @@ function broadcastToYouTubeTabs(message: unknown): Promise<void> {
   });
 }
 
-async function runShortcutCommand(command: string): Promise<void> {
+async function performShortcutCommand(command: string): Promise<void> {
+  // The browser opens the popup for this reserved command. It is not a storage change.
+  if (command === '_execute_action') return;
+  // Same action as the popup Reload button. No suggested key; see the manifest comment in docs.
+  if (command === 'reload-effect') {
+    await broadcastToYouTubeTabs({ type: 'RELOAD_BLUR' });
+    return;
+  }
+
   const mode = await loadModeFromStorage();
   const blurPx = await loadBlurStrengthFromStorage();
   const effect = applyShortcutCommand(command, { mode, blurPx });
@@ -84,14 +92,28 @@ async function runShortcutCommand(command: string): Promise<void> {
   await broadcastToYouTubeTabs({ type: 'BLUR_STRENGTH_CHANGED', strength: effect.blurPx });
 }
 
+// Overlapping onCommand events must not read the same stored value. The queue covers
+// read, decide, and save. A failure does not stall later commands.
+let shortcutQueue: Promise<void> = Promise.resolve();
+
+function runShortcutCommand(command: string): Promise<void> {
+  const task = shortcutQueue.then(() => performShortcutCommand(command));
+  shortcutQueue = task.then(
+    () => undefined,
+    () => undefined
+  );
+  return task;
+}
+
 function registerShortcutCommands() {
   const onCommand = typeof chrome !== 'undefined' ? chrome.commands?.onCommand : undefined;
   if (!onCommand || typeof onCommand.addListener !== 'function') return;
-  onCommand.addListener((command) =>
-    runShortcutCommand(command).catch((error) => {
+  onCommand.addListener((command) => {
+    // Return the promise so the service worker stays alive until the save finishes.
+    return runShortcutCommand(command).catch((error) => {
       console.warn('[youtublur] shortcut failed:', error);
-    })
-  );
+    });
+  });
 }
 
 registerShortcutCommands();

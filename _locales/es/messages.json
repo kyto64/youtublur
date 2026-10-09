@@ -100,6 +100,14 @@
   },
   "shortcutManageHint": {
     "message": "Cámbialos en los ajustes de atajos de extensiones del navegador.",
-    "description": "Nota bajo la lista de atajos. Chrome usa chrome://extensions/shortcuts; Firefox usa el administrador de complementos."
+    "description": "Nota bajo la lista de atajos. Chrome usa chrome://extensions/shortcuts; Firefox usa commands.openShortcutSettings."
+  },
+  "commandOpenPopup": {
+    "message": "Abrir youtublur",
+    "description": "Descripción del comando reservado _execute_action. Abre la ventana emergente. La tecla sugerida es Alt+Shift+U."
+  },
+  "commandReloadEffect": {
+    "message": "Recargar el fondo del reproductor",
+    "description": "Descripción del comando de recarga. Vuelve a aplicar el fondo del reproductor. No tiene tecla sugerida."
   }
 }

@@ -100,6 +100,14 @@
   },
   "shortcutManageHint": {
     "message": "可在浏览器的扩展程序快捷键设置中更改。",
-    "description": "快捷键列表下方的说明。Chrome 使用 chrome://extensions/shortcuts；Firefox 使用附加组件管理器。"
+    "description": "快捷键列表下方的说明。Chrome 使用 chrome://extensions/shortcuts；Firefox 使用 commands.openShortcutSettings。"
+  },
+  "commandOpenPopup": {
+    "message": "打开 youtublur",
+    "description": "保留命令 _execute_action 的说明。打开工具栏弹出窗口。建议快捷键是 Alt+Shift+U。"
+  },
+  "commandReloadEffect": {
+    "message": "重新应用播放器背景",
+    "description": "重新应用播放器背景的命令说明。不设置建议快捷键。"
   }
 }

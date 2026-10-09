@@ -100,6 +100,14 @@
   },
   "shortcutManageHint": {
     "message": "Altere os atalhos nas configurações de atalhos de extensões do navegador.",
-    "description": "Nota sob a lista de atalhos. O Chrome usa chrome://extensions/shortcuts; o Firefox usa o gerenciador de complementos."
+    "description": "Nota sob a lista de atalhos. O Chrome usa chrome://extensions/shortcuts; o Firefox usa commands.openShortcutSettings."
+  },
+  "commandOpenPopup": {
+    "message": "Abrir o youtublur",
+    "description": "Descrição do comando reservado _execute_action. Abre o popup da barra de ferramentas. A tecla sugerida é Alt+Shift+U."
+  },
+  "commandReloadEffect": {
+    "message": "Recarregar o fundo do player",
+    "description": "Descrição do comando de recarregar. Reaplica o fundo do player. Não há tecla sugerida."
   }
 }

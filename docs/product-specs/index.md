@@ -181,8 +181,12 @@
 | `toggle-mode` | Alt+Shift+Y | ブラーと単色を切り替える |
 | `increase-blur-strength` | Alt+Shift+Period | ブラー強度を 4px 上げる（8–72） |
 | `decrease-blur-strength` | Alt+Shift+Comma | ブラー強度を 4px 下げる（8–72） |
+| `reload-effect` | なし（ユーザーが割り当て） | ポップアップの再読み込みと同じ `RELOAD_BLUR` |
+| `_execute_action` | Alt+Shift+U | ポップアップを開く |
 
-上限または下限のときは保存しない。開いているタブへ既存の `BG_MODE_CHANGED` / `BLUR_STRENGTH_CHANGED` を送る。URL では絞り込まない（追加権限を避ける）。YouTube 以外はコンテンツスクリプトが無いのでメッセージを無視する。ポップアップは現在の割り当てと、ブラウザのショートカット設定を開くボタンを出す。
+issue #39 が挙げた `Ctrl+Shift+B` / `Ctrl+Shift+R` / `Ctrl+Shift+S` は、ブックマークバー、強制再読み込み、その他のブラウザ操作と重なるため使わない。提案キーは Chrome の上限 4 件までなので、再読み込みはコマンドだけ用意して未割り当てにする。
+
+上限または下限のときは保存しない。開いているタブへ既存の `BG_MODE_CHANGED` / `BLUR_STRENGTH_CHANGED` を送る。再読み込みは `RELOAD_BLUR`。連続したコマンドは、読み取りから保存まで直列に処理する。URL では絞り込まない（追加権限を避ける）。YouTube 以外はコンテンツスクリプトが無いのでメッセージを無視する。ポップアップは現在の割り当てと、ブラウザのショートカット設定を開くボタンを出す。Chrome は `chrome://extensions/shortcuts`、Firefox は `commands.openShortcutSettings()`。ポップアップ内のモード、スライダー、再読み込み、ショートカット設定はキーボードだけで操作できる。
 
 ## 非機能要件
 
