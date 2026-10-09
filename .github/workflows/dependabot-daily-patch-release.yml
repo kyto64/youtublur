@@ -15,7 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-      actions: write
+    outputs:
+      tag: ${{ steps.release.outputs.tag }}
+      dispatch_publish: ${{ steps.publish_mode.outputs.dispatch_publish }}
     steps:
       - name: Checkout master
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -87,6 +89,7 @@ jobs:
         env:
           RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
         run: |
+          set -euo pipefail
           if [ -n "${RELEASE_PUSH_TOKEN}" ]; then
             echo "dispatch_publish=false" >> "$GITHUB_OUTPUT"
             echo "RELEASE_PUSH_TOKEN is set; tag push should trigger publish.yml."
@@ -99,15 +102,27 @@ jobs:
         if: steps.need.outputs.need_release == 'true'
         run: git push origin master --follow-tags
 
+  # Separate job so a failed dispatch can be re-run without another version bump.
+  # Re-running patch-release after a successful push sees no manifest diff and skips.
+  dispatch-publish:
+    needs: patch-release
+    if: needs.patch-release.outputs.dispatch_publish == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - name: Checkout dispatch script
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # workflow_dispatch may start this workflow from a non-master ref.
+          # patch-release always releases master, so run that branch's script.
+          ref: master
+          persist-credentials: false
+          fetch-depth: 1
+
       - name: Dispatch publish workflow
-        if: steps.need.outputs.need_release == 'true' && steps.publish_mode.outputs.dispatch_publish == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          TAG="${{ steps.release.outputs.tag }}"
-          echo "Dispatching publish.yml for tag ${TAG}"
-          gh workflow run publish.yml \
-            --ref master \
-            -f "tag=${TAG}" \
-            -f build_from_tag=true
+          TAG: ${{ needs.patch-release.outputs.tag }}
+        run: bash scripts/dispatch-publish.sh
