@@ -33,6 +33,34 @@
       "128": "icons/icon128.png"
     }
   },
+  "commands": {
+    "toggle-mode": {
+      "suggested_key": {
+        "default": "Alt+Shift+Y"
+      },
+      "description": "__MSG_commandToggleMode__"
+    },
+    "increase-blur-strength": {
+      "suggested_key": {
+        "default": "Alt+Shift+Period"
+      },
+      "description": "__MSG_commandIncreaseBlur__"
+    },
+    "decrease-blur-strength": {
+      "suggested_key": {
+        "default": "Alt+Shift+Comma"
+      },
+      "description": "__MSG_commandDecreaseBlur__"
+    }
+  },
+  "background": {
+    "scripts": [
+      "storage-mode.js",
+      "shortcut-actions.js",
+      "background.js"
+    ],
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": [

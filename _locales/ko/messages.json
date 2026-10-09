@@ -73,5 +73,33 @@
   "reviewNudgeSaveFailed": {
     "message": "선택을 저장하지 못했습니다. 다시 시도할 수 있도록 이 안내를 남겨 둡니다.",
     "description": "리뷰 안내의 선택을 저장하지 못했을 때 표시하는 짧은 안내. 안내는 그대로 둔다."
+  },
+  "commandToggleMode": {
+    "message": "블러와 단색 전환",
+    "description": "브라우저 단축키 설정과 팝업에 표시되는 명령 설명. 팝업의 블러와 단색 모드를 전환한다."
+  },
+  "commandIncreaseBlur": {
+    "message": "블러 강도 높이기",
+    "description": "블러 강도를 슬라이더 한 단계(4px, 8–72 범위) 올리는 명령 설명."
+  },
+  "commandDecreaseBlur": {
+    "message": "블러 강도 낮추기",
+    "description": "블러 강도를 슬라이더 한 단계(4px, 8–72 범위) 내리는 명령 설명."
+  },
+  "shortcutSectionTitle": {
+    "message": "단축키",
+    "description": "팝업의 키보드 단축키 목록 제목."
+  },
+  "shortcutUnset": {
+    "message": "설정 안 됨",
+    "description": "키보드 단축키가 지정되지 않은 명령 옆에 표시한다."
+  },
+  "shortcutManage": {
+    "message": "단축키 관리",
+    "description": "브라우저의 확장 프로그램 단축키 설정을 여는 버튼."
+  },
+  "shortcutManageHint": {
+    "message": "브라우저의 확장 프로그램 단축키 설정에서 변경할 수 있습니다.",
+    "description": "단축키 목록 아래의 안내. Chrome은 chrome://extensions/shortcuts, Firefox는 부가 기능 관리자."
   }
 }

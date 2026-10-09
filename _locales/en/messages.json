@@ -73,5 +73,33 @@
   "reviewNudgeSaveFailed": {
     "message": "Couldn't save that choice. This stays here so you can try again.",
     "description": "Shown on the review prompt when the dismiss or review choice could not be saved. The prompt stays visible."
+  },
+  "commandToggleMode": {
+    "message": "Switch blur and solid",
+    "description": "Command description shown in the browser shortcut settings and the popup. Switches the popup's blur and solid modes."
+  },
+  "commandIncreaseBlur": {
+    "message": "Increase blur strength",
+    "description": "Command description for raising blur strength by one slider step (4px, within 8–72)."
+  },
+  "commandDecreaseBlur": {
+    "message": "Decrease blur strength",
+    "description": "Command description for lowering blur strength by one slider step (4px, within 8–72)."
+  },
+  "shortcutSectionTitle": {
+    "message": "Shortcuts",
+    "description": "Heading for the keyboard-shortcut list in the popup."
+  },
+  "shortcutUnset": {
+    "message": "Not set",
+    "description": "Shown next to a command that has no keyboard shortcut assigned."
+  },
+  "shortcutManage": {
+    "message": "Manage shortcuts",
+    "description": "Button that opens the browser's extension shortcut settings."
+  },
+  "shortcutManageHint": {
+    "message": "Rebind these in the browser's extension shortcut settings.",
+    "description": "Hint under the shortcut list. Chrome uses chrome://extensions/shortcuts; Firefox uses the Add-ons manager."
   }
 }

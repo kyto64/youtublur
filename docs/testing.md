@@ -127,6 +127,8 @@ const mockChrome = {
 
 ## E2Eテスト
 
+キーボードショートカットは `e2e/shortcuts.spec.js`。Chromium ではポップアップの割り当て表示と、service worker の `runShortcutCommand` が開いている watch タブのモードとブラー強度を変えることを見る。Firefox プロジェクトは拡張をロードしないため skip する。
+
 ### テストフレームワーク
 
 - **Playwright**: クロスブラウザのE2Eテスト

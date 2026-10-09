@@ -57,10 +57,13 @@ jobs:
           zip -r extension.zip \
             manifest.json \
             storage-mode.js \
+            shortcut-actions.js \
+            background.js \
             content.js \
             style.css \
             popup.html \
             popup.js \
+            popup-shortcuts.js \
             review-nudge.js \
             _locales/ \
             icons/

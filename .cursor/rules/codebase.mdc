@@ -16,6 +16,9 @@ alwaysApply: false
 ソース（編集対象）:
 - `src/content.ts`: コンテンツスクリプト（YouTube ページで実行）
 - `src/popup.ts`: ポップアップ UI ロジック
+- `src/popup-shortcuts.ts`: ポップアップのショートカット一覧
+- `src/shortcut-actions.ts`: ショートカットの次状態
+- `src/background.ts`: `commands` の受信と YouTube タブへの配信
 - `src/storage-mode.ts`: ストレージ同期ユーティリティ
 - `globals.d.ts`: 拡張グローバル / `BackgroundMode = 'blur' | 'solid'` 型定義
 - `tsconfig.json`: TypeScript 設定（`strict: true`）
@@ -23,7 +26,7 @@ alwaysApply: false
 - `style.css`: 拡張機能のスタイル
 
 コンパイル成果物（直接編集禁止、`pnpm build` で再生成）:
-- `content.js`, `popup.js`, `storage-mode.js`（manifest 参照先）
+- `content.js`, `popup.js`, `popup-shortcuts.js`, `storage-mode.js`, `shortcut-actions.js`, `background.js`（manifest 参照先）
 
 ## アーキテクチャ注意点
 - TypeScript ソースは `src/*.ts`、`tsc` で root に flat script `.js` を出力

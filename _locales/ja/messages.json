@@ -73,5 +73,33 @@
   "reviewNudgeSaveFailed": {
     "message": "選択を保存できませんでした。もう一度試せるよう、この表示は残します。",
     "description": "レビュー促しの選択を保存できなかったときに表示する短い案内。促し自体は残す。"
+  },
+  "commandToggleMode": {
+    "message": "ブラーと単色を切り替える",
+    "description": "ブラウザのショートカット設定とポップアップに出るコマンド説明。ポップアップのブラーと単色を切り替える。"
+  },
+  "commandIncreaseBlur": {
+    "message": "ブラーを強くする",
+    "description": "ブラー強度をスライダー1段（4px、8〜72の範囲）上げるコマンドの説明。"
+  },
+  "commandDecreaseBlur": {
+    "message": "ブラーを弱くする",
+    "description": "ブラー強度をスライダー1段（4px、8〜72の範囲）下げるコマンドの説明。"
+  },
+  "shortcutSectionTitle": {
+    "message": "ショートカット",
+    "description": "ポップアップ内のキーボードショートカット一覧の見出し。"
+  },
+  "shortcutUnset": {
+    "message": "未設定",
+    "description": "キーボードショートカットが割り当てられていないコマンドの横に表示する。"
+  },
+  "shortcutManage": {
+    "message": "ショートカットを変更",
+    "description": "ブラウザの拡張機能ショートカット設定を開くボタン。"
+  },
+  "shortcutManageHint": {
+    "message": "ブラウザの拡張機能ショートカット設定で変更できます。",
+    "description": "ショートカット一覧の下の補足。Chrome は chrome://extensions/shortcuts、Firefox はアドオンマネージャー。"
   }
 }

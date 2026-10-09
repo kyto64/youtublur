@@ -233,6 +233,12 @@ transition: color 140ms ease;
 - `Enter` または `Space` で選択
 - フォーカスの視覚的な表示
 
+### 拡張機能ショートカット
+
+ポップアップに「Shortcuts」セクションを出す。各コマンドの現在のキー（未設定ならその旨）と、ブラウザのショートカット設定を開くボタンを表示する。文字列は i18n。キー名は `chrome.commands.getAll()` の `shortcut` をそのまま出す（ユーザーが割り当てを変えた結果がそのまま見える）。
+
+既定は Alt+Shift+Y（ブラーと単色の切替）、Alt+Shift+Period（強く）、Alt+Shift+Comma（弱く）。YouTube の単キーショートカットや、ブラウザの Ctrl 系とは重ねない。
+
 ### 画面リーダー対応
 
 ```html

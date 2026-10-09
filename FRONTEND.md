@@ -27,9 +27,10 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 
 
 
-   バックグラウンド (Service Worker)
-  - イベント駆動型のライフサイクル
-  - 常時起動せず、イベント時に起動
+   バックグラウンド (Service Worker / Firefox はイベントページ)
+  - manifest commands の受信（モード切替、ブラー強度 ±4px）
+  - 開いている YouTube タブへ既存メッセージを配信
+  - 常時起動せず、コマンド時に起動
 
 
 
@@ -51,6 +52,7 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 - ユーザー操作の受け付け
 - ストレージへの設定保存
 - 任意のレビュー促し（`src/review-nudge.ts` → `review-nudge.js`）
+- 現在のキーボードショートカット表示（`src/popup-shortcuts.ts` → `popup-shortcuts.js`）
 
 **ライフサイクル:**
 - アイコンクリック時に作成

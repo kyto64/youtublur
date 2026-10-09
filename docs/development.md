@@ -67,7 +67,10 @@ youtublur/
 ├── src/                          # ソースコード（編集対象）
 │   ├── content.ts                # コンテンツスクリプト（YouTubeページで実行）
 │   ├── popup.ts                  # ポップアップUIのロジック
+│   ├── popup-shortcuts.ts        # ポップアップのショートカット一覧
 │   ├── review-nudge.ts           # レビュー促し（ポップアップ）
+│   ├── shortcut-actions.ts       # ショートカットの次状態（純粋関数）
+│   ├── background.ts             # commands の受信と YouTube タブへの配信
 │   └── storage-mode.ts           # ストレージ同期ユーティリティ
 ├── globals.d.ts                  # 型定義（拡張グローバル / BackgroundMode）
 ├── tsconfig.json                 # TypeScript 設定
@@ -76,10 +79,14 @@ youtublur/
 ├── style.css                     # スタイルシート
 ├── content.js                    # コンパイル成果物（編集禁止）
 ├── popup.js                      # コンパイル成果物（編集禁止）
+├── popup-shortcuts.js            # コンパイル成果物（編集禁止）
 ├── review-nudge.js               # コンパイル成果物（編集禁止）
+├── shortcut-actions.js           # コンパイル成果物（編集禁止）
+├── background.js                 # コンパイル成果物（編集禁止）
 ├── storage-mode.js               # コンパイル成果物（編集禁止）
 ├── content.test.js               # ユニットテスト
 ├── popup.test.js                 # ユニットテスト
+├── shortcuts.test.js             # ショートカットのユニットテスト
 ├── review-nudge.test.js          # ユニットテスト
 ├── _locales/                     # i18n（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）
 ├── e2e/                          # Playwright E2E と AI 検証
@@ -91,9 +98,9 @@ youtublur/
 ### レイヤーアーキテクチャ
 
 ```
-UIレイヤー（popup.ts / review-nudge.ts）
+UIレイヤー（popup.ts / popup-shortcuts.ts / review-nudge.ts）
     ↓
-ビジネスロジックレイヤー（content.ts）
+コマンド（background.ts + shortcut-actions.ts）とビジネスロジック（content.ts）
     ↓
 データ永続化レイヤー（storage-mode.ts）
 ```

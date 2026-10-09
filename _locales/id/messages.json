@@ -73,5 +73,33 @@
   "reviewNudgeSaveFailed": {
     "message": "Pilihan itu belum tersimpan. Pesan ini tetap di sini agar Anda bisa mencoba lagi.",
     "description": "Pemberitahuan singkat saat pilihan permintaan ulasan gagal disimpan. Permintaan tetap tampil."
+  },
+  "commandToggleMode": {
+    "message": "Beralih antara blur dan warna solid",
+    "description": "Deskripsi perintah di pengaturan pintasan browser dan di popup. Beralih antara mode blur dan warna solid."
+  },
+  "commandIncreaseBlur": {
+    "message": "Perkuat blur",
+    "description": "Deskripsi perintah yang menaikkan kekuatan blur satu langkah slider (4px, dalam rentang 8–72)."
+  },
+  "commandDecreaseBlur": {
+    "message": "Perlemah blur",
+    "description": "Deskripsi perintah yang menurunkan kekuatan blur satu langkah slider (4px, dalam rentang 8–72)."
+  },
+  "shortcutSectionTitle": {
+    "message": "Pintasan",
+    "description": "Judul daftar pintasan keyboard di popup."
+  },
+  "shortcutUnset": {
+    "message": "Belum diatur",
+    "description": "Ditampilkan di samping perintah yang belum memiliki pintasan keyboard."
+  },
+  "shortcutManage": {
+    "message": "Kelola pintasan",
+    "description": "Tombol yang membuka pengaturan pintasan ekstensi browser."
+  },
+  "shortcutManageHint": {
+    "message": "Ubah pintasan di pengaturan pintasan ekstensi browser.",
+    "description": "Petunjuk di bawah daftar pintasan. Chrome memakai chrome://extensions/shortcuts; Firefox memakai pengelola add-on."
   }
 }

@@ -73,5 +73,33 @@
   "reviewNudgeSaveFailed": {
     "message": "这个选择没能保存。提示会留在这里，方便你再试一次。",
     "description": "评价提示的选择未能保存时显示的简短说明。提示本身保持可见。"
+  },
+  "commandToggleMode": {
+    "message": "在模糊和纯色之间切换",
+    "description": "显示在浏览器快捷键设置和弹出窗口中的命令说明。切换弹出窗口的模糊与纯色模式。"
+  },
+  "commandIncreaseBlur": {
+    "message": "增强模糊",
+    "description": "将模糊强度提高一档滑块（4px，范围 8–72）的命令说明。"
+  },
+  "commandDecreaseBlur": {
+    "message": "减弱模糊",
+    "description": "将模糊强度降低一档滑块（4px，范围 8–72）的命令说明。"
+  },
+  "shortcutSectionTitle": {
+    "message": "快捷键",
+    "description": "弹出窗口中键盘快捷键列表的标题。"
+  },
+  "shortcutUnset": {
+    "message": "未设置",
+    "description": "显示在尚未指定键盘快捷键的命令旁边。"
+  },
+  "shortcutManage": {
+    "message": "管理快捷键",
+    "description": "打开浏览器扩展程序快捷键设置的按钮。"
+  },
+  "shortcutManageHint": {
+    "message": "可在浏览器的扩展程序快捷键设置中更改。",
+    "description": "快捷键列表下方的说明。Chrome 使用 chrome://extensions/shortcuts；Firefox 使用附加组件管理器。"
   }
 }
