@@ -270,6 +270,13 @@ let solidCommandGeneration = 0;
 function effectiveSolidCssColor() {
     return sanitizeSolidColorForCss(activeSolidColor ?? getSolidModeBackgroundColor());
 }
+/** 単色の保存色はプレイヤーが現れてから塗る。ホーム初期化のあと SPA で遅れて届く。 */
+function solidBackgroundNeedsPaint(container) {
+    if (currentMode !== 'solid' || !container)
+        return false;
+    return container.dataset.ytLightBgMode !== 'solid'
+        || container.dataset.ytSolidColor !== effectiveSolidCssColor();
+}
 function paintSolidBackground(container) {
     const color = effectiveSolidCssColor();
     container.style.setProperty('background-color', color, 'important');
@@ -796,9 +803,17 @@ function observePlayer() {
     function tryInit() {
         if (typeof document === 'undefined')
             return;
-        restartBlurInitRetryCycle();
         const c = getPlayerContainer();
         discardStaleBlurCanvas(c);
+        // initBlurForPlayer はブラー以外では即 return する。ホームで初期化済みの単色と保存色は、
+        // プレイヤーが後から現れたこの時点で塗る。
+        if (currentMode === 'solid') {
+            stopBlurInitRetryCompletely();
+            if (c)
+                hideBlurMode(c);
+            return;
+        }
+        restartBlurInitRetryCycle();
         if (c)
             initBlurForPlayer(c);
         scheduleBlurInitRetryIfNeeded();
@@ -821,7 +836,9 @@ function observePlayer() {
             if (!c)
                 return;
             discardStaleBlurCanvas(c);
-            if (currentMode === 'blur' && !hasCurrentBlurCanvas(c)) {
+            // プレイヤー DOM は yt-navigate-finish より後に出ることがある。ブラーは canvas が無いとき再初期化し、
+            // 単色はリトライが無いので、保存色が未反映のときだけ塗る。
+            if (solidBackgroundNeedsPaint(c) || (currentMode === 'blur' && !hasCurrentBlurCanvas(c))) {
                 scheduleTryInit();
             }
         });
@@ -869,7 +886,8 @@ function installYoutubeNavigationHooks() {
     // 生成されず、タブ切替（visibilitychange）まで反映されなかった。
     // YouTube が SPA 遷移完了時に dispatch する yt-navigate-finish を購読することで確実に再評価する。
     // このイベントは page world から共有 DOM 上に発火されるため、isolated world の content script でも受け取れる。
-    // （遷移完了後にプレイヤー DOM が遅れて現れるケースは既存の MutationObserver + リトライが拾う）
+    // （遷移完了後にプレイヤー DOM が遅れて現れるケースは MutationObserver が拾う。
+    // ブラーは canvas 未生成で再初期化し、単色は保存色が未反映なら塗る。video 未準備のブラーはリトライが拾う）
     window.addEventListener('yt-navigate-finish', onNav);
     function wrapHistoryMethod(method) {
         const orig = history[method];

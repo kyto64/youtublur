@@ -4,6 +4,7 @@ const {
   waitForExtensionStorageMode,
   waitForWatchPlayer,
   openExtensionPopup,
+  navigateToWatchViaSpa,
 } = require('./helpers');
 
 test('solid color is chosen from the keyboard and applied without reload', async ({
@@ -73,4 +74,40 @@ test('solid color is chosen from the keyboard and applied without reload', async
   await expect(popup3.locator('#solidColorSection')).toBeHidden();
   await expect(popup3.locator('#blurStrength')).toBeVisible();
   await popup3.close();
+});
+
+test('saved solid color is applied after SPA navigation from a non-player page', async ({
+  page,
+  context,
+  extensionId,
+  browserName,
+}) => {
+  test.skip(
+    browserName === 'firefox',
+    'Firefox E2E uses a chrome API mock; the real popup and storage are not available.'
+  );
+
+  // Storage is written before any YouTube document loads, so the content script
+  // initializes on search results (no #movie_player) with solid + #000000 already saved.
+  // A direct /watch load does not catch a miss in observePlayer.
+  const popup = await openExtensionPopup(context, extensionId);
+  await popup.locator('label[for="modeSolid"]').click();
+  await waitForExtensionStorageMode(popup, 'solid');
+  await popup.locator('label[for="solidPresetBlack"]').click();
+  await popup.waitForFunction(
+    () =>
+      new Promise((resolve) => {
+        chrome.storage.sync.get('playerSolidColor', (result) => {
+          resolve(result.playerSolidColor === '#000000');
+        });
+      }),
+    null,
+    { timeout: 15000 }
+  );
+  await popup.close();
+
+  await navigateToWatchViaSpa(page);
+  const player = page.locator('#movie_player, .html5-video-player').first();
+  await expect(player).toHaveAttribute('data-yt-solid-color', '#000000', { timeout: 15000 });
+  await expect(player).toHaveCSS('background-color', 'rgb(0, 0, 0)');
 });
