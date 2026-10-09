@@ -7,6 +7,7 @@
 ### 前提条件
 
 - Node.js 22.22.2 以上、24.15 以上、または 26 以上（`jsdom` 30.1.1 の要件。依存ツリー中最も厳しい）
+- CI の Test は Node.js `22.22.2`（22 系の下限）、`24`、`26` で実行する。E2E とリリースは Node.js 22（最新の 22 系）のまま
 - pnpm 9+
 - Git
 - Chrome または Firefox ブラウザ
@@ -63,17 +64,26 @@ pnpm install
 
 ```
 youtublur/
-├── src/                          # ソースコード
+├── src/                          # ソースコード（編集対象）
 │   ├── content.ts                # コンテンツスクリプト（YouTubeページで実行）
 │   ├── popup.ts                  # ポップアップUIのロジック
-│   └── storage-mode.ts          # ストレージ同期ユーティリティ
-├── globals.d.ts                  # 型定義
+│   ├── review-nudge.ts           # レビュー促し（ポップアップ）
+│   └── storage-mode.ts           # ストレージ同期ユーティリティ
+├── globals.d.ts                  # 型定義（拡張グローバル / BackgroundMode）
+├── tsconfig.json                 # TypeScript 設定
 ├── manifest.json                 # 拡張機能マニフェスト
 ├── popup.html                    # ポップアップUI
 ├── style.css                     # スタイルシート
 ├── content.js                    # コンパイル成果物（編集禁止）
 ├── popup.js                      # コンパイル成果物（編集禁止）
-├── storage-mode.js              # コンパイル成果物（編集禁止）
+├── review-nudge.js               # コンパイル成果物（編集禁止）
+├── storage-mode.js               # コンパイル成果物（編集禁止）
+├── content.test.js               # ユニットテスト
+├── popup.test.js                 # ユニットテスト
+├── review-nudge.test.js          # ユニットテスト
+├── _locales/                     # i18n（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）
+├── e2e/                          # Playwright E2E と AI 検証
+├── scripts/                      # 補助スクリプト
 ├── docs/                         # ドキュメント
 └── ...
 ```
@@ -81,7 +91,7 @@ youtublur/
 ### レイヤーアーキテクチャ
 
 ```
-UIレイヤー（popup.ts）
+UIレイヤー（popup.ts / review-nudge.ts）
     ↓
 ビジネスロジックレイヤー（content.ts）
     ↓
