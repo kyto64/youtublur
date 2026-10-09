@@ -190,8 +190,10 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 ## Code Review Rules
 
+PR レビューは Cursor Bugbot が行う。指摘の言語、重大度、このリポジトリのレビュー方針は [`.cursor/BUGBOT.md`](./.cursor/BUGBOT.md) が正。Bugbot は `.cursor/rules/*.mdc` を適用しない。
+
 ### レビューコメントの言語
-- PR 上のレビュー指摘・提案・説明はすべて日本語で書くこと。
+- PR 上のレビュー指摘・提案・説明・要約はすべて日本語で書くこと。
 - コード識別子・コマンド・ファイルパス・エラー原文・API 名はそのまま残すこと。
 
 ## リリース手順
