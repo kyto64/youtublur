@@ -87,6 +87,12 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
   - ブラー強度スライダー（ブラーモードのときだけ表示。ドラッグ中の保存は間引き、離したときは即保存）
   - カラーピッカーの同期
   - 任意のレビュー促し（`review-nudge.js` 経由。初回ポップアップから 7 日後に一度だけ表示候補）
+  - キーボードショートカットの現在の割り当て表示（`popup-shortcuts.js`。`chrome.commands.getAll`）
+- **`src/background.ts` → `background.js`**:
+  - Manifest `commands` の `chrome.commands.onCommand` を受け取る
+  - モードとブラー強度はポップアップと同じ `saveModeToStorage` / `saveBlurStrengthToStorage` で保存する（キーの形は変えない）
+  - 開いている全タブへ既存メッセージ `BG_MODE_CHANGED` / `BLUR_STRENGTH_CHANGED` を送る。タブ URL は読まない（`tabs` 権限や `host_permissions` を足さない）。コンテンツスクリプトがある YouTube タブだけが受け取る
+  - Chrome は `background.service_worker`（`importScripts` で `storage-mode.js` と `shortcut-actions.js` を読む）。Firefox は `background.scripts` のイベントページ（Chrome 121 以降は `scripts` を無視する）
 - **popup.html**:
   - シンプルな操作インターフェース
   - モードボタンとカラーピッカー
@@ -240,8 +246,9 @@ YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購�
 
 1. **追加の背景スタイル**: グラデーション、パターンなど（content.js に追加）
 2. **サイト別設定**: 他の動画サイトへの対応（manifest.json の matches 拡張 + content.js の調整）
-3. **キーボードショートカット**: chrome.commands API を使用した操作
-4. **スケジューリング**: 時刻ベースの自動モード切り替え
+3. **スケジューリング**: 時刻ベースの自動モード切り替え
+
+キーボードショートカットは実装済み。`manifest.json` の `commands`（`toggle-mode`、`increase-blur-strength`、`decrease-blur-strength`、提案キーなしの `reload-effect`、ポップアップを開く `_execute_action`）を使う。Chrome は `chrome://extensions/shortcuts`、Firefox は `commands.openShortcutSettings()` で割り当てを変える。決定は `src/shortcut-actions.ts`。保存とタブへの配信は `src/background.ts` が読み取りから保存まで直列に行う。
 
 アーキテクチャ変更が必要な機能:
 

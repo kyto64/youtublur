@@ -9,7 +9,14 @@ export default defineConfig({
       provider: 'v8',
       reportsDirectory: './coverage',
       reporter: ['text', 'text-summary', 'html', 'json-summary', 'lcov'],
-      include: ['content.js', 'popup.js', 'storage-mode.js']
+      include: [
+        'content.js',
+        'popup.js',
+        'popup-shortcuts.js',
+        'storage-mode.js',
+        'shortcut-actions.js',
+        'background.js'
+      ]
     }
   }
 });

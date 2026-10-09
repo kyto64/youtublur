@@ -73,5 +73,41 @@
   "reviewNudgeSaveFailed": {
     "message": "No se pudo guardar esa elección. El aviso se queda aquí para que puedas intentarlo de nuevo.",
     "description": "Aviso breve cuando no se pudo guardar la elección del aviso de reseña. El aviso permanece visible."
+  },
+  "commandToggleMode": {
+    "message": "Alternar desenfoque y color sólido",
+    "description": "Descripción del comando en los atajos del navegador y en la ventana emergente. Alterna los modos de desenfoque y color sólido."
+  },
+  "commandIncreaseBlur": {
+    "message": "Aumentar el desenfoque",
+    "description": "Descripción del comando que sube la intensidad del desenfoque un paso del control (4 px, entre 8 y 72)."
+  },
+  "commandDecreaseBlur": {
+    "message": "Reducir el desenfoque",
+    "description": "Descripción del comando que baja la intensidad del desenfoque un paso del control (4 px, entre 8 y 72)."
+  },
+  "shortcutSectionTitle": {
+    "message": "Atajos",
+    "description": "Título de la lista de atajos de teclado en la ventana emergente."
+  },
+  "shortcutUnset": {
+    "message": "Sin asignar",
+    "description": "Se muestra junto a un comando que no tiene atajo de teclado."
+  },
+  "shortcutManage": {
+    "message": "Gestionar atajos",
+    "description": "Botón que abre los ajustes de atajos de extensiones del navegador."
+  },
+  "shortcutManageHint": {
+    "message": "Cámbialos en los ajustes de atajos de extensiones del navegador.",
+    "description": "Nota bajo la lista de atajos. Chrome usa chrome://extensions/shortcuts; Firefox usa commands.openShortcutSettings."
+  },
+  "commandOpenPopup": {
+    "message": "Abrir youtublur",
+    "description": "Descripción del comando reservado _execute_action. Abre la ventana emergente. La tecla sugerida es Alt+Shift+U."
+  },
+  "commandReloadEffect": {
+    "message": "Recargar el fondo del reproductor",
+    "description": "Descripción del comando de recarga. Vuelve a aplicar el fondo del reproductor. No tiene tecla sugerida."
   }
 }

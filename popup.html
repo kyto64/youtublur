@@ -42,12 +42,23 @@
       -webkit-font-smoothing: antialiased;
     }
 
-    /* Inputs must be first in body so CSS ~ reaches all siblings */
+    /* Inputs stay first so CSS ~ reaches later siblings. Clip keeps them in the tab order. */
     input[type="radio"] {
       position: absolute;
-      opacity: 0;
-      width: 0;
-      height: 0;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+    #modeBlur:focus-visible ~ .radio-rows label[for="modeBlur"],
+    #modeSolid:focus-visible ~ .radio-rows label[for="modeSolid"] {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
 
     /* === Header === */
@@ -280,6 +291,10 @@
       user-select: none;
     }
     #reloadButton:hover { background: var(--btn-hover); }
+    #reloadButton:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
     #reloadButton:active {
       background: var(--accent);
       color: #fff;
@@ -333,6 +348,11 @@
     #reviewNudgeLeave:hover {
       background: var(--btn-hover);
     }
+    #reviewNudgeLeave:focus-visible,
+    .review-nudge-link:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
     .review-nudge-actions {
       display: flex;
       flex-wrap: wrap;
@@ -361,6 +381,71 @@
     }
     .review-nudge-notice[hidden] {
       display: none !important;
+    }
+
+    /* === Keyboard shortcuts === */
+    .shortcut-wrap {
+      padding: 0 16px 12px;
+    }
+    .shortcut-title {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+    .shortcut-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .shortcut-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .shortcut-label {
+      font-size: 12px;
+      color: var(--text);
+      line-height: 1.3;
+      min-width: 0;
+    }
+    .shortcut-list kbd {
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text);
+      background: var(--btn-bg);
+      border-radius: 6px;
+      padding: 2px 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .shortcut-hint {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-sub);
+      line-height: 1.4;
+    }
+    #shortcutManage {
+      margin-top: 4px;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 11px;
+      color: var(--text-sub);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    #shortcutManage:hover {
+      color: var(--text);
+    }
+    #shortcutManage:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
     }
   </style>
 </head>
@@ -456,6 +541,13 @@
     </button>
   </div>
 
+  <div class="shortcut-wrap" id="shortcutSection">
+    <p class="shortcut-title" id="shortcutSectionTitle"></p>
+    <ul class="shortcut-list" id="shortcutList"></ul>
+    <p class="shortcut-hint" id="shortcutManageHint"></p>
+    <button type="button" id="shortcutManage"></button>
+  </div>
+
   <div class="review-nudge-wrap">
     <aside id="reviewNudge" hidden aria-live="polite">
       <p class="review-nudge-title" id="reviewNudgeTitle"></p>
@@ -470,7 +562,9 @@
   </div>
 
   <script src="storage-mode.js"></script>
+  <script src="shortcut-actions.js"></script>
   <script src="review-nudge.js"></script>
+  <script src="popup-shortcuts.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

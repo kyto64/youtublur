@@ -73,5 +73,41 @@
   "reviewNudgeSaveFailed": {
     "message": "這個選擇沒能儲存。提示會留在這裡，方便你再試一次。",
     "description": "評價提示的選擇未能儲存時顯示的簡短說明。提示本身保持可見。"
+  },
+  "commandToggleMode": {
+    "message": "在模糊與純色之間切換",
+    "description": "顯示在瀏覽器快速鍵設定和彈出視窗中的指令說明。切換彈出視窗的模糊與純色模式。"
+  },
+  "commandIncreaseBlur": {
+    "message": "加強模糊",
+    "description": "將模糊強度提高一階滑桿（4px，範圍 8–72）的指令說明。"
+  },
+  "commandDecreaseBlur": {
+    "message": "減弱模糊",
+    "description": "將模糊強度降低一階滑桿（4px，範圍 8–72）的指令說明。"
+  },
+  "shortcutSectionTitle": {
+    "message": "快速鍵",
+    "description": "彈出視窗中鍵盤快速鍵清單的標題。"
+  },
+  "shortcutUnset": {
+    "message": "未設定",
+    "description": "顯示在尚未指定鍵盤快速鍵的指令旁邊。"
+  },
+  "shortcutManage": {
+    "message": "管理快速鍵",
+    "description": "開啟瀏覽器擴充功能快速鍵設定的按鈕。"
+  },
+  "shortcutManageHint": {
+    "message": "可在瀏覽器的擴充功能快速鍵設定中變更。",
+    "description": "快速鍵清單下方的說明。Chrome 使用 chrome://extensions/shortcuts；Firefox 使用 commands.openShortcutSettings。"
+  },
+  "commandOpenPopup": {
+    "message": "開啟 youtublur",
+    "description": "保留指令 _execute_action 的說明。開啟工具列彈出視窗。建議快速鍵是 Alt+Shift+U。"
+  },
+  "commandReloadEffect": {
+    "message": "重新套用播放器背景",
+    "description": "重新套用播放器背景的指令說明。不設定建議快速鍵。"
   }
 }

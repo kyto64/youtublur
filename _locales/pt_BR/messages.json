@@ -73,5 +73,41 @@
   "reviewNudgeSaveFailed": {
     "message": "Não foi possível salvar essa escolha. O aviso fica aqui para você tentar de novo.",
     "description": "Aviso curto quando a escolha do pedido de avaliação não pôde ser salva. O pedido permanece visível."
+  },
+  "commandToggleMode": {
+    "message": "Alternar desfoque e cor sólida",
+    "description": "Descrição do comando nas configurações de atalho do navegador e no popup. Alterna os modos de desfoque e cor sólida."
+  },
+  "commandIncreaseBlur": {
+    "message": "Aumentar o desfoque",
+    "description": "Descrição do comando que aumenta a intensidade do desfoque em um passo do controle (4 px, entre 8 e 72)."
+  },
+  "commandDecreaseBlur": {
+    "message": "Diminuir o desfoque",
+    "description": "Descrição do comando que diminui a intensidade do desfoque em um passo do controle (4 px, entre 8 e 72)."
+  },
+  "shortcutSectionTitle": {
+    "message": "Atalhos",
+    "description": "Título da lista de atalhos de teclado no popup."
+  },
+  "shortcutUnset": {
+    "message": "Não definido",
+    "description": "Exibido ao lado de um comando sem atalho de teclado."
+  },
+  "shortcutManage": {
+    "message": "Gerenciar atalhos",
+    "description": "Botão que abre as configurações de atalhos de extensões do navegador."
+  },
+  "shortcutManageHint": {
+    "message": "Altere os atalhos nas configurações de atalhos de extensões do navegador.",
+    "description": "Nota sob a lista de atalhos. O Chrome usa chrome://extensions/shortcuts; o Firefox usa commands.openShortcutSettings."
+  },
+  "commandOpenPopup": {
+    "message": "Abrir o youtublur",
+    "description": "Descrição do comando reservado _execute_action. Abre o popup da barra de ferramentas. A tecla sugerida é Alt+Shift+U."
+  },
+  "commandReloadEffect": {
+    "message": "Recarregar o fundo do player",
+    "description": "Descrição do comando de recarregar. Reaplica o fundo do player. Não há tecla sugerida."
   }
 }

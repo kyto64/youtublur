@@ -244,6 +244,8 @@ function initPopup() {
         applyLocalizedStrings();
         initReviewNudge();
         wireBlurStrengthControl();
+        if (typeof initPopupShortcuts === 'function')
+            initPopupShortcuts();
         loadModeFromStorage().then((mode) => {
             const radio = document.getElementById(mode === 'blur' ? 'modeBlur' : 'modeSolid');
             if (radio)
