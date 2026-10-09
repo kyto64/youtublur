@@ -113,6 +113,9 @@ jobs:
       - name: Checkout dispatch script
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # workflow_dispatch may start this workflow from a non-master ref.
+          # patch-release always releases master, so run that branch's script.
+          ref: master
           persist-credentials: false
           fetch-depth: 1
 

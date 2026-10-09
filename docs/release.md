@@ -17,7 +17,7 @@
 
 GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きたイベントでは **別ワークフローは再実行されない**（再帰ループ防止）。そのためデフォルトのトークンだけだと、自動パッチリリースで付いた `v*` タグの **push イベント**では [`publish.yml`](.github/workflows/publish.yml) が走らない。[dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) は **`RELEASE_PUSH_TOKEN` 未設定時**、タグ push の直後に別ジョブ `dispatch-publish` から `publish.yml` を **`workflow_dispatch`** で起動し、作成したタグ名を `inputs.tag` に渡す。同時に `build_from_tag=true` を指定し、拡張は **タグ付きコミット**からビルドする（`GITHUB_TOKEN` で `actions: write` が必要。UI の boolean `true` でも `gh workflow run -f build_from_tag=true` の文字列 `"true"` でもタグを checkout する）。dispatch の前にタグが origin にあることを確認する。**`RELEASE_PUSH_TOKEN` を設定した場合**は tag push が `publish.yml` を起動するため、二重公開を避けて dispatch は行わない。任意で、Secrets に **`RELEASE_PUSH_TOKEN`**（`contents: write` が付いた classic PAT など）を設定し、checkout／push に使うこともできる。
 
-`dispatch-publish` をバージョンバンプと分けているのは、dispatch だけが失敗したときに **そのジョブだけ再実行**できるようにするため。`patch-release` を再実行すると、push 済みのタグ以降に `package.json` / `pnpm-lock.yaml` の差分が無く、リリースも dispatch もスキップされる。`gh workflow run` は起動に成功したことまでを見て、ストア公開の完了は待たない。公開ジョブ自体が失敗したときは [Publish extensions](https://github.com/kyto64/youtublur/actions/workflows/publish.yml) を手動で再実行する。
+`dispatch-publish` は `scripts/dispatch-publish.sh` を常に **`master`** から checkout する。`workflow_dispatch` を別 ref から起動しても、`patch-release` がリリースした master のスクリプトを使う。ジョブを分けているのは、dispatch だけが失敗したときに **そのジョブだけ再実行**できるようにするため。`patch-release` を再実行すると、push 済みのタグ以降に `package.json` / `pnpm-lock.yaml` の差分が無く、リリースも dispatch もスキップされる。`gh workflow run` は起動に成功したことまでを見て、ストア公開の完了は待たない。公開ジョブ自体が失敗したときは [Publish extensions](https://github.com/kyto64/youtublur/actions/workflows/publish.yml) を手動で再実行する。
 
 ### GitHub 側の確認（初回）
 

@@ -115,6 +115,7 @@ describe('daily workflow wiring', () => {
     expect(dispatchJob).toContain("needs.patch-release.outputs.dispatch_publish == 'true'");
     expect(dispatchJob).toContain('actions: write');
     expect(dispatchJob).toContain('contents: read');
+    expect(dispatchJob).toContain('ref: master');
     expect(dispatchJob).toContain('bash scripts/dispatch-publish.sh');
     expect(dispatchJob).not.toContain('RELEASE_PUSH_TOKEN');
     expect(dispatchJob).toContain('TAG: ${{ needs.patch-release.outputs.tag }}');
