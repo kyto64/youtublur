@@ -245,15 +245,97 @@ function installBlurStrengthStorageListener() {
     onChanged.addListener((changes, areaName) => {
         if (areaName !== 'sync' && areaName !== 'local')
             return;
-        if (!changes[STORAGE_BLUR_KEY])
-            return;
-        // Re-read both areas so a late echo of an older write cannot clobber a newer radius.
-        loadBlurStrengthRecordFromStorage()
-            .then((record) => applyStoredBlurStrength(record.px, record.timestamp))
-            .catch((error) => {
-            console.warn('[youtublur] failed to apply stored blur strength:', error);
-        });
+        if (changes[STORAGE_BLUR_KEY]) {
+            // Re-read both areas so a late echo of an older write cannot clobber a newer radius.
+            loadBlurStrengthRecordFromStorage()
+                .then((record) => applyStoredBlurStrength(record.px, record.timestamp))
+                .catch((error) => {
+                console.warn('[youtublur] failed to apply stored blur strength:', error);
+            });
+        }
+        if (changes[STORAGE_SOLID_COLOR_KEY]) {
+            loadSolidColorRecordFromStorage()
+                .then((record) => applyStoredSolidColor(record.color, record.timestamp))
+                .catch((error) => {
+                console.warn('[youtublur] failed to apply stored solid color:', error);
+            });
+        }
     });
+}
+/** null: no explicit color yet, so the theme-based fill stays (existing users see no change). */
+let activeSolidColor = null;
+let commandedSolidAt = null;
+let commandedSolidTimer = null;
+let solidCommandGeneration = 0;
+function effectiveSolidCssColor() {
+    return sanitizeSolidColorForCss(activeSolidColor ?? getSolidModeBackgroundColor());
+}
+function paintSolidBackground(container) {
+    const color = effectiveSolidCssColor();
+    container.style.setProperty('background-color', color, 'important');
+    container.dataset.ytSolidColor = color;
+}
+function setActiveSolidColor(color) {
+    activeSolidColor = color === null ? null : normalizeSolidColor(color);
+    if (currentMode !== 'solid')
+        return;
+    const container = getPlayerContainer();
+    if (container)
+        paintSolidBackground(container);
+}
+function applyLoadedSolidColor(color, generation) {
+    if (generation !== solidCommandGeneration)
+        return;
+    setActiveSolidColor(color);
+}
+function clearCommandedSolidColor() {
+    solidCommandGeneration += 1;
+    commandedSolidAt = null;
+    if (commandedSolidTimer !== null) {
+        clearTimeout(commandedSolidTimer);
+        commandedSolidTimer = null;
+    }
+}
+function rememberCommandedSolidColor() {
+    const generation = ++solidCommandGeneration;
+    commandedSolidAt = Date.now();
+    if (commandedSolidTimer !== null)
+        clearTimeout(commandedSolidTimer);
+    // Debounced saves can echo an older color. After 2s, apply only a write stamped
+    // at or after this command (another tab, or our own save).
+    commandedSolidTimer = setTimeout(() => {
+        if (generation !== solidCommandGeneration)
+            return;
+        commandedSolidTimer = null;
+        const commandedAt = commandedSolidAt;
+        loadSolidColorRecordFromStorage()
+            .then((record) => {
+            if (generation !== solidCommandGeneration)
+                return;
+            commandedSolidAt = null;
+            if (commandedAt !== null && record.timestamp < commandedAt)
+                return;
+            setActiveSolidColor(record.color);
+        })
+            .catch((error) => {
+            if (generation === solidCommandGeneration)
+                commandedSolidAt = null;
+            console.warn('[youtublur] failed to refresh solid color after picker command:', error);
+        });
+    }, 2000);
+}
+function applyStoredSolidColor(color, storedAt) {
+    if (commandedSolidAt !== null && storedAt < commandedSolidAt)
+        return;
+    clearCommandedSolidColor();
+    setActiveSolidColor(color);
+}
+function applySolidColorMessage(raw) {
+    const color = normalizeSolidColor(raw);
+    if (!color)
+        return;
+    rememberCommandedSolidColor();
+    setActiveSolidColor(color);
 }
 let animationId = null;
 let frameCount = 0;
@@ -641,8 +723,7 @@ function hideBlurMode(container) {
     }
     if (container) {
         container.dataset.ytLightBgMode = 'solid';
-        // !importantを指定してCSSの優先度を確保
-        container.style.setProperty('background-color', getSolidModeBackgroundColor(), 'important');
+        paintSolidBackground(container);
     }
 }
 function applyMode(mode, container) {
@@ -831,6 +912,12 @@ function initExtension() {
             console.warn('[youtublur] failed to load blur strength from storage:', error);
         });
         installBlurStrengthStorageListener();
+        const initialSolidGeneration = solidCommandGeneration;
+        loadSolidColorRecordFromStorage()
+            .then((record) => applyLoadedSolidColor(record.color, initialSolidGeneration))
+            .catch((error) => {
+            console.warn('[youtublur] failed to load solid color from storage:', error);
+        });
         chrome.runtime.onMessage.addListener((msg) => {
             if (msg.type === 'BG_MODE_CHANGED') {
                 applyMode(msg.mode, getPlayerContainer());
@@ -840,6 +927,9 @@ function initExtension() {
                 rememberCommandedBlurStrength();
                 setActiveBlurStrengthPx(px);
             }
+            else if (msg.type === 'SOLID_COLOR_CHANGED') {
+                applySolidColorMessage(msg.color);
+            }
             else if (msg.type === 'RELOAD_BLUR') {
                 teardownPlayerPageBlur();
                 const reloadGeneration = blurCommandGeneration;
@@ -847,6 +937,12 @@ function initExtension() {
                     .then((px) => applyLoadedBlurStrength(px, reloadGeneration))
                     .catch((error) => {
                     console.warn('[youtublur] failed to reload blur strength from storage:', error);
+                });
+                const reloadSolidGeneration = solidCommandGeneration;
+                loadSolidColorRecordFromStorage()
+                    .then((record) => applyLoadedSolidColor(record.color, reloadSolidGeneration))
+                    .catch((error) => {
+                    console.warn('[youtublur] failed to reload solid color from storage:', error);
                 });
                 loadModeFromStorage()
                     .then((saved) => {
@@ -865,10 +961,8 @@ function initExtension() {
         themeObserver = new MutationObserver(() => {
             if (currentMode === 'solid') {
                 const container = getPlayerContainer();
-                if (container) {
-                    const bgColor = getSolidModeBackgroundColor();
-                    container.style.setProperty('background-color', bgColor, 'important');
-                }
+                if (container)
+                    paintSolidBackground(container);
             }
         });
         themeObserver.observe(document.documentElement, {
@@ -891,6 +985,10 @@ if (typeof module !== 'undefined' && module.exports) {
         isGeckoLayoutEngine,
         detectYouTubeTheme,
         getSolidModeBackgroundColor,
+        getActiveSolidColor: () => activeSolidColor,
+        setActiveSolidColor,
+        paintSolidBackground,
+        applyStoredSolidColor,
         getPlayerContainer,
         getVideoElement,
         createBlurCanvas,
@@ -923,6 +1021,8 @@ if (typeof module !== 'undefined' && module.exports) {
             activeBlurStrengthPx = BLUR_STRENGTH_PX;
             clearCommandedBlurStrength();
             blurStrengthStorageListenerInstalled = false;
+            activeSolidColor = null;
+            clearCommandedSolidColor();
             stopBlurLoop();
             frameCount = 0;
             releaseGeckoVideoSnapCanvas();

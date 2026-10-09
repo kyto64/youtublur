@@ -129,6 +129,8 @@ const mockChrome = {
 
 キーボードショートカットは `e2e/shortcuts.spec.js`。Chromium ではポップアップの割り当て表示、Tab / 矢印 / Enter によるポップアップ操作、service worker の `runShortcutCommand` が開いている watch タブのモードとブラー強度を変えることを見る。Firefox プロジェクトは拡張をロードしないため skip する。
 
+単色の色は `solid-color.test.js` と `e2e/solid-color.spec.js`。未設定ではテーマ色のまま、選んだ `#rrggbb` はリロードなしで `#movie_player` の `data-yt-solid-color` に届き、テーマ属性を変えても維持される。ポップアップでは単色のときだけプリセットにフォーカスが当たり、矢印キーで移動する。
+
 ### テストフレームワーク
 
 - **Playwright**: クロスブラウザのE2Eテスト

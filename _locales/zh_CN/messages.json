@@ -16,8 +16,8 @@
     "description": "单选选项：将视频模糊后作为背景显示。"
   },
   "modeSolid": {
-    "message": "纯色（浅灰色）",
-    "description": "单选选项：纯灰色背景。"
+    "message": "纯色",
+    "description": "单选：在播放器后面铺一层纯色。"
   },
   "reloadButton": {
     "message": "重新加载",
@@ -28,7 +28,10 @@
     "description": "重新加载进行中的按钮文字。"
   },
   "modeBlurSub": { "message": "磨砂氛围光晕" },
-  "modeSolidSub": { "message": "平整中性背景" },
+  "modeSolidSub": {
+    "message": "用所选颜色填充",
+    "description": "纯色模式的副标题，显示在模式名称下方。"
+  },
   "previewLabel": { "message": "预览" },
   "blurStrengthLabel": {
     "message": "模糊强度",
@@ -41,6 +44,30 @@
   "blurStrengthUnit": {
     "message": "px",
     "description": "显示在模糊强度数字旁边的单位。"
+  },
+  "solidColorLabel": {
+    "message": "背景颜色",
+    "description": "纯色模式的颜色控件标签。仅在纯色模式显示。"
+  },
+  "solidColorCustomLabel": {
+    "message": "自定义颜色",
+    "description": "纯色模式中自定义取色器的标签。"
+  },
+  "solidColorPresetLight": {
+    "message": "浅灰",
+    "description": "预设：原先的浅灰 #f1f1f1。"
+  },
+  "solidColorPresetGray": {
+    "message": "深灰",
+    "description": "预设：深灰 #272727。"
+  },
+  "solidColorPresetBlack": {
+    "message": "黑色",
+    "description": "预设：黑色 #000000。"
+  },
+  "solidColorPresetYtDark": {
+    "message": "YouTube 深色",
+    "description": "预设：YouTube 深色背景 #0f0f0f。"
   },
   "popupPhrase0": { "message": "让 YouTube 更护眼" },
   "popupPhrase1": { "message": "减少眩光，多一份从容" },

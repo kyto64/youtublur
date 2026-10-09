@@ -251,6 +251,7 @@ function initPopup() {
     applyLocalizedStrings();
     initReviewNudge();
     wireBlurStrengthControl();
+    if (typeof wireSolidColorControl === 'function') wireSolidColorControl();
     if (typeof initPopupShortcuts === 'function') initPopupShortcuts();
 
     loadModeFromStorage().then((mode) => {
@@ -318,6 +319,11 @@ function initPopup() {
 
 if (typeof chrome !== 'undefined' && chrome.storage) {
   initPopup();
+}
+
+if (typeof globalThis !== 'undefined') {
+  // popup-color.js calls this. Classic scripts share the global binding; Node tests do not.
+  Object.assign(globalThis, { sendMessageToTab });
 }
 
 if (typeof module !== 'undefined' && module.exports) {

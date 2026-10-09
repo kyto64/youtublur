@@ -16,8 +16,8 @@
     "description": "Opção de rádio: vídeo desfocado como fundo."
   },
   "modeSolid": {
-    "message": "Sólido (cinza claro)",
-    "description": "Opção de rádio: fundo cinza plano."
+    "message": "Sólido",
+    "description": "Opção de rádio: cor chapada atrás do player."
   },
   "reloadButton": {
     "message": "Recarregar",
@@ -28,7 +28,10 @@
     "description": "Texto do botão enquanto recarrega."
   },
   "modeBlurSub": { "message": "Brilho ambiente gelado" },
-  "modeSolidSub": { "message": "Superfície neutra plana" },
+  "modeSolidSub": {
+    "message": "Uma cor à sua escolha",
+    "description": "Subtítulo do modo sólido, abaixo do nome do modo."
+  },
   "previewLabel": { "message": "Pré-visualização" },
   "blurStrengthLabel": {
     "message": "Intensidade do desfoque",
@@ -41,6 +44,30 @@
   "blurStrengthUnit": {
     "message": "px",
     "description": "Unidade exibida ao lado do número de intensidade."
+  },
+  "solidColorLabel": {
+    "message": "Cor de fundo",
+    "description": "Rótulo dos controles de cor do modo sólido. Visível só nesse modo."
+  },
+  "solidColorCustomLabel": {
+    "message": "Cor personalizada",
+    "description": "Rótulo do seletor de cor personalizada no modo sólido."
+  },
+  "solidColorPresetLight": {
+    "message": "Cinza claro",
+    "description": "Amostra: o cinza claro histórico, #f1f1f1."
+  },
+  "solidColorPresetGray": {
+    "message": "Cinza escuro",
+    "description": "Amostra: cinza escuro, #272727."
+  },
+  "solidColorPresetBlack": {
+    "message": "Preto",
+    "description": "Amostra: preto, #000000."
+  },
+  "solidColorPresetYtDark": {
+    "message": "Escuro do YouTube",
+    "description": "Amostra: fundo escuro do YouTube, #0f0f0f."
   },
   "popupPhrase0": { "message": "Tornando o YouTube mais suave para os olhos" },
   "popupPhrase1": { "message": "Menos brilho, mais tranquilidade" },

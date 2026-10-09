@@ -65,6 +65,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - **実装**: `chrome.storage.sync` と `chrome.storage.local`
 - **キー（モード）**: `playerBackgroundMode`, `playerBackgroundModeTimestamp`（`storage-mode.js`）
 - **キー（ブラー強度）**: `playerBlurStrengthPx`, `playerBlurStrengthPxTimestamp`（既定 40px、8–72px、4px 刻み。未設定の利用者は従来どおり 40px）。ローカルのスライダー操作より前の書き込みは無視し、それより新しいタイムスタンプ（別タブの変更を含む）はすぐ適用する。抑制が切れてもストレージを読み直し、操作以降のタイムスタンプだけを適用する。読み込み開始後に新しいスライダー指示が届いた結果は適用しない
+- **キー（単色）**: `playerSolidColor`, `playerSolidColorTimestamp`（`#rrggbb` のみ。未設定なら従来のテーマ色のまま。ライト `#f1f1f1`、ダーク `#181818`）。不正な値は CSS に入れず、保存時は `#f1f1f1` に落とす。選んだあとはテーマ変更で上書きしない
 - **キー（レビュー促し・local のみ）**: `firstUseTimestamp`, `reviewNudgeHandled`, `reviewNudgeNeverAsk`, `reviewNudgeCooldownUntil`（`review-nudge.js`）
 
 #### 2. ビジネスロジックレイヤー（中間）
@@ -76,7 +77,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - **`src/storage-mode.ts` → `storage-mode.js`**:
   - ストレージ間の競合解決（sync vs local）
   - タイムスタンプベースの勝者決定
-  - `saveModeToStorage` / `saveBlurStrengthToStorage` は複数回の連続保存を内部キューで直列化し、遅延した古い `sync.set` コールバックが新しい選択より後に `local` を上書きしないようにする
+  - `saveModeToStorage` / `saveBlurStrengthToStorage` / `saveSolidColorToStorage` は複数回の連続保存を内部キューで直列化し、遅延した古い `sync.set` コールバックが新しい選択より後に `local` を上書きしないようにする
   - `BackgroundMode = 'blur' | 'solid'` 型に基づく型安全なAPI
   - ブラー強度は範囲外の値をスライダーの刻みにスナップしてから保存する
 
@@ -85,7 +86,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
   - ポップアップ UI の状態管理
   - モード切替ハンドラ
   - ブラー強度スライダー（ブラーモードのときだけ表示。ドラッグ中の保存は間引き、離したときは即保存）
-  - カラーピッカーの同期
+  - 単色の色（単色モードのときだけ。プリセットと `<input type="color">`。ドラッグ中の保存は間引き、プリセットと確定時は即保存）
   - 任意のレビュー促し（`review-nudge.js` 経由。初回ポップアップから 7 日後に一度だけ表示候補）
   - キーボードショートカットの現在の割り当て表示（`popup-shortcuts.js`。`chrome.commands.getAll`）
 - **`src/background.ts` → `background.js`**:

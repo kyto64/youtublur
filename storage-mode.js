@@ -3,6 +3,20 @@ const STORAGE_KEY = 'playerBackgroundMode';
 const STORAGE_TIMESTAMP_KEY = 'playerBackgroundModeTimestamp';
 const STORAGE_BLUR_KEY = 'playerBlurStrengthPx';
 const STORAGE_BLUR_TIMESTAMP_KEY = 'playerBlurStrengthPxTimestamp';
+const STORAGE_SOLID_COLOR_KEY = 'playerSolidColor';
+const STORAGE_SOLID_COLOR_TIMESTAMP_KEY = 'playerSolidColorTimestamp';
+/**
+ * Historical light-gray fill. A missing key is not stored as this color: the
+ * content script keeps the theme-based fill so existing users see no change.
+ * Values that are not hex become this color before they are saved or painted.
+ */
+const DEFAULT_SOLID_COLOR = '#f1f1f1';
+const SOLID_COLOR_PRESETS = Object.freeze([
+    Object.freeze({ id: 'light', value: '#f1f1f1' }),
+    Object.freeze({ id: 'gray', value: '#272727' }),
+    Object.freeze({ id: 'black', value: '#000000' }),
+    Object.freeze({ id: 'youtubeDark', value: '#0f0f0f' })
+]);
 /**
  * Slider bounds. Default matches the historical fixed radius so existing users see no change.
  * Step 4 keeps 40 on the grid. The ceiling stays at 72 because a video-sized canvas blur
@@ -22,7 +36,9 @@ const ALL_RECONCILE_KEYS = [
     STORAGE_KEY,
     STORAGE_TIMESTAMP_KEY,
     STORAGE_BLUR_KEY,
-    STORAGE_BLUR_TIMESTAMP_KEY
+    STORAGE_BLUR_TIMESTAMP_KEY,
+    STORAGE_SOLID_COLOR_KEY,
+    STORAGE_SOLID_COLOR_TIMESTAMP_KEY
 ];
 /** Serializes saves so an older sync.set callback cannot finalize after a newer save and overwrite local/sync with stale data. */
 let storageSaveChain = Promise.resolve();
@@ -36,6 +52,28 @@ function clampBlurStrengthPx(raw) {
     if (!Number.isFinite(n))
         return DEFAULT_BLUR_STRENGTH_PX;
     return snapBlurStrengthPx(n);
+}
+/** `#rgb` / `#rrggbb` only. Anything else is unset, never a CSS fragment. */
+function normalizeSolidColor(raw) {
+    if (typeof raw !== 'string')
+        return null;
+    const match = /^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.exec(raw.trim());
+    if (!match)
+        return null;
+    let hex = match[1].toLowerCase();
+    if (hex.length === 3) {
+        hex = hex[0] + hex[0] + hex[1] + hex[1] + hex[2] + hex[2];
+    }
+    return `#${hex}`;
+}
+function sanitizeSolidColorForCss(raw) {
+    return normalizeSolidColor(raw) ?? DEFAULT_SOLID_COLOR;
+}
+/** Stored strings that are not hex become unset so a bad value cannot override the theme fill. */
+function canonSolidColor(raw) {
+    if (raw === undefined || raw === null || raw === '')
+        return null;
+    return normalizeSolidColor(raw);
 }
 function readStorage(area, keys, done) {
     chrome.storage[area].get(keys, (result) => {
@@ -55,6 +93,7 @@ function reconcileStorageCopies() {
         readStorage('local', ALL_RECONCILE_KEYS, (localResult) => {
             reconcilePair(syncResult, localResult, STORAGE_KEY, STORAGE_TIMESTAMP_KEY, null);
             reconcilePair(syncResult, localResult, STORAGE_BLUR_KEY, STORAGE_BLUR_TIMESTAMP_KEY, clampBlurStrengthPx);
+            reconcilePair(syncResult, localResult, STORAGE_SOLID_COLOR_KEY, STORAGE_SOLID_COLOR_TIMESTAMP_KEY, canonSolidColor);
         });
     });
 }
@@ -157,6 +196,18 @@ function saveBlurStrengthToStorage(px) {
     };
     return saveTimestampedRecord(data);
 }
+/**
+ * Save a solid-mode color. Only a sanitized `#rrggbb` is written.
+ * @returns {Promise<boolean>} true if the sync write succeeded
+ */
+function saveSolidColorToStorage(color) {
+    const timestamp = Date.now();
+    const data = {
+        [STORAGE_SOLID_COLOR_KEY]: sanitizeSolidColorForCss(color),
+        [STORAGE_SOLID_COLOR_TIMESTAMP_KEY]: timestamp
+    };
+    return saveTimestampedRecord(data);
+}
 function loadTimestampedRecord(valueKey, timestampKey, fallback, normalize, errorLabel) {
     return new Promise((resolve) => {
         try {
@@ -225,11 +276,22 @@ function loadBlurStrengthFromStorage() {
 function loadBlurStrengthRecordFromStorage() {
     return loadTimestampedRecord(STORAGE_BLUR_KEY, STORAGE_BLUR_TIMESTAMP_KEY, DEFAULT_BLUR_STRENGTH_PX, clampBlurStrengthPx, 'Failed to load blur strength from storage:').then((record) => ({ px: record.value, timestamp: record.timestamp }));
 }
+/** Load the explicit solid color. null means the key is missing or not hex (theme fill stays). */
+function loadSolidColorFromStorage() {
+    return loadSolidColorRecordFromStorage().then((record) => record.color);
+}
+function loadSolidColorRecordFromStorage() {
+    return loadTimestampedRecord(STORAGE_SOLID_COLOR_KEY, STORAGE_SOLID_COLOR_TIMESTAMP_KEY, null, canonSolidColor, 'Failed to load solid color from storage:').then((record) => ({ color: record.value, timestamp: record.timestamp }));
+}
 const storageModeApi = {
     STORAGE_KEY,
     STORAGE_TIMESTAMP_KEY,
     STORAGE_BLUR_KEY,
     STORAGE_BLUR_TIMESTAMP_KEY,
+    STORAGE_SOLID_COLOR_KEY,
+    STORAGE_SOLID_COLOR_TIMESTAMP_KEY,
+    DEFAULT_SOLID_COLOR,
+    SOLID_COLOR_PRESETS,
     YOUTUBLUR_BLUR_RANGE,
     saveModeToStorage,
     loadModeFromStorage,
@@ -237,6 +299,11 @@ const storageModeApi = {
     loadBlurStrengthFromStorage,
     loadBlurStrengthRecordFromStorage,
     clampBlurStrengthPx,
+    normalizeSolidColor,
+    sanitizeSolidColorForCss,
+    saveSolidColorToStorage,
+    loadSolidColorFromStorage,
+    loadSolidColorRecordFromStorage,
     reconcileStorageCopies
 };
 if (typeof module !== 'undefined' && module.exports) {

@@ -64,6 +64,7 @@ jobs:
             popup.html \
             popup.js \
             popup-shortcuts.js \
+            popup-color.js \
             review-nudge.js \
             _locales/ \
             icons/

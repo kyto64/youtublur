@@ -219,6 +219,101 @@
       outline-offset: 3px;
     }
 
+    /* === Solid color (solid mode only; hidden while blur is selected) === */
+    .solid-color-section {
+      display: none;
+      padding: 2px 16px 10px;
+    }
+    #modeSolid:checked ~ .solid-color-section {
+      display: block;
+    }
+    .solid-color-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sub);
+      margin-bottom: 8px;
+    }
+    .solid-color-presets {
+      position: relative;
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .solid-color-presets input[type="radio"] {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+    .solid-color-preset {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+    .solid-color-swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.28);
+    }
+    #solidPresetLight:checked ~ label[for="solidPresetLight"],
+    #solidPresetGray:checked ~ label[for="solidPresetGray"],
+    #solidPresetBlack:checked ~ label[for="solidPresetBlack"],
+    #solidPresetYtDark:checked ~ label[for="solidPresetYtDark"],
+    #solidPresetLight:focus-visible ~ label[for="solidPresetLight"],
+    #solidPresetGray:focus-visible ~ label[for="solidPresetGray"],
+    #solidPresetBlack:focus-visible ~ label[for="solidPresetBlack"],
+    #solidPresetYtDark:focus-visible ~ label[for="solidPresetYtDark"] {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+    .solid-color-custom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .solid-color-custom-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-sub);
+    }
+    #solidColor {
+      width: 36px;
+      height: 28px;
+      padding: 0;
+      border: 1px solid var(--divider);
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+    }
+    #solidColor:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    .visually-hidden {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      margin: -1px;
+      padding: 0;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+      border: 0;
+    }
+
     /* === Preview swatch === */
     .preview-wrap {
       padding: 4px 16px 10px;
@@ -256,7 +351,7 @@
       white-space: nowrap;
     }
     #modeSolid:checked ~ .preview-wrap .preview-swatch {
-      background: #e0e0e0;
+      background: var(--solid-preview, #f1f1f1);
       box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
     }
     #modeSolid:checked ~ .preview-wrap .preview-swatch .preview-blur-overlay {
@@ -265,6 +360,10 @@
     #modeSolid:checked ~ .preview-wrap .preview-swatch .preview-label {
       background: rgba(0,0,0,0.12);
       color: rgba(0,0,0,0.55);
+    }
+    #modeSolid:checked ~ .preview-wrap .preview-swatch[data-solid-tone="dark"] .preview-label {
+      background: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.92);
     }
 
     /* === Reload button === */
@@ -522,8 +621,38 @@
     <input type="range" id="blurStrength" name="blurStrength" min="8" max="72" step="4" value="40">
   </div>
 
+  <div class="solid-color-section" id="solidColorSection">
+    <p id="labelSolidColor" class="solid-color-label"></p>
+    <div class="solid-color-presets" id="solidColorPresets" role="radiogroup" aria-labelledby="labelSolidColor">
+      <input type="radio" name="solidPreset" id="solidPresetLight" value="#f1f1f1">
+      <input type="radio" name="solidPreset" id="solidPresetGray" value="#272727">
+      <input type="radio" name="solidPreset" id="solidPresetBlack" value="#000000">
+      <input type="radio" name="solidPreset" id="solidPresetYtDark" value="#0f0f0f">
+      <label for="solidPresetLight" class="solid-color-preset">
+        <span class="solid-color-swatch" style="background-color:#f1f1f1"></span>
+        <span class="visually-hidden" id="solidPresetLightName"></span>
+      </label>
+      <label for="solidPresetGray" class="solid-color-preset">
+        <span class="solid-color-swatch" style="background-color:#272727"></span>
+        <span class="visually-hidden" id="solidPresetGrayName"></span>
+      </label>
+      <label for="solidPresetBlack" class="solid-color-preset">
+        <span class="solid-color-swatch" style="background-color:#000000"></span>
+        <span class="visually-hidden" id="solidPresetBlackName"></span>
+      </label>
+      <label for="solidPresetYtDark" class="solid-color-preset">
+        <span class="solid-color-swatch" style="background-color:#0f0f0f"></span>
+        <span class="visually-hidden" id="solidPresetYtDarkName"></span>
+      </label>
+    </div>
+    <div class="solid-color-custom">
+      <label id="labelSolidColorCustom" class="solid-color-custom-label" for="solidColor"></label>
+      <input type="color" id="solidColor" value="#f1f1f1">
+    </div>
+  </div>
+
   <div class="preview-wrap">
-    <div class="preview-swatch">
+    <div class="preview-swatch" data-solid-tone="light">
       <div class="preview-blur-overlay"></div>
       <span class="preview-label" id="labelPreview"></span>
     </div>
@@ -565,6 +694,7 @@
   <script src="shortcut-actions.js"></script>
   <script src="review-nudge.js"></script>
   <script src="popup-shortcuts.js"></script>
+  <script src="popup-color.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>
