@@ -190,14 +190,14 @@ function saveBlurStrengthToStorage(px: number) {
   return saveTimestampedRecord(data);
 }
 
-function loadTimestamped<T>(
+function loadTimestampedRecord<T>(
   valueKey: string,
   timestampKey: string,
   fallback: T,
   normalize: (raw: unknown) => T,
   errorLabel: string
-): Promise<T> {
-  return new Promise<T>((resolve) => {
+): Promise<{ value: T; timestamp: number }> {
+  return new Promise((resolve) => {
     try {
       readStorage('sync', [valueKey, timestampKey], (syncResult) => {
         readStorage('local', [valueKey, timestampKey], (localResult) => {
@@ -207,18 +207,27 @@ function loadTimestamped<T>(
           const localTimestamp = (localResult[timestampKey] || 0) as number;
 
           let chosen: unknown;
+          let timestamp = 0;
           if (syncValue !== undefined && localValue !== undefined) {
-            chosen = syncTimestamp >= localTimestamp ? syncValue : localValue;
+            if (syncTimestamp >= localTimestamp) {
+              chosen = syncValue;
+              timestamp = syncTimestamp;
+            } else {
+              chosen = localValue;
+              timestamp = localTimestamp;
+            }
           } else if (syncValue !== undefined) {
             chosen = syncValue;
+            timestamp = syncTimestamp;
           } else if (localValue !== undefined) {
             chosen = localValue;
+            timestamp = localTimestamp;
           } else {
-            resolve(fallback);
+            resolve({ value: fallback, timestamp: 0 });
             return;
           }
 
-          resolve(normalize(chosen));
+          resolve({ value: normalize(chosen), timestamp });
           queueMicrotask(() => {
             reconcileStorageCopies();
           });
@@ -226,9 +235,21 @@ function loadTimestamped<T>(
       });
     } catch (error) {
       console.error(errorLabel, error);
-      resolve(fallback);
+      resolve({ value: fallback, timestamp: 0 });
     }
   });
+}
+
+function loadTimestamped<T>(
+  valueKey: string,
+  timestampKey: string,
+  fallback: T,
+  normalize: (raw: unknown) => T,
+  errorLabel: string
+): Promise<T> {
+  return loadTimestampedRecord(valueKey, timestampKey, fallback, normalize, errorLabel).then(
+    (record) => record.value
+  );
 }
 
 /**
@@ -247,13 +268,22 @@ function loadModeFromStorage(): Promise<BackgroundMode> {
 
 /** Load blur strength (px). Missing or non-numeric values become the 40px default. */
 function loadBlurStrengthFromStorage(): Promise<number> {
-  return loadTimestamped(
+  return loadBlurStrengthRecordFromStorage().then((record) => record.px);
+}
+
+/**
+ * Load blur strength plus the winning sync/local timestamp.
+ * Timestamp 0 means nothing was stored. Content scripts use it to ignore
+ * echoes of writes that started before the latest local slider command.
+ */
+function loadBlurStrengthRecordFromStorage(): Promise<{ px: number; timestamp: number }> {
+  return loadTimestampedRecord(
     STORAGE_BLUR_KEY,
     STORAGE_BLUR_TIMESTAMP_KEY,
     DEFAULT_BLUR_STRENGTH_PX,
     clampBlurStrengthPx,
     'Failed to load blur strength from storage:'
-  );
+  ).then((record) => ({ px: record.value, timestamp: record.timestamp }));
 }
 
 const storageModeApi = {
@@ -266,6 +296,7 @@ const storageModeApi = {
   loadModeFromStorage,
   saveBlurStrengthToStorage,
   loadBlurStrengthFromStorage,
+  loadBlurStrengthRecordFromStorage,
   clampBlurStrengthPx,
   reconcileStorageCopies
 };

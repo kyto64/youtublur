@@ -136,6 +136,7 @@ describe('blur strength rendering', () => {
     vi.stubGlobal('location', { pathname: '/watch' });
     document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
     let storedPx = 40;
+    let storedTs = 1;
     let onChanged = null;
     let onMessage = null;
     vi.stubGlobal('chrome', {
@@ -146,7 +147,7 @@ describe('blur strength rendering', () => {
               playerBackgroundMode: 'blur',
               playerBackgroundModeTimestamp: 1,
               playerBlurStrengthPx: storedPx,
-              playerBlurStrengthPxTimestamp: storedPx
+              playerBlurStrengthPxTimestamp: storedTs
             });
           }),
           set: vi.fn((_data, cb) => { if (cb) cb(); })
@@ -183,15 +184,186 @@ describe('blur strength rendering', () => {
     expect(canvas.dataset.ytBlurStrength).toBe('8');
 
     storedPx = 40;
+    storedTs = 1;
     onChanged({ playerBlurStrengthPx: { newValue: 40 } }, 'sync');
     await Promise.resolve();
     await Promise.resolve();
     expect(getActiveBlurStrengthPx()).toBe(8);
 
     storedPx = 8;
+    storedTs = Date.now();
     onChanged({ playerBlurStrengthPx: { newValue: 8 } }, 'local');
     await Promise.resolve();
     await Promise.resolve();
     expect(getActiveBlurStrengthPx()).toBe(8);
+  });
+
+  test('a newer blur strength from another tab applies during the local suppression window', async () => {
+    vi.stubGlobal('location', { pathname: '/watch' });
+    document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
+    let storedPx = 40;
+    let storedTs = 1;
+    let onChanged = null;
+    let onMessage = null;
+    vi.stubGlobal('chrome', {
+      storage: {
+        sync: {
+          get: vi.fn((_keys, cb) => {
+            cb({
+              playerBackgroundMode: 'blur',
+              playerBackgroundModeTimestamp: 1,
+              playerBlurStrengthPx: storedPx,
+              playerBlurStrengthPxTimestamp: storedTs
+            });
+          }),
+          set: vi.fn((_data, cb) => { if (cb) cb(); })
+        },
+        local: {
+          get: vi.fn((_keys, cb) => cb({})),
+          set: vi.fn((_data, cb) => { if (cb) cb(); })
+        },
+        onChanged: {
+          addListener: (fn) => { onChanged = fn; }
+        }
+      },
+      runtime: {
+        onMessage: {
+          addListener: (fn) => { onMessage = fn; }
+        }
+      }
+    });
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+    initExtension();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    onMessage({ type: 'BLUR_STRENGTH_CHANGED', strength: 8 });
+    expect(getActiveBlurStrengthPx()).toBe(8);
+
+    storedPx = 16;
+    storedTs = Date.now() + 1000;
+    onChanged({ playerBlurStrengthPx: { newValue: 16 } }, 'sync');
+    await Promise.resolve();
+    await Promise.resolve();
+
+    const canvas = document.querySelector('#yt-light-bg-blur-canvas');
+    expect(getActiveBlurStrengthPx()).toBe(16);
+    expect(canvas.dataset.ytBlurStrength).toBe('16');
+  });
+
+  test('suppression timeout re-reads storage when another tab changed and the notice was missed', async () => {
+    vi.stubGlobal('location', { pathname: '/watch' });
+    document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
+    let storedPx = 40;
+    let storedTs = 1;
+    let onMessage = null;
+    vi.stubGlobal('chrome', {
+      storage: {
+        sync: {
+          get: vi.fn((_keys, cb) => {
+            cb({
+              playerBackgroundMode: 'blur',
+              playerBackgroundModeTimestamp: 1,
+              playerBlurStrengthPx: storedPx,
+              playerBlurStrengthPxTimestamp: storedTs
+            });
+          }),
+          set: vi.fn((_data, cb) => { if (cb) cb(); })
+        },
+        local: {
+          get: vi.fn((_keys, cb) => cb({})),
+          set: vi.fn((_data, cb) => { if (cb) cb(); })
+        },
+        onChanged: { addListener: () => {} }
+      },
+      runtime: {
+        onMessage: {
+          addListener: (fn) => { onMessage = fn; }
+        }
+      }
+    });
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+    initExtension();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+      onMessage({ type: 'BLUR_STRENGTH_CHANGED', strength: 8 });
+      expect(getActiveBlurStrengthPx()).toBe(8);
+
+      storedPx = 16;
+      storedTs = Date.now() + 5000;
+      await vi.advanceTimersByTimeAsync(2000);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(getActiveBlurStrengthPx()).toBe(16);
+      expect(document.querySelector('#yt-light-bg-blur-canvas').dataset.ytBlurStrength).toBe('16');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  test('suppression timeout does not restore a blur strength written before the local command', async () => {
+    vi.stubGlobal('location', { pathname: '/watch' });
+    document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
+    let storedPx = 40;
+    let storedTs = 1;
+    let onMessage = null;
+    vi.stubGlobal('chrome', {
+      storage: {
+        sync: {
+          get: vi.fn((_keys, cb) => {
+            cb({
+              playerBackgroundMode: 'blur',
+              playerBackgroundModeTimestamp: 1,
+              playerBlurStrengthPx: storedPx,
+              playerBlurStrengthPxTimestamp: storedTs
+            });
+          }),
+          set: vi.fn((_data, cb) => { if (cb) cb(); })
+        },
+        local: {
+          get: vi.fn((_keys, cb) => cb({})),
+          set: vi.fn((_data, cb) => { if (cb) cb(); })
+        },
+        onChanged: { addListener: () => {} }
+      },
+      runtime: {
+        onMessage: {
+          addListener: (fn) => { onMessage = fn; }
+        }
+      }
+    });
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation(() => 0);
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+    initExtension();
+    await Promise.resolve();
+    await Promise.resolve();
+
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date('2026-01-01T00:00:00Z'));
+      onMessage({ type: 'BLUR_STRENGTH_CHANGED', strength: 8 });
+      expect(getActiveBlurStrengthPx()).toBe(8);
+
+      storedPx = 40;
+      storedTs = 1;
+      await vi.advanceTimersByTimeAsync(2000);
+      await Promise.resolve();
+      await Promise.resolve();
+
+      expect(getActiveBlurStrengthPx()).toBe(8);
+      expect(document.querySelector('#yt-light-bg-blur-canvas').dataset.ytBlurStrength).toBe('8');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

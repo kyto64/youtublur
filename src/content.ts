@@ -1,9 +1,13 @@
 /** Default blur radius (px). Stored values override this; unset storage keeps 40 so existing users see no change. */
 const BLUR_STRENGTH_PX = 40;
 let activeBlurStrengthPx = BLUR_STRENGTH_PX;
-/** Latest slider command. Storage echoes of an older radius are ignored until this lands or times out. */
-let commandedBlurStrengthPx: number | null = null;
+/**
+ * Local slider command. Storage writes stamped before this time are echoes of an
+ * older drag and are ignored. A newer timestamp (another tab) still applies.
+ */
+let commandedBlurAt: number | null = null;
 let commandedBlurTimer: ReturnType<typeof setTimeout> | null = null;
+let blurCommandGeneration = 0;
 let blurStrengthStorageListenerInstalled = false;
 
 // デバイス性能検出と動的な描画間隔の設定
@@ -193,26 +197,47 @@ function setActiveBlurStrengthPx(px: number) {
   stampActiveBlurStrength();
 }
 
+/** Drop a storage read that started before a newer local slider command. */
+function applyLoadedBlurStrength(px: number, generation: number) {
+  if (generation !== blurCommandGeneration) return;
+  setActiveBlurStrengthPx(px);
+}
+
 function clearCommandedBlurStrength() {
-  commandedBlurStrengthPx = null;
+  blurCommandGeneration += 1;
+  commandedBlurAt = null;
   if (commandedBlurTimer !== null) {
     clearTimeout(commandedBlurTimer);
     commandedBlurTimer = null;
   }
 }
 
-function rememberCommandedBlurStrength(px: number) {
-  commandedBlurStrengthPx = px;
+function rememberCommandedBlurStrength() {
+  const generation = ++blurCommandGeneration;
+  commandedBlurAt = Date.now();
   if (commandedBlurTimer !== null) clearTimeout(commandedBlurTimer);
-  // Storage writes are debounced; keep the command long enough for that write to echo back.
+  // Debounced saves can echo an older radius. After 2s, re-read and apply only
+  // a write stamped at or after this command (another tab, or our own save).
   commandedBlurTimer = setTimeout(() => {
-    commandedBlurStrengthPx = null;
+    if (generation !== blurCommandGeneration) return;
     commandedBlurTimer = null;
+    const commandedAt = commandedBlurAt;
+    loadBlurStrengthRecordFromStorage()
+      .then((record) => {
+        if (generation !== blurCommandGeneration) return;
+        commandedBlurAt = null;
+        if (commandedAt !== null && record.timestamp < commandedAt) return;
+        setActiveBlurStrengthPx(record.px);
+      })
+      .catch((error) => {
+        if (generation === blurCommandGeneration) commandedBlurAt = null;
+        console.warn('[youtublur] failed to refresh blur strength after slider command:', error);
+      });
   }, 2000);
 }
 
-function applyStoredBlurStrength(px: number) {
-  if (commandedBlurStrengthPx !== null && px !== commandedBlurStrengthPx) return;
+function applyStoredBlurStrength(px: number, storedAt: number) {
+  if (commandedBlurAt !== null && storedAt < commandedBlurAt) return;
   clearCommandedBlurStrength();
   setActiveBlurStrengthPx(px);
 }
@@ -226,8 +251,8 @@ function installBlurStrengthStorageListener() {
     if (areaName !== 'sync' && areaName !== 'local') return;
     if (!changes[STORAGE_BLUR_KEY]) return;
     // Re-read both areas so a late echo of an older write cannot clobber a newer radius.
-    loadBlurStrengthFromStorage()
-      .then((px) => applyStoredBlurStrength(px))
+    loadBlurStrengthRecordFromStorage()
+      .then((record) => applyStoredBlurStrength(record.px, record.timestamp))
       .catch((error) => {
         console.warn('[youtublur] failed to apply stored blur strength:', error);
       });
@@ -836,8 +861,9 @@ function initExtension() {
         console.warn('[youtublur] failed to load mode from storage:', error);
       });
 
+    const initialBlurGeneration = blurCommandGeneration;
     loadBlurStrengthFromStorage()
-      .then((px) => setActiveBlurStrengthPx(px))
+      .then((px) => applyLoadedBlurStrength(px, initialBlurGeneration))
       .catch((error) => {
         console.warn('[youtublur] failed to load blur strength from storage:', error);
       });
@@ -849,12 +875,13 @@ function initExtension() {
         applyMode(msg.mode, getPlayerContainer());
       } else if (msg.type === 'BLUR_STRENGTH_CHANGED' && typeof msg.strength === 'number') {
         const px = clampBlurStrengthPx(msg.strength);
-        rememberCommandedBlurStrength(px);
+        rememberCommandedBlurStrength();
         setActiveBlurStrengthPx(px);
       } else if (msg.type === 'RELOAD_BLUR') {
         teardownPlayerPageBlur();
+        const reloadGeneration = blurCommandGeneration;
         loadBlurStrengthFromStorage()
-          .then((px) => setActiveBlurStrengthPx(px))
+          .then((px) => applyLoadedBlurStrength(px, reloadGeneration))
           .catch((error) => {
             console.warn('[youtublur] failed to reload blur strength from storage:', error);
           });

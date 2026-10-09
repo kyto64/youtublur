@@ -8,6 +8,7 @@ declare function saveModeToStorage(mode: BackgroundMode): Promise<boolean>;
 declare function loadModeFromStorage(): Promise<BackgroundMode>;
 declare function saveBlurStrengthToStorage(px: number): Promise<boolean>;
 declare function loadBlurStrengthFromStorage(): Promise<number>;
+declare function loadBlurStrengthRecordFromStorage(): Promise<{ px: number; timestamp: number }>;
 declare function clampBlurStrengthPx(raw: unknown): number;
 declare function reconcileStorageCopies(): void;
 

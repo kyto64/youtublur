@@ -64,7 +64,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - **責務**: 設定値の永続化と同期
 - **実装**: `chrome.storage.sync` と `chrome.storage.local`
 - **キー（モード）**: `playerBackgroundMode`, `playerBackgroundModeTimestamp`（`storage-mode.js`）
-- **キー（ブラー強度）**: `playerBlurStrengthPx`, `playerBlurStrengthPxTimestamp`（既定 40px、8–72px、4px 刻み。未設定の利用者は従来どおり 40px）
+- **キー（ブラー強度）**: `playerBlurStrengthPx`, `playerBlurStrengthPxTimestamp`（既定 40px、8–72px、4px 刻み。未設定の利用者は従来どおり 40px）。ローカルのスライダー操作より前の書き込みは無視し、それより新しいタイムスタンプ（別タブの変更を含む）はすぐ適用する。抑制が切れてもストレージを読み直し、操作以降のタイムスタンプだけを適用する。読み込み開始後に新しいスライダー指示が届いた結果は適用しない
 - **キー（レビュー促し・local のみ）**: `firstUseTimestamp`, `reviewNudgeHandled`, `reviewNudgeNeverAsk`, `reviewNudgeCooldownUntil`（`review-nudge.js`）
 
 #### 2. ビジネスロジックレイヤー（中間）
