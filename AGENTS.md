@@ -27,6 +27,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 - すべての作業は `git worktree` で行う（master ブランチでの直接作業は禁止）
 - コード変更後は必ず `pnpm test` と `pnpm exec vp lint` を実行
 - バージョンは `pnpm run release` フローで管理
+- Node.js は `package.json` の `engines`（`^22.22.2 || ^24.15.0 || >=26.0.0`）。CI の Test は `22.22.2`、`24`、`26`。E2E とリリースは Node.js 22
 
 ### 基本ワークフロー
 

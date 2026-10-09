@@ -34,6 +34,8 @@ jobs:
       - name: Setup Vite+
         uses: voidzero-dev/setup-vp@237a7eda494c3466dcb53e9f067142b9218d64a1 # v1
         with:
+          # Publish stays on one Node line. Latest 22.x satisfies engines
+          # ^22.22.2. The Test workflow covers 22.22.2, 24, and 26.
           node-version: '22'
           cache: true
 

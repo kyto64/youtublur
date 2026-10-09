@@ -2,6 +2,9 @@ name: Merge Dependabot update after checks
 
 on:
   workflow_run:
+    # Names, not job names. A matrix (Test's Node legs, E2E's browsers)
+    # is still one run of that workflow. conclusion is success only when
+    # every job in the run succeeded.
     workflows: [Test, Lint, E2E Tests, Semgrep]
     types: [completed]
 

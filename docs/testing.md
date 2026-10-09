@@ -376,6 +376,8 @@ export function createMockPlayer() {
 
 ### GitHub Actions
 
+実装は [`.github/workflows/test.yml`](../.github/workflows/test.yml)。Test は Node.js `22.22.2`、`24`、`26` のマトリクスで、チェック名 `test` はすべてのレグが成功したときだけ成功する。E2E（`.github/workflows/e2e.yml`）とリリースは Node.js 22 のまま。以下は構成イメージです。
+
 ```yaml
 name: Test
 

@@ -4,6 +4,8 @@ on:
   issue_comment:
     types: [created]
   workflow_run:
+    # Names, not job names. Test's Node matrix and E2E's browser matrix
+    # are each one run; conclusion is success only when every job passed.
     workflows: [Test, Lint, E2E Tests, Semgrep]
     types: [completed]
 

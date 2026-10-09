@@ -6,10 +6,25 @@ on:
   pull_request:
     branches: [ "master" ]
 
+# Workflow name stays "Test". dependabot-merge-after-checks.yml and
+# codex-review.yml trigger on that name and read the run conclusion via
+# `gh run list --workflow Test`. A matrix is still one run: the conclusion
+# is success only when every job succeeds, so every Node leg must pass.
 jobs:
-  test:
+  unit:
+    name: Node ${{ matrix.node-version }}
     runs-on: ubuntu-latest
-
+    strategy:
+      # Show every engine line in one run. The `test` job still fails the
+      # workflow unless every leg succeeded.
+      fail-fast: false
+      matrix:
+        # package.json engines.node: ^22.22.2 || ^24.15.0 || >=26.0.0
+        # 22.22.2 is the 22-line floor. Floating "22" is a newer 22.x and
+        # would hide breakage on that floor. "24" and "26" track those
+        # lines (currently inside ^24.15.0 and >=26). setup-vp installs
+        # them with `vp env use`. All three are published on nodejs.org.
+        node-version: ['22.22.2', '24', '26']
     steps:
     - name: Checkout repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -20,7 +35,7 @@ jobs:
     - name: Setup Vite+
       uses: voidzero-dev/setup-vp@237a7eda494c3466dcb53e9f067142b9218d64a1 # v1
       with:
-        node-version: '22'
+        node-version: ${{ matrix.node-version }}
         cache: true
 
     - name: Install dependencies
@@ -32,9 +47,30 @@ jobs:
     - name: Upload coverage report (HTML)
       uses: actions/upload-artifact@v7
       with:
-        name: coverage-html
+        # One artifact name per leg. A shared name fails the upload.
+        name: coverage-html-node-${{ matrix.node-version }}
         path: coverage/
         retention-days: 14
 
     - name: Audit dependencies
       run: pnpm audit --audit-level=moderate
+
+  # Check name stays `test` (see recent PRs). Putting the matrix on this
+  # job would rename it to `test (22.22.2)` and drop a required check
+  # called `test`. This job passes only when every matrix leg passed.
+  test:
+    name: test
+    needs: unit
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every Node version
+        env:
+          MATRIX_RESULT: ${{ needs.unit.result }}
+        run: |
+          set -euo pipefail
+          echo "Node matrix result: ${MATRIX_RESULT}"
+          if [ "${MATRIX_RESULT}" != "success" ]; then
+            echo "One or more Node versions did not succeed."
+            exit 1
+          fi
