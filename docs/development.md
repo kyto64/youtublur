@@ -67,6 +67,7 @@ youtublur/
 ├── src/                          # ソースコード（編集対象）
 │   ├── content.ts                # コンテンツスクリプト（YouTubeページで実行）
 │   ├── popup.ts                  # ポップアップUIのロジック
+│   ├── popup-color.ts            # 単色モードの色（プリセットとカラーピッカー）
 │   ├── popup-shortcuts.ts        # ポップアップのショートカット一覧
 │   ├── review-nudge.ts           # レビュー促し（ポップアップ）
 │   ├── shortcut-actions.ts       # ショートカットの次状態（純粋関数）
@@ -79,6 +80,7 @@ youtublur/
 ├── style.css                     # スタイルシート
 ├── content.js                    # コンパイル成果物（編集禁止）
 ├── popup.js                      # コンパイル成果物（編集禁止）
+├── popup-color.js                # コンパイル成果物（編集禁止）
 ├── popup-shortcuts.js            # コンパイル成果物（編集禁止）
 ├── review-nudge.js               # コンパイル成果物（編集禁止）
 ├── shortcut-actions.js           # コンパイル成果物（編集禁止）
@@ -87,6 +89,7 @@ youtublur/
 ├── content.test.js               # ユニットテスト
 ├── popup.test.js                 # ユニットテスト
 ├── shortcuts.test.js             # ショートカットのユニットテスト
+├── solid-color.test.js           # 単色の色のユニットテスト
 ├── review-nudge.test.js          # ユニットテスト
 ├── _locales/                     # i18n（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）
 ├── e2e/                          # Playwright E2E と AI 検証
@@ -98,7 +101,7 @@ youtublur/
 ### レイヤーアーキテクチャ
 
 ```
-UIレイヤー（popup.ts / popup-shortcuts.ts / review-nudge.ts）
+UIレイヤー（popup.ts / popup-color.ts / popup-shortcuts.ts / review-nudge.ts）
     ↓
 コマンド（background.ts + shortcut-actions.ts）とビジネスロジック（content.ts）
     ↓

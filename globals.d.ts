@@ -10,7 +10,13 @@ declare function saveBlurStrengthToStorage(px: number): Promise<boolean>;
 declare function loadBlurStrengthFromStorage(): Promise<number>;
 declare function loadBlurStrengthRecordFromStorage(): Promise<{ px: number; timestamp: number }>;
 declare function clampBlurStrengthPx(raw: unknown): number;
+declare function normalizeSolidColor(raw: unknown): string | null;
+declare function sanitizeSolidColorForCss(raw: unknown): string;
+declare function saveSolidColorToStorage(color: string): Promise<boolean>;
+declare function loadSolidColorFromStorage(): Promise<string | null>;
+declare function loadSolidColorRecordFromStorage(): Promise<{ color: string | null; timestamp: number }>;
 declare function reconcileStorageCopies(): void;
+declare function wireSolidColorControl(): void;
 
 declare function ensureFirstUseTimestamp(): Promise<number | null>;
 declare function shouldShowReviewNudge(now?: number): Promise<boolean>;

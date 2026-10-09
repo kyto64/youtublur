@@ -151,13 +151,13 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 | 用途 | パス |
 |------|------|
 | コンテンツロジック | [`src/content.ts`](./src/content.ts), [`content.test.js`](./content.test.js) |
-| ポップアップ UI | [`popup.html`](./popup.html), [`src/popup.ts`](./src/popup.ts), [`popup.test.js`](./popup.test.js) |
+| ポップアップ UI | [`popup.html`](./popup.html), [`src/popup.ts`](./src/popup.ts), [`src/popup-color.ts`](./src/popup-color.ts), [`popup.test.js`](./popup.test.js), [`solid-color.test.js`](./solid-color.test.js) |
 | キーボードショートカット | [`manifest.json`](./manifest.json) の `commands`。決定は [`src/shortcut-actions.ts`](./src/shortcut-actions.ts)、配信は [`src/background.ts`](./src/background.ts)（読み取りから保存まで直列）、ポップアップ表示は [`src/popup-shortcuts.ts`](./src/popup-shortcuts.ts)。テストは [`shortcuts.test.js`](./shortcuts.test.js) と [`e2e/shortcuts.spec.js`](./e2e/shortcuts.spec.js)。既定は Alt+Shift+Y（モード切替）、Alt+Shift+Period / Comma（ブラー強度 ±4px）、Alt+Shift+U（ポップアップ）。再読み込みは未割り当て |
 | レビュー促し（ポップアップ） | [`src/review-nudge.ts`](./src/review-nudge.ts), [`review-nudge.test.js`](./review-nudge.test.js)。読めないときは非表示。選択は保存できたときだけ閉じ、「レビューを書く」もそのときだけストアを開く |
-| ストレージユーティリティ | [`src/storage-mode.ts`](./src/storage-mode.ts)（モードとブラー強度。強度の既定は 40px） |
+| ストレージユーティリティ | [`src/storage-mode.ts`](./src/storage-mode.ts)（モード、ブラー強度の既定 40px、単色 `playerSolidColor`。色が未設定ならテーマ色のまま） |
 | 型定義（拡張グローバル / `BackgroundMode`） | [`globals.d.ts`](./globals.d.ts) |
 | TS 設定 | [`tsconfig.json`](./tsconfig.json) |
-| コンパイル成果物（編集禁止） | `content.js`, `popup.js`, `popup-shortcuts.js`, `storage-mode.js`, `shortcut-actions.js`, `background.js`, `review-nudge.js`（manifest / popup 参照先） |
+| コンパイル成果物（編集禁止） | `content.js`, `popup.js`, `popup-color.js`, `popup-shortcuts.js`, `storage-mode.js`, `shortcut-actions.js`, `background.js`, `review-nudge.js`（manifest / popup 参照先） |
 | スタイル | [`style.css`](./style.css) |
 | マニフェスト | [`manifest.json`](./manifest.json) |
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |

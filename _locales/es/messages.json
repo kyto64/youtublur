@@ -16,8 +16,8 @@
     "description": "Opción de radio: video borroso como fondo."
   },
   "modeSolid": {
-    "message": "Sólido (gris claro)",
-    "description": "Opción de radio: fondo gris plano."
+    "message": "Sólido",
+    "description": "Opción de radio: color plano detrás del reproductor."
   },
   "reloadButton": {
     "message": "Recargar",
@@ -28,7 +28,10 @@
     "description": "Texto del botón mientras se recarga."
   },
   "modeBlurSub": { "message": "Resplandor ambiental helado" },
-  "modeSolidSub": { "message": "Superficie neutra plana" },
+  "modeSolidSub": {
+    "message": "Un color a tu elección",
+    "description": "Subtítulo del modo sólido, debajo del nombre del modo."
+  },
   "previewLabel": { "message": "Vista previa" },
   "blurStrengthLabel": {
     "message": "Intensidad del desenfoque",
@@ -41,6 +44,30 @@
   "blurStrengthUnit": {
     "message": "px",
     "description": "Unidad que aparece junto al número de intensidad."
+  },
+  "solidColorLabel": {
+    "message": "Color de fondo",
+    "description": "Etiqueta de los controles de color del modo sólido. Solo se muestra en ese modo."
+  },
+  "solidColorCustomLabel": {
+    "message": "Color personalizado",
+    "description": "Etiqueta del selector de color personalizado en el modo sólido."
+  },
+  "solidColorPresetLight": {
+    "message": "Gris claro",
+    "description": "Muestra predefinida: el gris claro histórico, #f1f1f1."
+  },
+  "solidColorPresetGray": {
+    "message": "Gris oscuro",
+    "description": "Muestra predefinida: gris oscuro, #272727."
+  },
+  "solidColorPresetBlack": {
+    "message": "Negro",
+    "description": "Muestra predefinida: negro, #000000."
+  },
+  "solidColorPresetYtDark": {
+    "message": "Oscuro de YouTube",
+    "description": "Muestra predefinida: fondo oscuro de YouTube, #0f0f0f."
   },
   "popupPhrase0": { "message": "Haciendo YouTube más suave para los ojos" },
   "popupPhrase1": { "message": "Menos brillo, más calma" },

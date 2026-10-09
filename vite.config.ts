@@ -13,6 +13,7 @@ export default defineConfig({
         'content.js',
         'popup.js',
         'popup-shortcuts.js',
+        'popup-color.js',
         'storage-mode.js',
         'shortcut-actions.js',
         'background.js'

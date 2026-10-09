@@ -16,8 +16,8 @@
     "description": "Opsi radio: video blur sebagai latar belakang."
   },
   "modeSolid": {
-    "message": "Padat (abu-abu muda)",
-    "description": "Opsi radio: latar belakang abu-abu datar."
+    "message": "Padat",
+    "description": "Opsi radio: warna datar di belakang pemutar."
   },
   "reloadButton": {
     "message": "Muat ulang",
@@ -28,7 +28,10 @@
     "description": "Teks tombol saat sedang memuat ulang."
   },
   "modeBlurSub": { "message": "Cahaya ambien beku" },
-  "modeSolidSub": { "message": "Permukaan netral datar" },
+  "modeSolidSub": {
+    "message": "Warna pilihan Anda",
+    "description": "Subjudul mode padat, di bawah nama mode."
+  },
   "previewLabel": { "message": "Pratinjau" },
   "blurStrengthLabel": {
     "message": "Kekuatan blur",
@@ -41,6 +44,30 @@
   "blurStrengthUnit": {
     "message": "px",
     "description": "Satuan di samping angka kekuatan blur."
+  },
+  "solidColorLabel": {
+    "message": "Warna latar",
+    "description": "Label kontrol warna mode padat. Hanya tampil saat mode padat dipilih."
+  },
+  "solidColorCustomLabel": {
+    "message": "Warna kustom",
+    "description": "Label pemilih warna kustom pada mode padat."
+  },
+  "solidColorPresetLight": {
+    "message": "Abu-abu muda",
+    "description": "Preset: abu-abu muda yang dipakai sebelumnya, #f1f1f1."
+  },
+  "solidColorPresetGray": {
+    "message": "Abu-abu tua",
+    "description": "Preset: abu-abu tua, #272727."
+  },
+  "solidColorPresetBlack": {
+    "message": "Hitam",
+    "description": "Preset: hitam, #000000."
+  },
+  "solidColorPresetYtDark": {
+    "message": "Gelap YouTube",
+    "description": "Preset: latar gelap YouTube, #0f0f0f."
   },
   "popupPhrase0": { "message": "Membuat YouTube lebih nyaman di mata" },
   "popupPhrase1": { "message": "Kurangi silau, tambah ketenangan" },

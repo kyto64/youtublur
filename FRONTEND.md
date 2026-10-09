@@ -71,7 +71,7 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 - プレイヤー要素の検出と監視
 - 背景へのスタイル適用（単色/ブラー）
 - ブラー強度の反映（描画ループは再開せず、次フレームの `ctx.filter` だけを変える）
-- ストレージ変更の監視と反映（`playerBlurStrengthPx` は開いている YouTube タブへ `chrome.storage.onChanged` で届く）
+- ストレージ変更の監視と反映（`playerBlurStrengthPx` と `playerSolidColor` は開いている YouTube タブへ `chrome.storage.onChanged` で届く）
 
 **ライフサイクル:**
 - ページ読み込み時に注入

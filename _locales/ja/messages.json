@@ -16,8 +16,8 @@
     "description": "ラジオ：動画をぼかして背景に表示。"
   },
   "modeSolid": {
-    "message": "単色（薄いグレー）",
-    "description": "ラジオ：薄いグレーの単色背景。"
+    "message": "単色",
+    "description": "ラジオ：プレイヤー背面を単色で塗る。"
   },
   "reloadButton": {
     "message": "リロード",
@@ -28,7 +28,10 @@
     "description": "リロード処理中のボタンテキスト。"
   },
   "modeBlurSub": { "message": "やわらかなアンビエントグロー" },
-  "modeSolidSub": { "message": "フラットなニュートラル背景" },
+  "modeSolidSub": {
+    "message": "選んだ色で塗りつぶす",
+    "description": "単色モードの補足。モード名の下に出す。"
+  },
   "previewLabel": { "message": "プレビュー" },
   "blurStrengthLabel": {
     "message": "ブラーの強さ",
@@ -41,6 +44,30 @@
   "blurStrengthUnit": {
     "message": "px",
     "description": "ブラー強度の数値の横に出す単位。"
+  },
+  "solidColorLabel": {
+    "message": "背景色",
+    "description": "単色モードの色コントロールのラベル。単色モードのときだけ表示する。"
+  },
+  "solidColorCustomLabel": {
+    "message": "カスタム色",
+    "description": "単色モードのカスタムカラーピッカーのラベル。"
+  },
+  "solidColorPresetLight": {
+    "message": "薄いグレー",
+    "description": "プリセット：従来の薄いグレー #f1f1f1。"
+  },
+  "solidColorPresetGray": {
+    "message": "ダークグレー",
+    "description": "プリセット：ダークグレー #272727。"
+  },
+  "solidColorPresetBlack": {
+    "message": "黒",
+    "description": "プリセット：黒 #000000。"
+  },
+  "solidColorPresetYtDark": {
+    "message": "YouTube ダーク",
+    "description": "プリセット：YouTube のダーク背景 #0f0f0f。"
   },
   "popupPhrase0": { "message": "目にやさしい YouTube を" },
   "popupPhrase1": { "message": "まぶしさを、やわらかく" },

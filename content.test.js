@@ -11,6 +11,7 @@ const {
   getVideoElement,
   resetState,
   getMode,
+  getActiveSolidColor,
   initBlurForPlayer,
   observePlayer,
   isPlayerPagePath,
@@ -718,6 +719,79 @@ describe('content.js', () => {
       expect(player.dataset.ytLightBgMode).toBe('blur');
     });
 
+    test('paints saved solid color on yt-navigate-finish after SPA navigation from a non-player page', async () => {
+      vi.stubGlobal('location', { pathname: '/' });
+      document.body.innerHTML = '<div id="content"></div>';
+      const stored = {
+        playerBackgroundMode: 'solid',
+        playerBackgroundModeTimestamp: 10,
+        playerSolidColor: '#000000',
+        playerSolidColorTimestamp: 10
+      };
+      const syncGet = vi.fn((_keys, cb) => cb && cb(stored));
+      const localGet = vi.fn((_keys, cb) => cb && cb({}));
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: syncGet, set: vi.fn((_data, cb) => cb && cb()) },
+          local: { get: localGet, set: vi.fn((_data, cb) => cb && cb()) }
+        },
+        runtime: { onMessage: { addListener: vi.fn() }, lastError: undefined }
+      });
+
+      initExtension();
+      for (let i = 0; i < 10; i += 1) await Promise.resolve();
+      expect(document.getElementById('movie_player')).toBeNull();
+      expect(getMode()).toBe('solid');
+      expect(getActiveSolidColor()).toBe('#000000');
+
+      vi.stubGlobal('location', { pathname: '/watch' });
+      document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
+      window.dispatchEvent(new Event('yt-navigate-finish'));
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const player = document.getElementById('movie_player');
+      expect(player.dataset.ytLightBgMode).toBe('solid');
+      expect(player.dataset.ytSolidColor).toBe('#000000');
+      expect(player.style.getPropertyValue('background-color')).toMatch(/#000000|rgb\(0,\s*0,\s*0\)/);
+    });
+
+    test('paints saved solid color when the player appears after SPA navigation', async () => {
+      vi.stubGlobal('location', { pathname: '/' });
+      document.body.innerHTML = '<div id="content"></div>';
+      const stored = {
+        playerBackgroundMode: 'solid',
+        playerBackgroundModeTimestamp: 10,
+        playerSolidColor: '#0f0f0f',
+        playerSolidColorTimestamp: 10
+      };
+      vi.stubGlobal('chrome', {
+        storage: {
+          sync: { get: vi.fn((_keys, cb) => cb && cb(stored)), set: vi.fn((_data, cb) => cb && cb()) },
+          local: { get: vi.fn((_keys, cb) => cb && cb({})), set: vi.fn((_data, cb) => cb && cb()) }
+        },
+        runtime: { onMessage: { addListener: vi.fn() }, lastError: undefined }
+      });
+
+      initExtension();
+      for (let i = 0; i < 10; i += 1) await Promise.resolve();
+
+      vi.stubGlobal('location', { pathname: '/watch' });
+      window.dispatchEvent(new Event('yt-navigate-finish'));
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(document.getElementById('movie_player')).toBeNull();
+
+      document.body.innerHTML = '<div id="content"><div id="movie_player"><video></video></div></div>';
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+
+      const player = document.getElementById('movie_player');
+      expect(player.dataset.ytSolidColor).toBe('#0f0f0f');
+      expect(player.dataset.ytLightBgMode).toBe('solid');
+    });
+
     test('applies saved solid mode when storage differs from optimistic blur', async () => {
       const timestamp = Date.now();
       const syncGet = vi.fn((_keys, cb) => {
@@ -802,8 +876,8 @@ describe('content.js', () => {
       await Promise.resolve();
       await Promise.resolve();
 
-      // init mode + init blur + reconcile, then reload blur + reload mode + reconcile
-      expect(syncGet).toHaveBeenCalledTimes(6);
+      // init mode + blur + solid color + reconcile, then reload blur + solid color + mode + reconcile
+      expect(syncGet).toHaveBeenCalledTimes(8);
 
       // Canvas should be re-created after reload
       expect(player.querySelector('#yt-light-bg-blur-canvas')).not.toBeNull();

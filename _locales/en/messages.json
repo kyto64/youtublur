@@ -16,8 +16,8 @@
     "description": "Radio option: blurred video as background."
   },
   "modeSolid": {
-    "message": "Solid (light gray)",
-    "description": "Radio option: flat gray background."
+    "message": "Solid",
+    "description": "Radio option: flat color behind the player."
   },
   "reloadButton": {
     "message": "Reload",
@@ -28,7 +28,10 @@
     "description": "Reload button text while the reload is in progress."
   },
   "modeBlurSub": { "message": "Frosted ambient glow" },
-  "modeSolidSub": { "message": "Flat neutral surface" },
+  "modeSolidSub": {
+    "message": "A color you choose",
+    "description": "Subtitle for solid mode, shown under the mode name."
+  },
   "previewLabel": { "message": "Preview" },
   "blurStrengthLabel": {
     "message": "Blur strength",
@@ -41,6 +44,30 @@
   "blurStrengthUnit": {
     "message": "px",
     "description": "Unit shown beside the blur-strength number."
+  },
+  "solidColorLabel": {
+    "message": "Background color",
+    "description": "Label for the solid-mode color controls. Shown only while solid mode is selected."
+  },
+  "solidColorCustomLabel": {
+    "message": "Custom color",
+    "description": "Label for the custom color picker in solid mode."
+  },
+  "solidColorPresetLight": {
+    "message": "Light gray",
+    "description": "Preset swatch: the historical light gray, #f1f1f1."
+  },
+  "solidColorPresetGray": {
+    "message": "Dark gray",
+    "description": "Preset swatch: dark gray, #272727."
+  },
+  "solidColorPresetBlack": {
+    "message": "Black",
+    "description": "Preset swatch: black, #000000."
+  },
+  "solidColorPresetYtDark": {
+    "message": "YouTube dark",
+    "description": "Preset swatch: YouTube dark background, #0f0f0f."
   },
   "popupPhrase0": { "message": "Making YouTube easier on the eyes" },
   "popupPhrase1": { "message": "Less glare, more chill" },
