@@ -32,12 +32,11 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 
 ### Bugbot（PR レビュー）
 
-PR レビューは Cursor Bugbot が行う。レビュー基準は [`.cursor/BUGBOT.md`](../.cursor/BUGBOT.md)。
+PR レビューは Cursor Bugbot が行う。レビュー基準は [`.cursor/BUGBOT.md`](../.cursor/BUGBOT.md)。kyto の設定は手動トリガーのみで、push では自動実行しない。
 
-- `kyto64` が作成した PR と、kyto の Cursor cloud agent が作成した PR を、各 push で自動レビューする。
+- 実行するのは、PR に `bugbot run` とコメントしたときだけ。レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびにコメントしない（1 回ごとに費用がかかる）。
 - 結果は GitHub のチェック run `Cursor Bugbot`。`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー。
-- 手動で再実行するときは、PR に `bugbot run` とコメントする。
-- Dependabot の PR は personal plan の Bugbot ではレビューしない。自動マージはこれまでどおり CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）のみを条件にする。
+- Dependabot の PR は Bugbot ではレビューしない。自動マージは CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）のみを条件にする。
 
 ---
 

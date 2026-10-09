@@ -2,6 +2,10 @@
 
 このファイルが PR レビュー基準の正である。Bugbot は `.cursor/rules/*.mdc` を適用しない。`AGENTS.md` を読むかも未確認なので、レビューに必要な方針はここに自己完結で書いてある。変更行と、その変更が壊しうる呼び出し元だけを見る。無関係な既存コードの一括改修は求めない。
 
+## 起動
+
+kyto の設定は手動トリガーのみ。push では自動実行しない。PR に `bugbot run` とコメントしたときだけ走る。レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびに要求しない（1 回ごとに費用がかかる）。結果はチェック run `Cursor Bugbot`（`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー）。Dependabot の PR はレビューしない。
+
 ## レビューコメントの言語
 
 指摘・提案・説明・要約はすべて日本語で書く。次はそのまま残す。
@@ -75,7 +79,7 @@ YouTube 視聴ページのプレイヤー背景を単色またはブラーにす
 
 - Dependabot（作者 `app/dependabot` と `dependabot[bot]` の両方）の patch / minor / major は、`Test` / `Lint` / `E2E Tests` / `Semgrep` が成功したあと自動マージする。semver major も、この 4 つが担保できる更新は自動マージする。極めて高リスクなのは、この 4 ワークフローが失敗する場合か、既存スイートが検証できない変更だけ。
 - ワークフロー名はジョブ名ではない。`Test` の Node マトリクスと `E2E Tests` のブラウザマトリクスは、それぞれ 1 run で、全ジョブ成功のときだけ conclusion が success。`dependabot-merge-after-checks.yml` は `gh run list --workflow` でこの名前を読む。名前を変えない。
-- personal plan の Bugbot は Dependabot PR をレビューしない。Dependabot の自動マージ条件に `Cursor Bugbot` を足さない。Dependabot PR に Bugbot コメントが無いことを指摘しない。
+- Dependabot の PR は Bugbot ではレビューしない。自動マージ条件に `Cursor Bugbot` を足さない。Dependabot PR に Bugbot の指摘が無いことを指摘しない。自動マージは `Test` / `Lint` / `E2E Tests` / `Semgrep` のみ。
 - 自動パッチリリースは最大 1 日 1 回（既定 cron は UTC 15:00）。`package.json` の version やタグをこの PR で手動変更しない。
 - `GITHUB_TOKEN` による push では他ワークフローが再実行されない。日次リリースの publish 起動（`scripts/dispatch-publish.sh`、`RELEASE_PUSH_TOKEN`）を、レビューで別方式に置き換えない。
 
