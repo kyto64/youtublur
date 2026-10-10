@@ -77,7 +77,7 @@ YouTube 視聴ページのプレイヤー背景を単色またはブラーにす
 
 ### Dependabot とリリース
 
-- Dependabot（作者 `app/dependabot` と `dependabot[bot]` の両方）の patch / minor は、`Test` / `Lint` / `E2E Tests` / `Semgrep` が成功したあと自動マージする。semver major（`fetch-metadata` の `version-update:semver-major`）は自動承認も自動マージもしない。トリアージが `needs-ai-review` と `dependency-major` を付け、`kyto64` にレビューを依頼する。AI レビューは CI 外の Cursor cloud agent が行う。kyto64 の承認後に手動マージする。
+- Dependabot（作者 `app/dependabot` と `dependabot[bot]` の両方）の patch / minor は、`Test` / `Lint` / `E2E Tests` / `Semgrep` が成功したあと自動マージする。semver major（`fetch-metadata` の `version-update:semver-major`）はワークフローでは自動承認も自動マージもしない。トリアージが `needs-ai-review` と `dependency-major` を付ける。`kyto64` へのレビュー依頼はしない。AI リスク判定は CI 外のアシスタントが行い、低リスクはメンテ bot がマージし、リスクがあるものだけ kyto にエスカレーションする。
 - ワークフロー名はジョブ名ではない。`Test` の Node マトリクスと `E2E Tests` のブラウザマトリクスは、それぞれ 1 run で、全ジョブ成功のときだけ conclusion が success。`dependabot-merge-after-checks.yml` は `gh run list --workflow` でこの名前を読む。名前を変えない。
 - Dependabot の PR は Bugbot ではレビューしない。自動マージ条件に `Cursor Bugbot` を足さない。Dependabot PR に Bugbot の指摘が無いことを指摘しない。patch / minor の自動マージは `Test` / `Lint` / `E2E Tests` / `Semgrep` のみ。
 - 自動パッチリリースは最大 1 日 1 回（既定 cron は UTC 15:00）。`package.json` の version やタグをこの PR で手動変更しない。

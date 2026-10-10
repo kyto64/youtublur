@@ -5,9 +5,11 @@
  * `pull_request` events and the REST API still use `dependabot[bot]`.
  * Both logins are the same bot; matching only one of them skips every PR.
  *
- * Semver-major PRs are never selected. The triage workflow labels them from
- * Dependabot `fetch-metadata` (`version-update:semver-major`). This script
- * also skips a body `from X to Y` major bump so a missing label cannot merge.
+ * Semver-major PRs are never selected here. The triage workflow labels them
+ * from Dependabot `fetch-metadata` (`version-update:semver-major`). An
+ * assistant outside CI does the risk review and merges low-risk majors.
+ * This script also skips a body `from X to Y` major bump so a missing label
+ * cannot merge.
  */
 
 import { readFileSync } from 'node:fs';

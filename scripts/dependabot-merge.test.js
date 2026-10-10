@@ -166,13 +166,14 @@ describe('Dependabot triage workflow', () => {
     expect(automerge).not.toContain("version-update:semver-major");
   });
 
-  it('holds majors with labels, a kyto64 review request, and an idempotent comment', () => {
+  it('holds majors with labels and an idempotent AI-risk comment', () => {
     expect(triageWorkflow).toContain('notify-major:');
     expect(triageWorkflow).toContain("needs.metadata.outputs.update-type == 'version-update:semver-major'");
     expect(triageWorkflow).toContain('needs-ai-review');
     expect(triageWorkflow).toContain('dependency-major');
-    expect(triageWorkflow).toContain('--add-reviewer kyto64');
+    expect(triageWorkflow).not.toContain('--add-reviewer kyto64');
     expect(triageWorkflow).toContain(MAJOR_HOLD_COMMENT_MARKER);
+    expect(triageWorkflow).toContain('AI risk review');
     expect(mergeWorkflow).toContain('--json number,author,body,labels');
   });
 });

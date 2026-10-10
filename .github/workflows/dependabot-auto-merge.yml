@@ -39,14 +39,13 @@ jobs:
           gh label create needs-ai-review --color 5319E7 --description 'Waiting for an AI review before merge' --repo "${{ github.repository }}" || true
           gh label create dependency-major --color BD5C00 --description 'Dependabot semver-major update' --repo "${{ github.repository }}" || true
 
-      - name: Label PR and request review from kyto64
+      - name: Label the major update
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr edit "${{ github.event.pull_request.number }}" \
             --add-label needs-ai-review \
             --add-label dependency-major \
-            --add-reviewer kyto64 \
             --repo "${{ github.repository }}"
 
       - name: Comment once about the hold
@@ -62,7 +61,7 @@ jobs:
             echo "Hold comment already present; skipping."
             exit 0
           fi
-          BODY=$(printf '%s\n%s' "$MARKER" 'This Dependabot update is `version-update:semver-major`. Auto-merge is disabled. It waits for an AI review and approval from kyto64 before merge.')
+          BODY=$(printf '%s\n%s' "$MARKER" 'This Dependabot update is `version-update:semver-major`. Auto-merge is disabled. It waits for an AI risk review: the maintainer bot merges low-risk updates and escalates risky ones to kyto.')
           gh pr comment "$PR_NUMBER" \
             --repo "$REPOSITORY" \
             --body "$BODY"
