@@ -28,8 +28,8 @@ importers:
         specifier: 0.1.24
         version: 0.1.24(@vitest/coverage-v8@5.0.1(@vitest/browser@5.0.1)(vitest@5.0.1))(@vitest/ui@5.0.1(vitest@5.0.1))(jsdom@30.1.1)(typescript@6.0.3)(vite@8.0.16(yaml@2.9.1))(yaml@2.9.1)
       chrome-webstore-upload:
-        specifier: 6.0.0
-        version: 6.0.0
+        specifier: 6.0.1
+        version: 6.0.1
       commit-and-tag-version:
         specifier: 13.2.1
         version: 13.2.1(conventional-commits-filter@6.0.1)(conventional-commits-parser@7.1.2)
@@ -1104,8 +1104,8 @@ packages:
     resolution: {integrity: sha512-/Ce6KNm3vIbWdMlNna6RVIZ/ICQxnJxCicet5LBKK9ZffBkqzDw0xh9EiKSljdRtiIQ1S1z4YgcscUUGzNCWrA==}
     engines: {node: '>=22'}
 
-  chrome-webstore-upload@6.0.0:
-    resolution: {integrity: sha512-wUPi8iwR2KPPPytHY8rstA5tbcLp2r8fMYnqMUIgci1q1A6QFYiyeiyG/aqAj35PzNuCTpZseD1VZ9y1b/Fkmw==}
+  chrome-webstore-upload@6.0.1:
+    resolution: {integrity: sha512-0Bi/SODOHPymx682lZsP947LeczSpH0pt72nHCVfwV3lrllmHkPS5P886+os1inQs/CvJLRCfiS5ulHe9mVmhQ==}
     engines: {node: '>=20'}
 
   cliui@8.0.1:
@@ -2505,7 +2505,7 @@ snapshots:
 
   chalk@6.0.1: {}
 
-  chrome-webstore-upload@6.0.0:
+  chrome-webstore-upload@6.0.1:
     dependencies:
       junk: 4.0.1
       yazl: 3.3.1
