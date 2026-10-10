@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.29](https://github.com/kyto64/youtublur/compare/v1.12.28...v1.12.29) (2026-10-10)
+
+### Features
+
+* キーボードショートカットとポップアップのキーボード操作を追加する ([#185](https://github.com/kyto64/youtublur/issues/185)) ([4e7ad2b](https://github.com/kyto64/youtublur/commit/4e7ad2bab2652fad38b5fd5d652bd4033e57feee))
+* ブラー強度をポップアップから調整できるようにする ([#182](https://github.com/kyto64/youtublur/issues/182)) ([ee3452d](https://github.com/kyto64/youtublur/commit/ee3452d112384c030e231316430c9bf8a272588b)), closes [#42](https://github.com/kyto64/youtublur/issues/42)
+* 単色モードの背景色を選べるようにする ([#186](https://github.com/kyto64/youtublur/issues/186)) ([d613565](https://github.com/kyto64/youtublur/commit/d6135653e8899a7516f6a32ee2671ac21fd04e70)), references [#rrggbb](https://github.com/kyto64/youtublur/issues/rrggbb)
+
+### Bug Fixes
+
+* **ci:** 日次リリースの publish dispatch を単独で再実行できるようにする ([#181](https://github.com/kyto64/youtublur/issues/181)) ([5366633](https://github.com/kyto64/youtublur/commit/53666330477d77397877f9cd792ae27149515fb3))
+
 ## [1.12.28](https://github.com/kyto64/youtublur/compare/v1.12.27...v1.12.28) (2026-10-07)
 
 ### Features
