@@ -32,21 +32,7 @@ jobs:
 
       - name: Decide if patch release is needed
         id: need
-        run: |
-          set -euo pipefail
-          TAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
-          if [ -z "${TAG}" ]; then
-            echo "need_release=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::No matching v* tag on master; skipping automated patch release."
-            exit 0
-          fi
-          echo "Latest semver tag: ${TAG}"
-          if git diff --quiet "${TAG}"..HEAD -- package.json pnpm-lock.yaml; then
-            echo "need_release=false" >> "$GITHUB_OUTPUT"
-            echo "No dependency manifest changes since ${TAG}; skipping release."
-          else
-            echo "need_release=true" >> "$GITHUB_OUTPUT"
-          fi
+        run: node scripts/should-patch-release.mjs
 
       - name: Setup pnpm
         uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
@@ -72,7 +58,17 @@ jobs:
 
       - name: Bump patch version, changelog, manifest, and tag
         if: steps.need.outputs.need_release == 'true'
-        run: pnpm run release -- --release-as patch
+        env:
+          NEXT_VERSION: ${{ steps.need.outputs.next_version }}
+        run: |
+          set -euo pipefail
+          if ! [[ "${NEXT_VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "unexpected next version: ${NEXT_VERSION}" >&2
+            exit 1
+          fi
+          # Pass the computed patch number. Using the word "patch" as the
+          # bump type still follows commit type and can become a minor.
+          pnpm exec commit-and-tag-version --release-as "${NEXT_VERSION}"
 
       - name: Capture release tag
         if: steps.need.outputs.need_release == 'true'
@@ -103,7 +99,8 @@ jobs:
         run: git push origin master --follow-tags
 
   # Separate job so a failed dispatch can be re-run without another version bump.
-  # Re-running patch-release after a successful push sees no manifest diff and skips.
+  # Re-running patch-release after a successful push sees no releasable
+  # commits since the new tag and skips.
   dispatch-publish:
     needs: patch-release
     if: needs.patch-release.outputs.dispatch_publish == 'true'

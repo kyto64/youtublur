@@ -163,7 +163,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |
 | E2E テスト | [`e2e/`](./e2e/) |
 | AI 検証ハーネス | [`e2e/ai-verify/`](./e2e/ai-verify/)（`pnpm run verify:ai-blur`、ブラー描画の証跡採取） |
-| 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token, dependabot-merge） |
+| 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token, dependabot-merge, should-patch-release） |
 | CI/CD | [`.github/workflows/publish.yml`](./.github/workflows/publish.yml) |
 
 ## Do / Don't
@@ -215,7 +215,7 @@ PR レビューは Cursor Bugbot が行う。指摘の言語、重大度、レ�
 ### Dependabot 自動化
 
 - **patch / minor / major**: CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）合格後に自動マージ（[`scripts/dependabot-merge.mjs`](./scripts/dependabot-merge.mjs) が `app/dependabot` と `dependabot[bot]` の両方を対象にする）。semver major も CI が担保できる更新は自動マージする。
-- **自動パッチリリース**: 最大 1 日 1 回（UTC 15:00 cron）。`RELEASE_PUSH_TOKEN` 未設定時はタグ push のあと別ジョブ `dispatch-publish` が `publish.yml` を `workflow_dispatch`（`build_from_tag=true`）で起動する。このジョブは `scripts/dispatch-publish.sh` を常に master から checkout する。dispatch 失敗時はそのジョブだけ再実行する（`patch-release` の再実行は差分がなくスキップされる）
+- **自動パッチリリース**: 最大 1 日 1 回（UTC 15:00 cron）。直前の `v*` タグ以降に `feat` / `fix` / `perf`、または配布ファイル・`package.json` / `pnpm-lock.yaml` の変更があるときだけ patch を切る（docs / CI / テスト / chore のみはスキップ。判定は [`scripts/should-patch-release.mjs`](./scripts/should-patch-release.mjs)）。バンプは `commit-and-tag-version --release-as <next patch>`（`pnpm run release -- --release-as patch` は使わない）。`RELEASE_PUSH_TOKEN` 未設定時はタグ push のあと別ジョブ `dispatch-publish` が `publish.yml` を `workflow_dispatch`（`build_from_tag=true`）で起動する。このジョブは `scripts/dispatch-publish.sh` を常に master から checkout する。dispatch 失敗時はそのジョブだけ再実行する（`patch-release` の再実行はリリース対象がなくスキップされる）
 - **手動対応が必要なケース**: 上記 CI が失敗する、または既存テストスイートがカバーしない変更のみ（「極めて高リスク」）
 
 ## 設計理念
