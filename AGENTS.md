@@ -196,7 +196,7 @@ PR レビューは Cursor Bugbot が行う。指摘の言語、重大度、レ�
 - kyto の設定は手動トリガーのみ。push では自動実行しない。PR に `bugbot run` とコメントしたときだけ走る。
 - コメントは、PR がレビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびにはコメントしない（1 回ごとに費用がかかる）。
 - 結果はチェック run `Cursor Bugbot`。`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー。
-- Dependabot の PR は Bugbot ではレビューしない。自動マージは CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）のみ。
+- Dependabot の PR は Bugbot ではレビューしない。patch / minor の自動マージは CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）のみ。semver major は自動マージしない。
 
 ### レビューコメントの言語
 - PR 上のレビュー指摘・提案・説明・要約はすべて日本語で書くこと。
@@ -214,9 +214,10 @@ PR レビューは Cursor Bugbot が行う。指摘の言語、重大度、レ�
 
 ### Dependabot 自動化
 
-- **patch / minor / major**: CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）合格後に自動マージ（[`scripts/dependabot-merge.mjs`](./scripts/dependabot-merge.mjs) が `app/dependabot` と `dependabot[bot]` の両方を対象にする）。semver major も CI が担保できる更新は自動マージする。
+- **patch / minor**: CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）合格後に自動マージ（[`scripts/dependabot-merge.mjs`](./scripts/dependabot-merge.mjs) が `app/dependabot` と `dependabot[bot]` の両方を対象にする）
+- **major**: Dependabot `fetch-metadata` の `version-update:semver-major` で判定し、自動承認・自動マージしない。ラベル `needs-ai-review` と `dependency-major` を付け、`kyto64` にレビュー依頼する。コメントは一度だけ（`<!-- dependabot-major-hold -->`）。AI レビューは CI 外の Cursor cloud agent が行い、Bugbot は Dependabot PR を見ない。kyto64 の承認後に手動マージする
 - **自動パッチリリース**: 最大 1 日 1 回（UTC 15:00 cron）。直前の `v*` タグ以降に `feat` / `fix` / `perf`、または配布ファイル・`package.json` / `pnpm-lock.yaml` の変更があるときだけ patch を切る（docs / CI / テスト / chore のみはスキップ。判定は [`scripts/should-patch-release.mjs`](./scripts/should-patch-release.mjs)）。バンプは `commit-and-tag-version --release-as <next patch>`（`pnpm run release -- --release-as patch` は使わない）。`RELEASE_PUSH_TOKEN` 未設定時はタグ push のあと別ジョブ `dispatch-publish` が `publish.yml` を `workflow_dispatch`（`build_from_tag=true`）で起動する。このジョブは `scripts/dispatch-publish.sh` を常に master から checkout する。dispatch 失敗時はそのジョブだけ再実行する（`patch-release` の再実行はリリース対象がなくスキップされる）
-- **手動対応が必要なケース**: 上記 CI が失敗する、または既存テストスイートがカバーしない変更のみ（「極めて高リスク」）
+- **手動対応が必要なケース**: semver major（AI レビューと kyto64 の承認後）、上記 CI が失敗する更新、または既存テストスイートがカバーしない変更（「極めて高リスク」）
 
 ## 設計理念
 

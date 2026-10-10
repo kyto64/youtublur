@@ -35,7 +35,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          PRS=$(gh pr list --repo "$REPOSITORY" --head "$HEAD_BRANCH" --state open --json number,author,body)
+          PRS=$(gh pr list --repo "$REPOSITORY" --head "$HEAD_BRANCH" --state open --json number,author,body,labels)
           DECISION=$(printf '%s' "$PRS" | node scripts/dependabot-merge.mjs)
           ACTION=$(jq -r '.action' <<<"$DECISION")
           if [ "$ACTION" != "merge" ]; then
