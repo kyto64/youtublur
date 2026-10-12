@@ -22,6 +22,9 @@ cd youtublur
 # 依存関係のインストール
 pnpm install
 
+# Cursor Cloud Agent では次でも可（Node の engines 確認と pnpm の corepack 有効化を含む）
+bash scripts/cloud-agent-install.sh
+
 # ビルド
 pnpm build
 
@@ -57,6 +60,20 @@ pnpm install
 6. **コミット**: `git add -A && git commit -m "type: message"`
 7. **プッシュ**: `git push -u origin ブランチ名`
 8. **PR作成**: `gh pr create`
+
+## Cursor Cloud Agent ハーネス
+
+Cloud Agent がユニットテストまで自律的に回せるように、リポジトリ側で次を固定する。手順の順序は [AGENTS.md](../AGENTS.md) の **Workflow（必須）** が正。
+
+| ファイル | 役割 |
+|----------|------|
+| [`.cursor/environment.json`](../.cursor/environment.json) | Cursor の install ステップ。Build 時に依存を入れる（[Cloud Agent setup](https://cursor.com/docs/cloud-agent/setup)） |
+| [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | Node（`package.json` の `engines`。`.nvmrc` は無い）、corepack の pnpm、`pnpm install --frozen-lockfile` |
+| [`.cursor/agents/implementer.md`](../.cursor/agents/implementer.md) | 計画を最小差分で実装し、test / lint / typecheck を実行する |
+| [`.cursor/agents/verifier.md`](../.cursor/agents/verifier.md) | テストを再実行し `passed` / `incomplete` を返す。ファイルは編集しない |
+| [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) | PR 前に base との `git diff` を独立レビューする |
+
+`environment.json` にシークレットは置かない。`start` は未設定（常駐プロセスが無い）。Playwright ブラウザは install では入れない。既定の `pnpm test` は jsdom であり、`pnpm run test:e2e` は UI 変更時だけ必要で、Chromium / Firefox の取得が重いため。E2E が要るときはエージェントが `pnpm exec playwright install --with-deps` を実行する。
 
 ## コード構造
 
