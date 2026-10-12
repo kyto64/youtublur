@@ -4,6 +4,23 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 この AGENTS.md はエージェントがリポジトリを理解するためのマップです。詳細は各ドキュメントを参照してください。
 
+## Workflow（必須）
+
+変更作業は次の順で進める。git worktree や個別コマンドの詳細は下記「開発手順」「開発コマンド」を使う。ハーネスの配置は [docs/development.md](./docs/development.md) を参照する。
+
+1. **Plan**: 変更前に目的・影響ファイル・手順・テスト方針を箇条書きで出す。不明点は仮定を明記する。
+2. **Implement**: 計画に沿って最小差分で実装する。委譲する場合は `implementer` subagent（[`.cursor/agents/implementer.md`](./.cursor/agents/implementer.md)）を使う。
+3. **Test**: 次を必ず実行し、失敗したら直して再実行する。
+   - 依存が未整備なら `pnpm install`（Cloud Agent の初期セットアップは `bash scripts/cloud-agent-install.sh`）
+   - `pnpm test`（`pretest` で `tsc`）
+   - `pnpm exec vp lint`
+   - `pnpm typecheck`
+   - UI の挙動を変える場合は `pnpm run test:e2e`
+   - UI 変更はスクリーンショットを残す
+4. **Verifier**: `verifier` subagent（[`.cursor/agents/verifier.md`](./.cursor/agents/verifier.md)）に独立検証させる。`pnpm test` / `pnpm exec vp lint` / `pnpm typecheck` を実行し、要件との照合結果を `passed` または `incomplete` で返す。ファイルは編集しない。
+5. **Review**: PR 作成前に `reviewer` subagent（[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、Grok、クリーンコンテキスト）で base との `git diff` を独立レビューする。指摘を修正してから PR を出す。
+6. **Report**: PR 本文に計画・実施したテストと結果・レビュー結果・未解決事項を書く。
+
 ## リポジトリ構造
 
 ```
@@ -145,6 +162,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 - **スラッシュコマンド**: [`.cursor/commands/`](./.cursor/commands/)（`/feedback-review`, `/self-review` など）
 - **ルールファイル**: [`.cursor/rules/*.mdc`](./.cursor/rules/)（グローバルルールは `alwaysApply: true`）
+- **サブエージェント**: [`.cursor/agents/`](./.cursor/agents/)（`implementer`, `verifier`, `reviewer`）
 
 ## 主なパス
 
@@ -163,7 +181,8 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |
 | E2E テスト | [`e2e/`](./e2e/) |
 | AI 検証ハーネス | [`e2e/ai-verify/`](./e2e/ai-verify/)（`pnpm run verify:ai-blur`、ブラー描画の証跡採取） |
-| 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token, dependabot-merge, should-patch-release） |
+| 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token, dependabot-merge, should-patch-release, cloud-agent-install） |
+| Cursor Cloud Agent ハーネス | [`.cursor/environment.json`](./.cursor/environment.json)、[`.cursor/agents/`](./.cursor/agents/)、[`scripts/cloud-agent-install.sh`](./scripts/cloud-agent-install.sh)。説明は [docs/development.md](./docs/development.md) |
 | CI/CD | [`.github/workflows/publish.yml`](./.github/workflows/publish.yml) |
 
 ## Do / Don't
