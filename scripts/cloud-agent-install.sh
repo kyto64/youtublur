@@ -39,17 +39,7 @@ install_node_tarball() {
   hash -r
 }
 
-if ! satisfies_engines; then
-  nvm_dir="${NVM_DIR:-${HOME}/.nvm}"
-  if [[ -s "${nvm_dir}/nvm.sh" ]]; then
-    # nvm の PATH は非対話 login shell では載らないことがある。このプロセス内だけで使う。
-    # shellcheck disable=SC1091
-    . "${nvm_dir}/nvm.sh"
-    nvm install "${NODE_FLOOR}"
-    nvm use "${NODE_FLOOR}"
-  fi
-fi
-
+# nvm は使わない。Cloud Agent の Build はディスクだけを残し、nvm の PATH は起動後に消える。
 if ! satisfies_engines; then
   install_node_tarball
 fi
