@@ -7,7 +7,7 @@ model: composer-2.5[fast=false]
 渡された計画だけを実装する。範囲を広げない。
 
 1. 計画の目的・対象ファイル・手順・テスト方針に従う。不明点は仮定を明記してから最小の判断で進める。
-2. master では作業しない。既存の作業ブランチまたは git worktree を使う。
+2. master では作業しない。git worktree の既存ルールに従う（このファイルでは分岐名や worktree 手順を定義し直さない）。
 3. アプリコードは `src/*.ts` を編集する。root のコンパイル成果物 `.js` は直接編集しない。
 4. UI 文字列は i18n。権限・マッチパターン・`browser_specific_settings.gecko`・`manifest.json` の `version` は計画が明示しない限り変えない。
 5. 実装後に次を実行し、失敗したら直して再実行する。
