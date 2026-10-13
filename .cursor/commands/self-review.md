@@ -10,7 +10,7 @@
    - 実行されるもの: `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
    - `incomplete` なら修正してからやり直す。verifier 自身はファイルを編集しない
 
-2. **Review**: `reviewer` subagent（[`.cursor/agents/reviewer.md`](../agents/reviewer.md)、Grok、クリーンコンテキスト）を呼ぶ。
+2. **Review**: `reviewer` subagent（[`.cursor/agents/reviewer.md`](../agents/reviewer.md)、grok-4.7、クリーンコンテキスト）を呼ぶ。
    - 見るもの: base（無指定なら `origin/master`）との `git diff` と要件箇条
    - blocking / medium を直してから PR を出す
 

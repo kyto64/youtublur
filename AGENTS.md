@@ -18,7 +18,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
    - UI の挙動を変える場合は `pnpm run test:e2e`
    - UI 変更はスクリーンショットを残す
 4. **Verifier**: `verifier` subagent（[`.cursor/agents/verifier.md`](./.cursor/agents/verifier.md)）に独立検証させる。`pnpm test` / `pnpm exec vp lint` / `pnpm typecheck` を実行し、要件との照合結果を `passed` または `incomplete` で返す。ファイルは編集しない。
-5. **Review**: PR 作成前に `reviewer` subagent（[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、Grok、クリーンコンテキスト）で base との `git diff` を独立レビューする。指摘を修正してから PR を出す。
+5. **Review**: PR 作成前に `reviewer` subagent（[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、grok-4.7、クリーンコンテキスト）で base との `git diff` を独立レビューする。指摘を修正してから PR を出す。
 6. **Report**: PR 本文に計画・実施したテストと結果・レビュー結果・未解決事項を書く。
 
 ## リポジトリ構造
@@ -212,7 +212,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 ## Code Review Rules
 
-PR 作成前のレビューは `reviewer` subagent（[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、Grok、base との `git diff`）が正。指摘を直してから PR を出す。
+PR 作成前のレビューは `reviewer` subagent（[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、grok-4.7、base との `git diff`）が正。指摘を直してから PR を出す。
 
 Cursor Bugbot は停止しており、日常の PR レビュー経路ではない。動くのは kyto が PR に `bugbot run` と明示コメントしたときだけ（push では自動実行しない）。エージェントは `bugbot run` を書かない。
 

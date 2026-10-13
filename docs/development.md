@@ -69,9 +69,11 @@ Cloud Agent がユニットテストまで自律的に回せるように、リ�
 |----------|------|
 | [`.cursor/environment.json`](../.cursor/environment.json) | Cursor の install ステップ。Build 時に依存を入れる（[Cloud Agent setup](https://cursor.com/docs/cloud-agent/setup)） |
 | [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | `engines` を満たす Node（不足時は `$HOME/.youtublur-node` に 22.22.2 を展開。`/usr/local` のシステム Node は上書きしない）、`~/.bashrc` / `~/.profile` に PATH を冪等追記、corepack の pnpm、`pnpm install --frozen-lockfile` |
-| [`.cursor/agents/implementer.md`](../.cursor/agents/implementer.md) | 計画を最小差分で実装し、test / lint / typecheck を実行する |
+| [`.cursor/agents/implementer.md`](../.cursor/agents/implementer.md) | 計画を最小差分で実装する（`composer-2.5`）。test / lint / typecheck を実行する |
 | [`.cursor/agents/verifier.md`](../.cursor/agents/verifier.md) | テストを再実行し `passed` / `incomplete` を返す。ファイルは編集しない |
-| [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) | PR 前に base との `git diff` を独立レビューする |
+| [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) | PR 前に base との `git diff` を独立レビューする（`grok-4.7[reasoning_effort=xhigh]`） |
+
+PR 前 **Review** のモデルは `reviewer` の frontmatter で `grok-4.7[reasoning_effort=xhigh]` に固定する。Workflow の **Plan** も同じ `grok-4.7`（reasoning effort 最大）を使う運用だが、Plan 用のサブエージェント定義はリポジトリに無い（親エージェント／Cursor 側のモデル選択）。実装は `implementer`（`composer-2.5`）に委譲する。
 
 `environment.json` にシークレットは置かない。`start` は未設定（常駐プロセスが無い）。Playwright ブラウザは install では入れない。既定の `pnpm test` は jsdom であり、`pnpm run test:e2e` は UI 変更時だけ必要で、Chromium / Firefox の取得が重いため。E2E が要るときはエージェントが `pnpm exec playwright install --with-deps` を実行する。
 
