@@ -23,3 +23,8 @@ Chrome Web Store / Firefox AMO への公開手順は [docs/release.md](docs/rele
 ## 対応ブラウザ
 - Chrome（Manifest V3）
 - Firefox（Manifest V3）
+
+## ライセンス
+
+proprietary。利用条件は [LICENSE](LICENSE) を参照。
+公開されているのはソースの閲覧用であり、オープンソースライセンスではない。
