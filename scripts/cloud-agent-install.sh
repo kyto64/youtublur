@@ -31,7 +31,9 @@ ensure_node_path_in_shell_profile() {
   local line='export PATH="$HOME/.youtublur-node/bin:$PATH"'
   local profile
   for profile in "${HOME}/.bashrc" "${HOME}/.profile"; do
-    [[ -f "${profile}" ]] || continue
+    if [[ ! -f "${profile}" ]]; then
+      touch "${profile}"
+    fi
     if ! grep -qF "${PROFILE_PATH_MARKER}" "${profile}" 2>/dev/null; then
       {
         echo ""
@@ -76,6 +78,8 @@ install_node_tarball() {
 }
 
 # nvm は使わない。Cloud Agent の Build はディスクだけを残し、nvm の PATH は起動後に消える。
+# スナップショットに残った user-local Node を優先（system Node の corepack を触らない）
+prepend_youtublur_node_path
 if ! satisfies_engines; then
   install_node_tarball
 fi
