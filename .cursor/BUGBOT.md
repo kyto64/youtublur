@@ -1,10 +1,16 @@
 # Bugbot レビュールール（youtublur）
 
-このファイルが PR レビュー基準の正である。Bugbot は `.cursor/rules/*.mdc` を適用しない。`AGENTS.md` を読むかも未確認なので、レビューに必要な方針はここに自己完結で書いてある。変更行と、その変更が壊しうる呼び出し元だけを見る。無関係な既存コードの一括改修は求めない。
+このファイルは、kyto が PR に `bugbot run` したときだけ適用する Bugbot 用の基準である。
+通常の PR 作成前レビューの正は `reviewer` subagent（`.cursor/agents/reviewer.md`）であり、このファイルではない。
+
+Bugbot は `.cursor/rules/*.mdc` を適用しない。`AGENTS.md` を読むかも未確認なので、Bugbot が動くときに必要な方針はここに自己完結で書いてある。変更行と、その変更が壊しうる呼び出し元だけを見る。無関係な既存コードの一括改修は求めない。
 
 ## 起動
 
-kyto の設定は手動トリガーのみ。push では自動実行しない。PR に `bugbot run` とコメントしたときだけ走る。レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびに要求しない（1 回ごとに費用がかかる）。結果はチェック run `Cursor Bugbot`（`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー）。Dependabot の PR はレビューしない。
+Cursor Bugbot は停止しており、push では自動実行しない。日常の PR レビューには使わない。
+動くのは kyto が PR に `bugbot run` とコメントしたときだけ。エージェントは起動コメントを書かない。
+
+kyto が起動した場合の回数: レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびに要求しない（1 回ごとに費用がかかる）。結果はチェック run `Cursor Bugbot`（`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー）。Dependabot の PR はレビューしない。
 
 ## レビューコメントの言語
 

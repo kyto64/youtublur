@@ -12,7 +12,8 @@ alwaysApply: true
   - 権限エラー時は `required_permissions: ["all"]` を使用
   - worktree 作成後は必ず `pnpm install` を実行
   - cleanup: `git worktree remove ../youtublur-<name>`
-- コード変更後は必ず `pnpm test` を実行
-- コミット前に `pnpm exec vp lint` を実行
+- 変更作業の順序と品質ゲートは [AGENTS.md](../../AGENTS.md) の **Workflow（必須）** が正
+- コード変更後は必ず `pnpm test` と `pnpm typecheck` を実行する
+- コミット前に `pnpm exec vp lint` を実行する
 - GitHub 操作は `gh` CLI を使用（REST API/PAT/ブラウザは禁止）
 - バージョンは `pnpm run release` フローで管理（手動変更禁止）
