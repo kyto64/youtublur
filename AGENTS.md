@@ -39,28 +39,29 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 ## 開発手順
 
+手順の順序と品質ゲートは上記 **Workflow（必須）** が正（Plan → Implement → Test → Verifier → Review → Report）。
+この節は git worktree とブランチ名の詳細だけを書く。個別コマンドは「開発コマンド」、ハーネスは [docs/development.md](./docs/development.md)。
+
 ### 前提
 
 - すべての作業は `git worktree` で行う（master ブランチでの直接作業は禁止）
-- コード変更後は必ず `pnpm test` と `pnpm exec vp lint` を実行
+- 新規ブランチ名は `feature/<name>`
+- 必須コマンドは Workflow の Test / Verifier に従う（`pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`。UI 変更時は `pnpm run test:e2e`）
+- コード変更時は関連ドキュメント（ARCHITECTURE.md、DESIGN.md、docs/、または AGENTS.md）も更新する
 - バージョンは `pnpm run release` フローで管理
 - Node.js は `package.json` の `engines`（`^22.22.2 || ^24.15.0 || >=26.0.0`）。CI の Test は `22.22.2`、`24`、`26`。E2E とリリースは Node.js 22
 
-### 基本ワークフロー
+### 基本ワークフロー（worktree）
 
 1. **ブランチ作成**: `git worktree add -b feature/<name> ../youtublur-<name> master`
 2. **依存インストール**: `cd ../youtublur-<name> && pnpm install`
-3. **実装**: コードを変更
-4. **ドキュメント更新**: 変更に応じて関連ドキュメント（ARCHITECTURE.md、DESIGN.md、docs/ 内、または AGENTS.md）を更新
-5. **テスト**: `pnpm test` でユニットテスト実行
-6. **Lint**: `pnpm exec vp lint` でコード品質チェック
-7. **E2E テスト（必要時）**: `pnpm run test:e2e`
-8. **コミット**: `git add -A && git commit -m "type: message"`
-9. **プッシュ**: `git push -u origin feature/branch-name`
-10. **PR 作成**: `gh pr create`
-11. **Cleanup**: `git worktree remove ../youtublur-<name>`
+3. **実装以降**: コード・ドキュメントの変更、テスト、Verifier、Review、PR 本文は Workflow に従う
+4. **コミット**: `git add -A && git commit -m "type: message"`
+5. **プッシュ**: `git push -u origin feature/<name>`
+6. **PR 作成**: Review 通過後に `gh pr create`。`bugbot run` は書かない
+7. **Cleanup**: `git worktree remove ../youtublur-<name>`
 
-詳しくは [implementation.mdc](./.cursor/rules/implementation.mdc) を参照。
+詳しくは [implementation.mdc](./.cursor/rules/implementation.mdc)（worktree 手順）を参照。
 
 ## 技術スタック
 
@@ -160,7 +161,7 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 ## Cursor 設定
 
-- **スラッシュコマンド**: [`.cursor/commands/`](./.cursor/commands/)（`/feedback-review`, `/self-review` など）
+- **スラッシュコマンド**: [`.cursor/commands/`](./.cursor/commands/)（`/feedback-review`、`/self-review` など）。`/self-review` は Workflow の Verifier → Review を回す入口であり、旧 7 視点セルフビューではない
 - **ルールファイル**: [`.cursor/rules/*.mdc`](./.cursor/rules/)（グローバルルールは `alwaysApply: true`）
 - **サブエージェント**: [`.cursor/agents/`](./.cursor/agents/)（`implementer`, `verifier`, `reviewer`）
 
@@ -190,8 +191,9 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 ### Do（必ず行うこと）
 
 - **git worktree で作業**: master ブランチでの直接作業は禁止
-- **テスト実行**: `pnpm test` で全テスト通過を確認
-- **Lint 実行**: コミット前に `pnpm exec vp lint` でエラー解消
+- **テスト実行**: `pnpm test` と `pnpm typecheck` で通過を確認する
+- **Lint 実行**: コミット前に `pnpm exec vp lint` でエラーを解消する
+- **PR 前検証**: Workflow の `verifier` と `reviewer` を実行する。`bugbot run` は書かない
 - **バージョン管理**: `pnpm run release` フローに従う
 - **i18n キー管理**: 全ロケール（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）でキー定義
 - **zip 同期**: リリース zip の変更は `.github/workflows/publish.yml` にも反映
@@ -210,10 +212,13 @@ content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evid
 
 ## Code Review Rules
 
-PR レビューは Cursor Bugbot が行う。指摘の言語、重大度、レビュー方針は [`.cursor/BUGBOT.md`](./.cursor/BUGBOT.md) が正。Bugbot は `.cursor/rules/*.mdc` を適用しない。
+PR 作成前のレビューは `reviewer` subagent（[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、Grok、base との `git diff`）が正。指摘を直してから PR を出す。
 
-- kyto の設定は手動トリガーのみ。push では自動実行しない。PR に `bugbot run` とコメントしたときだけ走る。
-- コメントは、PR がレビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびにはコメントしない（1 回ごとに費用がかかる）。
+Cursor Bugbot は停止しており、日常の PR レビュー経路ではない。動くのは kyto が PR に `bugbot run` と明示コメントしたときだけ（push では自動実行しない）。エージェントは `bugbot run` を書かない。
+
+Bugbot が動いた場合の指摘言語・重大度・方針は [`.cursor/BUGBOT.md`](./.cursor/BUGBOT.md) が正。Bugbot は `.cursor/rules/*.mdc` を適用しない。
+
+- Bugbot が動いた場合: コメントは、レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびにはコメントしない（1 回ごとに費用がかかる）。
 - 結果はチェック run `Cursor Bugbot`。`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー。
 - Dependabot の PR は Bugbot ではレビューしない。patch / minor の自動マージは CI（`Test` / `Lint` / `E2E Tests` / `Semgrep`）のみ。semver major はワークフローでは自動マージしない。
 

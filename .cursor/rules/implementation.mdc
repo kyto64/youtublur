@@ -15,7 +15,7 @@ alwaysApply: true
 - **すべての作業は必ず git worktree を作成してから実施する**（master ブランチでの直接作業は禁止）
 - **作業前の確認**：現在のブランチが master の場合、直接修正せず必ず worktree を作成すること
 - **worktree 作成コマンド**（新規ブランチの場合は `-b` を忘れずに）：
-  `git worktree add -b feature/branch-name ../youtublur-<name> master`
+  `git worktree add -b feature/<name> ../youtublur-<name> master`
 - **既に master で修正をしてしまった場合のリカバリ**：
   1. `git stash` で変更を退避
   2. 上記コマンドで worktree を作成
@@ -92,24 +92,27 @@ alwaysApply: true
 - **テストファイル**: 原則 400 行以内
 
 ## 実装フロー
-1. **worktree を作成**（master では作業しない）：`git worktree add -b feature/branch-name ../youtublur-<name> master`
-2. worktree ディレクトリに移動：`cd ../youtublur-<name>`
-3. **依存関係をインストール**：`pnpm install`
-4. コードを変更・実装（編集対象は `src/*.ts`。root の `.js` はコンパイル成果物のため直接編集しない）
-5. `pnpm typecheck` を実行し、型エラーを解消する
-6. `pnpm exec vp lint` を実行し、警告・エラーを解消する
-7. `pnpm test` を実行し、すべて通過することを確認（`pretest` で `tsc` が自動実行される）
-7. `pnpm run test:e2e` も必要に応じて実行（UI 変更時）
-8. コミット: `git add -A && git commit -m "type: message"`
-9. プッシュ: `git push -u origin feature/branch-name`
-10. `gh pr create` で PR を作成
-11. **cleanup**: `git worktree remove ../youtublur-<name>`
+
+変更の順序と品質ゲートは [AGENTS.md](../../AGENTS.md) の **Workflow（必須）** が正
+（Plan → Implement → Test → Verifier → Review → Report）。
+この節は worktree とブランチ名だけを定義する。手順を Workflow より短い列に再定義しない。
+
+1. **worktree を作成**（master では作業しない）: `git worktree add -b feature/<name> ../youtublur-<name> master`
+2. worktree ディレクトリに移動: `cd ../youtublur-<name>`
+3. **依存関係をインストール**: `pnpm install`
+4. 以降は Workflow に従う。編集対象は `src/*.ts`。root の `.js` はコンパイル成果物のため直接編集しない
+5. Test の必須コマンドは `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
+6. コミット: `git add -A && git commit -m "type: message"`
+7. プッシュ: `git push -u origin feature/<name>`
+8. PR 作成は Review 通過後（`gh pr create`）。`bugbot run` は書かない
+9. **cleanup**: `git worktree remove ../youtublur-<name>`
 
 ## 注意
 - テストが失敗したらマージ・リリースしない
 - Lint エラーはコミット前に解消すること
 - 未コミットの変更が残ったまま `pnpm run release` を実行しない
 - AIエージェントによるコード生成も含め、すべてのコード変更はレビューとテストを経ること
+- PR 前の検証とレビューは Workflow の `verifier` / `reviewer` が正。7 視点の自己レビューや Bugbot 起動は使わない
 
 ## 参考資料
 - 設計原則: [DESIGN.md](../DESIGN.md)

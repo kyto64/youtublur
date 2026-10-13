@@ -1,74 +1,22 @@
-# 多角的セルフレビューの実施
+# Workflow の Verifier / Review を実行する
 
-自身のプラン・実装を多角的な視点でレビューする。サブエージェントを使用して包括的なレビューを実施する。
+旧 7 視点セルフビューは使わない。
+[AGENTS.md](../../AGENTS.md) の **Workflow（必須）** に従い、PR 作成前に次だけを行う。
 
 ## 手順
 
-1. **レビュー対象の確認**
+1. **Verifier**: `verifier` subagent（[`.cursor/agents/verifier.md`](../agents/verifier.md)）を独立検証で呼ぶ。
+   - 渡すもの: 目的、対象ファイル、テスト方針
+   - 実行されるもの: `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
+   - `incomplete` なら修正してからやり直す。verifier 自身はファイルを編集しない
 
-   - プランファイル: `.cursor/plans/` 配下
-   - 実装ファイル: 変更したファイル群
-   - ルールファイル: `.cursor/rules/*.mdc`
+2. **Review**: `reviewer` subagent（[`.cursor/agents/reviewer.md`](../agents/reviewer.md)、Grok、クリーンコンテキスト）を呼ぶ。
+   - 見るもの: base（無指定なら `origin/master`）との `git diff` と要件箇条
+   - blocking / medium を直してから PR を出す
 
-2. **サブエージェントによる多角的レビュー**
+3. **しないこと**
+   - explore タイプの並行セルフレビュー
+   - PR への `bugbot run`（kyto 以外は起動しない）
+   - verifier / reviewer の編集・コミット・プッシュ
 
-   以下の視点でサブエージェント（explore タイプ）を使用してレビューを実施:
-
-   ```bash
-   # 機能面・保守性のレビュー
-   # サブエージェントに以下を依頼:
-   # "以下のプラン/コードを機能面・保守性の視点でレビューしてください: [対象ファイル]"
-   
-   # セキュリティ・互換性のレビュー
-   # "セキュリティ面（権限・XSS等）とブラウザ互換性（Chrome/Firefox）の視点でレビューしてください"
-   
-   # i18n・テスト・リリース準備のレビュー
-   # "i18n遵守、テストカバレッジ、リリース準備の視点でレビューしてください"
-   ```
-
-3. **レビュー結果の統合**
-
-   - 各視点からの指摘事項を整理
-   - 優先順位をつけて修正リストを作成
-   - 修正が必要な項目を worktree またはブランチで修正
-
-4. **修正の実施**
-
-   - 該当ファイルを修正
-   - `vp lint` と `pnpm test` を実行
-   - コミット: `git add -A && git commit -m "fix: address self-review findings"`
-
-## レビュー視点のチェックリスト
-
-### 機能面
-- [ ] 要件を満たしているか
-- [ ] エッジケースは考慮されているか
-- [ ] エラーハンドリングは適切か
-
-### セキュリティ面
-- [ ] 権限は必要最小限か
-- [ ] XSS やインジェクションの脆弱性がないか
-- [ ] サードパーティ依存関係の安全性
-
-### 保守性
-- [ ] コードは理解しやすいか
-- [ ] 重複コードはないか
-- [ ] 適切な構造か
-
-### 互換性
-- [ ] Chrome (MV3) との互換性
-- [ ] Firefox (AMO) との互換性
-- [ ] browser_specific_settings.gecko の維持
-
-### i18n
-- [ ] UI 文字列は i18n 経由か
-- [ ] 全ロケールでキーが定義されているか
-
-### テスト・CI
-- [ ] テストは通過するか
-- [ ] Lint エラーはないか
-- [ ] E2E テストは適切か
-
-### リリース準備
-- [ ] バージョンは手動変更していないか
-- [ ] リリース zip のファイル一覧は一致するか
+指摘の修正は既存の worktree（`feature/<name>`）で行い、Test を再実行してから Verifier / Review に戻る。
