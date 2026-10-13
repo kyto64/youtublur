@@ -22,7 +22,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
   "bugs": {
     "url": "https://github.com/kyto64/youtublur/issues"
   },
