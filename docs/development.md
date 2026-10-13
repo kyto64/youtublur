@@ -68,7 +68,7 @@ Cloud Agent がユニットテストまで自律的に回せるように、リ�
 | ファイル | 役割 |
 |----------|------|
 | [`.cursor/environment.json`](../.cursor/environment.json) | Cursor の install ステップ。Build 時に依存を入れる（[Cloud Agent setup](https://cursor.com/docs/cloud-agent/setup)） |
-| [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | Node（`package.json` の `engines`。`.nvmrc` は無い）、corepack の pnpm、`pnpm install --frozen-lockfile` |
+| [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | `engines` を満たす Node（不足時は `$HOME/.youtublur-node` に 22.22.2 を展開。`/usr/local` のシステム Node は上書きしない）、`~/.bashrc` / `~/.profile` に PATH を冪等追記、corepack の pnpm、`pnpm install --frozen-lockfile` |
 | [`.cursor/agents/implementer.md`](../.cursor/agents/implementer.md) | 計画を最小差分で実装し、test / lint / typecheck を実行する |
 | [`.cursor/agents/verifier.md`](../.cursor/agents/verifier.md) | テストを再実行し `passed` / `incomplete` を返す。ファイルは編集しない |
 | [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) | PR 前に base との `git diff` を独立レビューする |
