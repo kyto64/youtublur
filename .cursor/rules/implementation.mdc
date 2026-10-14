@@ -1,5 +1,5 @@
 ---
-description: コード実装時のルール（worktree、lint、テスト、AI駆動開発）
+description: コード実装時のルール（ブランチ、lint、テスト、AI駆動開発）
 globs:
   - "src/**/*.ts"
   - "globals.d.ts"
@@ -12,15 +12,16 @@ alwaysApply: true
 # コード実装ルール
 
 ## 作業環境
-- **すべての作業は必ず git worktree を作成してから実施する**（master ブランチでの直接作業は禁止）
-- **作業前の確認**：現在のブランチが master の場合、直接修正せず必ず worktree を作成すること
+- **master ブランチでの直接作業は禁止**。作業前に現在のブランチを確認する
+- **Devin セッション**：VM のクローンでブランチを切る（worktree は不要）。`git checkout -b devin/$(date +%s)-<slug> origin/master`
+- **既に master で修正をしてしまった場合（Devin）**：`git checkout -b devin/$(date +%s)-<slug>` で変更ごと新ブランチに移る
+- 以下は人手のローカル作業（git worktree を使う）
 - **worktree 作成コマンド**（新規ブランチの場合は `-b` を忘れずに）：
   `git worktree add -b feature/<name> ../youtublur-<name> master`
 - **既に master で修正をしてしまった場合のリカバリ**：
   1. `git stash` で変更を退避
   2. 上記コマンドで worktree を作成
   3. worktree ディレクトリで `git stash apply stash@{0}` で変更を適用
-- **権限エラー時の対処**：worktree 作成時に `Permission denied` が発生した場合、Shell コマンドに `required_permissions: ["all"]` を指定してサンドボックス制限を回避する
 - **依存関係のインストール**：worktree 作成後、最初に `pnpm install` を実行して node_modules を整備すること（test/lint 実行前に必須）
 - **cleanup 手順**：
   1. 未コミットの変更がないことを確認（`git status`）
@@ -94,25 +95,24 @@ alwaysApply: true
 ## 実装フロー
 
 変更の順序と品質ゲートは [AGENTS.md](../../AGENTS.md) の **Workflow（必須）** が正
-（Plan → Implement → Test → Verifier → Review → Report）。
-この節は worktree とブランチ名だけを定義する。手順を Workflow より短い列に再定義しない。
+（Plan → Implement → Test → Verify → Review → Report）。
+この節はブランチと作業場所だけを定義する。手順を Workflow より短い列に再定義しない。
 
-1. **worktree を作成**（master では作業しない）: `git worktree add -b feature/<name> ../youtublur-<name> master`
-2. worktree ディレクトリに移動: `cd ../youtublur-<name>`
-3. **依存関係をインストール**: `pnpm install`
-4. 以降は Workflow に従う。編集対象は `src/*.ts`。root の `.js` はコンパイル成果物のため直接編集しない
-5. Test の必須コマンドは `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
-6. コミット: `git add -A && git commit -m "type: message"`
-7. プッシュ: `git push -u origin feature/<name>`
-8. PR 作成は Review 通過後（`gh pr create`）。`bugbot run` は書かない
-9. **cleanup**: `git worktree remove ../youtublur-<name>`
+1. **ブランチを作成**（master では作業しない）: Devin は `git checkout -b devin/$(date +%s)-<slug> origin/master`、人手のローカルは `git worktree add -b feature/<name> ../youtublur-<name> master` → `cd ../youtublur-<name>`
+2. **依存関係をインストール**: `pnpm install`（Node が無い環境は `bash scripts/cloud-agent-install.sh`）
+3. 以降は Workflow に従う。編集対象は `src/*.ts`。root の `.js` はコンパイル成果物のため直接編集しない
+4. Test の必須コマンドは `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
+5. コミット: `git add <変更ファイル> && git commit -m "type: message"`
+6. プッシュ: `git push -u origin <branch>`
+7. Review（別の新しい Devin セッション）を通してから PR を作成する（Devin の GitHub 連携か `gh pr create`）。`bugbot run` / `cursor review` / `@codex` は書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
+8. **cleanup**（worktree を使った場合）: `git worktree remove ../youtublur-<name>`
 
 ## 注意
 - テストが失敗したらマージ・リリースしない
 - Lint エラーはコミット前に解消すること
 - 未コミットの変更が残ったまま `pnpm run release` を実行しない
 - AIエージェントによるコード生成も含め、すべてのコード変更はレビューとテストを経ること
-- PR 前の検証とレビューは Workflow の `verifier` / `reviewer` が正。7 視点の自己レビューや Bugbot 起動は使わない
+- PR 前の検証とレビューは Workflow の Verify（実装セッション）と Review（別の新しい Devin セッション）が正。7 視点の自己レビューやエージェントによる Bugbot 起動は使わない
 
 ## 参考資料
 - 設計原則: [DESIGN.md](../DESIGN.md)

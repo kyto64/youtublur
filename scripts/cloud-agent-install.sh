@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cursor Cloud Agent の install 用。依存を入れ、pnpm test がすぐ走るようにする。
+# Devin の環境設定（blueprint）から呼ぶ依存セットアップ用（Node の無い VM・ローカルでも可）。依存を入れ、pnpm test がすぐ走るようにする。
 # 冪等。シークレットは扱わない。Playwright ブラウザは入れない（下記コメント）。
 # システムの /usr/local や VM 同梱 Node は上書きしない（エージェント runtime 破損防止）。
 
@@ -77,7 +77,7 @@ install_node_tarball() {
   ensure_node_path_in_shell_profile
 }
 
-# nvm は使わない。Cloud Agent の Build はディスクだけを残し、nvm の PATH は起動後に消える。
+# nvm は使わない。クラウドエージェントのスナップショットはディスクだけを残し、nvm の PATH は起動後に消える。
 # スナップショットに残った user-local Node を優先（system Node の corepack を触らない）
 prepend_youtublur_node_path
 if ! satisfies_engines; then

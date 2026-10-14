@@ -1,22 +1,22 @@
-# Workflow の Verifier / Review を実行する
+# Workflow の Verify / Review を実行する
 
 旧 7 視点セルフビューは使わない。
 [AGENTS.md](../../AGENTS.md) の **Workflow（必須）** に従い、PR 作成前に次だけを行う。
 
 ## 手順
 
-1. **Verifier**: `verifier` subagent（[`.cursor/agents/verifier.md`](../agents/verifier.md)）を独立検証で呼ぶ。
-   - 渡すもの: 目的、対象ファイル、テスト方針
-   - 実行されるもの: `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
-   - `incomplete` なら修正してからやり直す。verifier 自身はファイルを編集しない
+1. **Verify**（実装セッション）: [`.cursor/agents/verifier.md`](../agents/verifier.md) の手順で検証する。
+   - 照合するもの: 目的、対象ファイル、テスト方針
+   - 実行するもの: `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
+   - `incomplete` なら Implement に戻って直し、やり直す
 
-2. **Review**: `reviewer` subagent（[`.cursor/agents/reviewer.md`](../agents/reviewer.md)、grok-4.7、クリーンコンテキスト）を呼ぶ。
-   - 見るもの: base（無指定なら `origin/master`）との `git diff` と要件箇条
-   - blocking / medium を直してから PR を出す
+2. **Review**（別の新しい Devin セッション）: ブランチを push し、実装とは別の新しい Devin セッション（普段は normal、重い PR だけ fusion 可。クリーンコンテキスト）に [`.cursor/agents/reviewer.md`](../agents/reviewer.md) の手順でレビューさせる。
+   - 渡すもの: ブランチ名、base（無指定なら `origin/master`）、要件の箇条書き
+   - blocking / medium を実装セッションで直してから PR を出す
 
 3. **しないこと**
-   - explore タイプの並行セルフレビュー
-   - PR への `bugbot run`（kyto 以外は起動しない）
-   - verifier / reviewer の編集・コミット・プッシュ
+   - PR への `bugbot run` / `cursor review` / `@codex`（レビューボットは使わない。例外は kyto 本人が手動で `bugbot run` する場合だけ）
+   - 実装セッション内だけで Review を済ませること（レビューは必ず別セッション）
+   - レビューセッションによる編集・コミット・プッシュ
 
-指摘の修正は既存の worktree（`feature/<name>`）で行い、Test を再実行してから Verifier / Review に戻る。
+指摘の修正は同じブランチで行い、Test を再実行してから Verify / Review に戻る。

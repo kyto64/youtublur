@@ -22,7 +22,7 @@ cd youtublur
 # 依存関係のインストール
 pnpm install
 
-# Cursor Cloud Agent では次でも可（Node の engines 確認と pnpm の corepack 有効化を含む）
+# Node が無い環境（Devin の VM など）では次でも可（engines を満たす Node の導入と pnpm の corepack 有効化を含む）
 bash scripts/cloud-agent-install.sh
 
 # ビルド
@@ -34,7 +34,10 @@ pnpm test
 
 ### Git ワークフロー
 
-このプロジェクトでは、master ブランチでの直接作業は禁止されています。常に git worktree を使用してください。
+このプロジェクトでは、master ブランチでの直接作業は禁止されています。ブランチ名は [AGENTS.md](../AGENTS.md) の「開発手順」が正です。
+
+- Devin セッション: VM 上のクローンで `git checkout -b devin/$(date +%s)-<slug> origin/master`（worktree は不要）
+- 人手のローカル作業: 次のように git worktree を使用してください。
 
 ```bash
 # 新しい機能の場合
@@ -57,25 +60,27 @@ pnpm install
 3. **ビルド**: `pnpm build` でコンパイル
 4. **テスト**: `pnpm test` でユニットテストを実行
 5. **Lint**: `pnpm exec vp lint` でコード品質を確認
-6. **コミット**: `git add -A && git commit -m "type: message"`
+6. **コミット**: `git add <変更ファイル> && git commit -m "type: message"`
 7. **プッシュ**: `git push -u origin ブランチ名`
-8. **PR作成**: `gh pr create`
+8. **PR作成**: 別の新しい Devin セッションでレビューしてから作成する（Devin は GitHub 連携、人手は `gh pr create`）
 
-## Cursor Cloud Agent ハーネス
+## エージェントハーネス（Devin）
 
-Cloud Agent がユニットテストまで自律的に回せるように、リポジトリ側で次を固定する。手順の順序は [AGENTS.md](../AGENTS.md) の **Workflow（必須）** が正。
+計画・実装・PR 前レビューはすべて Devin のセッションで行う。手順の順序と Devin のモードの選び方（普段は normal、重いタスクだけ fusion、ultra は kyto の承認制）は [AGENTS.md](../AGENTS.md) の **Workflow（必須）** が正。モデルはセッションのモードに任せ、リポジトリ側ではモデル名を指定しない。
 
 | ファイル | 役割 |
 |----------|------|
-| [`.cursor/environment.json`](../.cursor/environment.json) | Cursor の install ステップ。Build 時に依存を入れる（[Cloud Agent setup](https://cursor.com/docs/cloud-agent/setup)） |
-| [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | `engines` を満たす Node（不足時は `$HOME/.youtublur-node` に 22.22.2 を展開。`/usr/local` のシステム Node は上書きしない）、`~/.bashrc` / `~/.profile` に PATH を冪等追記、corepack の pnpm、`pnpm install --frozen-lockfile` |
-| [`.cursor/agents/implementer.md`](../.cursor/agents/implementer.md) | 計画を最小差分で実装する（`composer-2.5`）。test / lint / typecheck を実行する |
-| [`.cursor/agents/verifier.md`](../.cursor/agents/verifier.md) | テストを再実行し `passed` / `incomplete` を返す。ファイルは編集しない |
-| [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) | PR 前に base との `git diff` を独立レビューする（`grok-4.7[reasoning_effort=xhigh]`） |
+| [`AGENTS.md`](../AGENTS.md) | Devin がセッション開始時に自動で読む（先頭 16 KiB まで）。Workflow・ブランチ名・マージ基準などの常時ルール |
+| [`.cursor/agents/implementer.md`](../.cursor/agents/implementer.md) | 実装セッションが Implement / Test で従う。計画を最小差分で実装し、test / lint / typecheck を実行する |
+| [`.cursor/agents/verifier.md`](../.cursor/agents/verifier.md) | 実装セッションが Verify で従う。テストを再実行し `passed` / `incomplete` を出す。このステップでは編集しない |
+| [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) | 実装とは別の新しい Devin セッション（クリーンコンテキスト）が Review で従う。base との `git diff` だけを見て、編集・push はしない |
+| [`.cursor/commands/`](../.cursor/commands/) | 定型作業の手順（`self-review` など）。Devin にはファイル名で指示する |
+| [`.cursor/rules/*.mdc`](../.cursor/rules/) | パス別のルール。Devin CLI と Devin Review も読む |
+| [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | `engines` を満たす Node（不足時は `$HOME/.youtublur-node` に 22.22.2 を展開。`/usr/local` のシステム Node は上書きしない）、`~/.bashrc` / `~/.profile` に PATH を冪等追記、corepack の pnpm、`pnpm install --frozen-lockfile`。Devin の環境設定（blueprint）から呼ぶ前提。Node の無い VM でもそのまま動く |
 
-PR 前 **Review** のモデルは `reviewer` の frontmatter で `grok-4.7[reasoning_effort=xhigh]` に固定する。Workflow の **Plan** も同じ `grok-4.7`（reasoning effort 最大）を使う運用だが、Plan 用のサブエージェント定義はリポジトリに無い（親エージェント／Cursor 側のモデル選択）。実装は `implementer`（`composer-2.5`）に委譲する。
+Devin の環境（blueprint）は Devin 側の設定で管理し、リポジトリには置かない。依存セットアップは blueprint から `bash scripts/cloud-agent-install.sh` を呼ぶ前提とする。シークレットはリポジトリに置かない。Playwright ブラウザは既定では入れない。既定の `pnpm test` は jsdom であり、`pnpm run test:e2e` は UI 変更時だけ必要で、Chromium / Firefox の取得が重いため。E2E が要るときはエージェントが `pnpm exec playwright install --with-deps` を実行する。
 
-`environment.json` にシークレットは置かない。`start` は未設定（常駐プロセスが無い）。Playwright ブラウザは install では入れない。既定の `pnpm test` は jsdom であり、`pnpm run test:e2e` は UI 変更時だけ必要で、Chromium / Firefox の取得が重いため。E2E が要るときはエージェントが `pnpm exec playwright install --with-deps` を実行する。
+手順書は当面 `.cursor/` に置く。Devin ネイティブの `.devin/skills/<name>/SKILL.md` への移行は今後の課題。
 
 ## コード構造
 

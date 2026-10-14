@@ -6,14 +6,12 @@ alwaysApply: true
 # youtublur グローバルルール
 
 - 会話は日本語で実施する
-- **すべての作業は必ず git worktree を作成してから実施する**（master ブランチでの直接作業は禁止）
-  - 新規ブランチ: `git worktree add -b feature/<name> ../youtublur-<name> master`
-  - 既存ブランチ: `git worktree add ../youtublur-<name> <branch-name>`
-  - 権限エラー時は `required_permissions: ["all"]` を使用
-  - worktree 作成後は必ず `pnpm install` を実行
-  - cleanup: `git worktree remove ../youtublur-<name>`
+- **master ブランチでの直接作業は禁止**。ブランチ名と作業場所は [AGENTS.md](../../AGENTS.md) の「開発手順」が正
+  - Devin セッション: VM のクローンで `devin/<unix 秒>-<slug>` ブランチを切る（worktree は不要）
+  - 人手のローカル作業: `git worktree add -b feature/<name> ../youtublur-<name> master` → `pnpm install`。cleanup は `git worktree remove ../youtublur-<name>`
 - 変更作業の順序と品質ゲートは [AGENTS.md](../../AGENTS.md) の **Workflow（必須）** が正
 - コード変更後は必ず `pnpm test` と `pnpm typecheck` を実行する
 - コミット前に `pnpm exec vp lint` を実行する
-- GitHub 操作は `gh` CLI を使用（REST API/PAT/ブラウザは禁止）
+- GitHub 操作は Devin の GitHub 連携か `gh` CLI を使う
+- `bugbot run` / `cursor review` / `@codex` は PR に書かない（レビューボットは使わない。例外は kyto 本人が手動で `bugbot run` する場合だけ）
 - バージョンは `pnpm run release` フローで管理（手動変更禁止）
