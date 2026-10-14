@@ -57,7 +57,9 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 
 ### PR レビュー
 
-PR 作成前のレビューは、実装とは別の新しい Devin セッションが [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) に従って行う（[AGENTS.md](../AGENTS.md) の Workflow）。Cursor Bugbot などのレビューボットは使わず、エージェントは `bugbot run` / `cursor review` / `@codex` を書かない。例外は kyto 本人が手動で `bugbot run` する場合だけ。
+PR 作成前のレビューは、実装とは別の新しい Devin セッションが [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) に従って行う（[AGENTS.md](../AGENTS.md) の Workflow）。
+
+Codex のレビューを使う: PR オープン時の自動レビューと、必要に応じた `@codex review` コメントの手動依頼の両方。Codex の指摘を検討したうえで CI とマージ基準に従う。Bugbot は停止中。エージェントは `bugbot run` / `cursor review` を書かない。例外は kyto 本人が手動で `bugbot run` する場合だけ。
 
 - Dependabot の PR はレビューセッションの対象外。patch / minor は GitHub auto-merge が ruleset の必須チェック（上表）を待って squash する。semver major はワークフローでは自動マージしない。
 

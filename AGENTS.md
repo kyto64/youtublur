@@ -71,7 +71,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 3. **実装以降**: コード・ドキュメントの変更、Test、Verify は Workflow に従う
 4. **コミット・プッシュ**: `git add <変更ファイル>` → `git commit -m "type: message"` → `git push -u origin <branch>`
 5. **Review**: 別の新しい Devin セッションでレビューし、指摘を直す
-6. **PR 作成**: Devin の GitHub 連携か `gh` で作成する（draft 可）。`bugbot run` / `cursor review` / `@codex` は書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
+6. **PR 作成**: Devin の GitHub 連携か `gh` で作成する（draft 可）。Codex のレビューを使う: PR オープン時の自動レビューと、必要に応じた `@codex review` コメントの手動依頼の両方。Codex の指摘を検討したうえで CI とマージ基準に従う。`bugbot run` / `cursor review` は書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
 
 **人手のローカル作業**（git worktree を使う）
 
@@ -167,7 +167,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 - **マッチパターン拡張**: `*://*.youtube.com/*` を維持
 - **manifest.json 手動変更**: `version` は `pnpm run release` で管理
 - **PAT / ブラウザでの GitHub 操作**: しない（Devin の GitHub 連携か `gh` CLI を使う）
-- **停止中のレビューボット起動**: `bugbot run` / `cursor review` / `@codex` を PR に書かない
+- **停止中の Bugbot 起動**: `bugbot run` / `cursor review` を PR に書かない（例外は kyto 本人が手動で `bugbot run` する場合だけ）
 - **モデル指定**: ルールや手順書に特定モデル名（旧 `grok-*` / `composer-*` など）を書かない
 - **description 省略不可**: i18n キーには `message` と `description` を必須
 - **E2E テスト無視**: 主要ユーザーストーリーは e2e でカバー
@@ -177,7 +177,8 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 PR 作成前のレビューは Workflow の **Review**（実装とは別の新しい Devin セッション、[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、base との `git diff`）が正。指摘を直してから PR を出す。
 
-- Cursor Bugbot などのレビューボットは使わない。エージェントは `bugbot run` / `cursor review` / `@codex` を書かない。例外は kyto 本人が手動で `bugbot run` する場合だけ
+- Codex のレビューを使う: PR オープン時の自動レビューと、必要に応じた `@codex review` コメントの手動依頼の両方。Codex の指摘を検討したうえで CI とマージ基準に従う
+- Bugbot は停止中。エージェントは `bugbot run` / `cursor review` を書かない。例外は kyto 本人が手動で `bugbot run` する場合だけ
 - Dependabot の PR はレビューセッションの対象外。patch / minor は CI のみで auto-merge、major は下記「Dependabot 自動化」
 
 ### マージ基準
