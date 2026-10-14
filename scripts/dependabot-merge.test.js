@@ -20,10 +20,6 @@ const triageWorkflow = readFileSync(
   join(repoRoot, '.github/workflows/dependabot-auto-merge.yml'),
   'utf8'
 );
-const mergeWorkflow = readFileSync(
-  join(repoRoot, '.github/workflows/dependabot-merge-after-checks.yml'),
-  'utf8'
-);
 
 describe('isDependabotLogin', () => {
   it('accepts both gh CLI and REST author logins', () => {
@@ -154,9 +150,8 @@ describe('dependabot-merge CLI', () => {
 });
 
 describe('Dependabot triage workflow', () => {
-  it('keeps the workflow name other jobs depend on', () => {
+  it('keeps the triage workflow name stable', () => {
     expect(triageWorkflow).toMatch(/^name: Dependabot triage$/m);
-    expect(mergeWorkflow).toMatch(/^name: Merge Dependabot update after checks$/m);
   });
 
   it('approves only patch and minor via fetch-metadata update-type', () => {
@@ -174,6 +169,13 @@ describe('Dependabot triage workflow', () => {
     expect(triageWorkflow).not.toContain('--add-reviewer kyto64');
     expect(triageWorkflow).toContain(MAJOR_HOLD_COMMENT_MARKER);
     expect(triageWorkflow).toContain('AI risk review');
-    expect(mergeWorkflow).toContain('--json number,author,body,labels');
+  });
+
+  it('enables GitHub auto-merge for patch and minor only', () => {
+    const automerge = triageWorkflow.slice(triageWorkflow.indexOf('automerge:'));
+    expect(automerge).toContain('--auto');
+    expect(automerge).toContain('--squash');
+    expect(automerge).not.toContain('gh run list');
+    expect(automerge).not.toContain('workflow_run');
   });
 });
