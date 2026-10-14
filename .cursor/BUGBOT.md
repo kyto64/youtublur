@@ -37,7 +37,7 @@ kyto が起動した場合の回数: レビュー可能になったときに 1 �
 - `manifest.json` の `version` を手動で変える。バージョンは `pnpm run release` だけが上げる。
 - UI に出す文字列を i18n 経由にしない。ロケールキーの追加・変更が `en`, `es`, `id`, `ja`, `ko`, `pt_BR`, `zh_CN`, `zh_TW` のどれかで欠ける。キーに `message` または `description` が無い。
 - コンパイル成果物（root の `content.js` / `popup.js` / `storage-mode.js` / `review-nudge.js`）だけを手編集し、対応する `src/*.ts` を変えていない。
-- ワークフロー名 `Test` / `Lint` / `E2E Tests` / `Semgrep` を変える、または Dependabot 自動マージ（`dependabot-auto-merge.yml`、`dependabot-merge-after-checks.yml`、`scripts/dependabot-merge.mjs`）がこれらの結論を読めなくなる。
+- ワークフロー名 `Test` / `Lint` / `E2E Tests` / `Semgrep` を変える、または Dependabot 自動マージ（`dependabot-auto-merge.yml`、`scripts/dependabot-merge.mjs`）と ruleset 必須チェック（各ジョブ名）の整合が崩れる。
 - 新しい機能なのにユニットテストが無く、既存テストも更新されていない。`pnpm test` や `pnpm exec vp lint` が落ちる。
 - ユーザー入力やストレージ値を検証せず DOM に入れる（XSS）。シークレットやトークンをリポジトリに書く。
 
@@ -84,7 +84,7 @@ YouTube 視聴ページのプレイヤー背景を単色またはブラーにす
 ### Dependabot とリリース
 
 - Dependabot（作者 `app/dependabot` と `dependabot[bot]` の両方）の patch / minor は、`Test` / `Lint` / `E2E Tests` / `Semgrep` が成功したあと自動マージする。semver major（`fetch-metadata` の `version-update:semver-major`）はワークフローでは自動承認も自動マージもしない。トリアージが `needs-ai-review` と `dependency-major` を付ける。`kyto64` へのレビュー依頼はしない。AI リスク判定は CI 外のアシスタントが行い、低リスクはメンテ bot がマージし、リスクがあるものだけ kyto にエスカレーションする。
-- ワークフロー名はジョブ名ではない。`Test` の Node マトリクスと `E2E Tests` のブラウザマトリクスは、それぞれ 1 run で、全ジョブ成功のときだけ conclusion が success。`dependabot-merge-after-checks.yml` は `gh run list --workflow` でこの名前を読む。名前を変えない。
+- ruleset の required status checks は **ジョブ名**（check run 名）で指定する。`Test` の `Node 22.22.2` / `Node 24` / `Node 26` / `test`、`E2E Tests` の `test-e2e (chromium)` / `test-e2e (firefox)`、`Semgrep` の `Analyze` など。ワークフロー `name:` フィールドと混同しない。
 - Dependabot の PR は Bugbot ではレビューしない。自動マージ条件に `Cursor Bugbot` を足さない。Dependabot PR に Bugbot の指摘が無いことを指摘しない。patch / minor の自動マージは `Test` / `Lint` / `E2E Tests` / `Semgrep` のみ。
 - 自動パッチリリースは最大 1 日 1 回（既定 cron は UTC 15:00）。`package.json` の version やタグをこの PR で手動変更しない。
 - `GITHUB_TOKEN` による push では他ワークフローが再実行されない。日次リリースの publish 起動（`scripts/dispatch-publish.sh`、`RELEASE_PUSH_TOKEN`）を、レビューで別方式に置き換えない。

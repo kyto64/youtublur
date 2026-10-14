@@ -83,5 +83,21 @@ jobs:
         run: |
           gh pr review "${{ github.event.pull_request.number }}" \
             --approve \
-            --body "Automated approve for Dependabot updates. CI (Test, Lint, E2E Tests, Semgrep) must pass before merge." \
+            --body "Automated approve for Dependabot patch/minor updates. GitHub auto-merge (squash) waits for required status checks on the ruleset." \
+            --repo "${{ github.repository }}"
+
+      - name: Enable GitHub auto-merge (squash)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          PR_NUMBER="${{ github.event.pull_request.number }}"
+          ENABLED=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json autoMergeRequest --jq '.autoMergeRequest != null')
+          if [ "$ENABLED" = "true" ]; then
+            echo "Auto-merge already enabled; skipping."
+            exit 0
+          fi
+          gh pr merge "$PR_NUMBER" \
+            --auto \
+            --squash \
             --repo "${{ github.repository }}"
