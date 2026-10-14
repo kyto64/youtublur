@@ -13,5 +13,6 @@ alwaysApply: true
 - コード変更後は必ず `pnpm test` と `pnpm typecheck` を実行する
 - コミット前に `pnpm exec vp lint` を実行する
 - GitHub 操作は Devin の GitHub 連携か `gh` CLI を使う
-- `bugbot run` / `cursor review` / `@codex` は PR に書かない（レビューボットは使わない。例外は kyto 本人が手動で `bugbot run` する場合だけ）
+- Codex のレビューを使う: PR オープン時の自動レビューと、必要に応じた `@codex review` コメントの手動依頼の両方。Codex の指摘を検討したうえで CI とマージ基準に従う
+- `bugbot run` / `cursor review` は PR に書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
 - バージョンは `pnpm run release` フローで管理（手動変更禁止）

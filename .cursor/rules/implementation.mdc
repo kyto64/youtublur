@@ -104,7 +104,7 @@ alwaysApply: true
 4. Test の必須コマンドは `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
 5. コミット: `git add <変更ファイル> && git commit -m "type: message"`
 6. プッシュ: `git push -u origin <branch>`
-7. Review（別の新しい Devin セッション）を通してから PR を作成する（Devin の GitHub 連携か `gh pr create`）。`bugbot run` / `cursor review` / `@codex` は書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
+7. Review（別の新しい Devin セッション）を通してから PR を作成する（Devin の GitHub 連携か `gh pr create`）。Codex のレビューを使う: PR オープン時の自動レビューと、必要に応じた `@codex review` コメントの手動依頼の両方。Codex の指摘を検討したうえで CI とマージ基準に従う。`bugbot run` / `cursor review` は書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
 8. **cleanup**（worktree を使った場合）: `git worktree remove ../youtublur-<name>`
 
 ## 注意
