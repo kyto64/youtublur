@@ -6,7 +6,14 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 ## Workflow（必須）
 
-計画・実装・PR 前レビューはすべて Devin（Fusion モード）のセッションで行う。モデルはセッションのモードに任せ、リポジトリ側ではモデル名を指定しない。ブランチ名とコマンドの詳細は下記「開発手順」「開発コマンド」、ハーネスの配置は [docs/development.md](./docs/development.md) を参照する。
+計画・実装・PR 前レビューはすべて Devin のセッションで行う。リポジトリ側ではモデル名を指定しない。Devin のモードはタスクの重さで選ぶ。
+
+- **normal**（既定）: ドキュメント、小さな修正、ルール編集、レビュー
+- **fusion**: 複雑なロジック、複数ファイルにまたがる大きな変更、難しいバグだけ
+- **ultra**: kyto の承認なしでは使わない
+- セッション起動時の報告に、使ったモードと理由を一言添える（例: 「normal（ドキュメントのみの変更のため）」）
+
+ブランチ名とコマンドの詳細は下記「開発手順」「開発コマンド」、ハーネスの配置は [docs/development.md](./docs/development.md) を参照する。
 
 1. **Plan**（実装セッション）: 変更前に目的・影響ファイル・手順・テスト方針を箇条書きで出す。不明点は仮定を明記する。
 2. **Implement**（実装セッション）: 計画に沿って最小差分で実装する。手順と制約は [`.cursor/agents/implementer.md`](./.cursor/agents/implementer.md)。
@@ -18,7 +25,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
    - UI の挙動を変える場合は `pnpm run test:e2e`
    - UI 変更はスクリーンショットを残す
 4. **Verify**（実装セッション）: [`.cursor/agents/verifier.md`](./.cursor/agents/verifier.md) の手順で、テスト結果と差分を要件と照合し `passed` / `incomplete` を出す。`incomplete` なら Implement に戻る。
-5. **Review**（別の新しい Devin セッション）: ブランチを push したあと、実装とは別の新しい Devin セッション（Fusion モード、クリーンコンテキスト）に [`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md) の手順で base との `git diff` をレビューさせる。渡すのはブランチ名・base・要件の箇条書きだけで、実装の経緯は渡さない。レビューセッションはファイル編集・コミット・push をしない。blocking / medium は実装セッションで直し、Test からやり直してから PR を出す。
+5. **Review**（別の新しい Devin セッション）: ブランチを push したあと、実装とは別の新しい Devin セッション（normal、クリーンコンテキスト）に [`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md) の手順で base との `git diff` をレビューさせる。渡すのはブランチ名・base・要件の箇条書きだけで、実装の経緯は渡さない。レビューセッションはファイル編集・コミット・push をしない。blocking / medium は実装セッションで直し、Test からやり直してから PR を出す。
 6. **Report**（実装セッション）: PR 本文に計画・実施したテストと結果・Verify 結果・レビュー結果（レビューセッションの URL）・未解決事項を書く。
 
 ## リポジトリ構造
