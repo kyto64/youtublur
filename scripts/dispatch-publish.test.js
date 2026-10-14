@@ -113,6 +113,7 @@ describe('daily workflow wiring', () => {
     expect(releaseJob).not.toContain('actions: write');
     expect(dispatchJob).toContain('needs: patch-release');
     expect(dispatchJob).toContain("needs.patch-release.outputs.dispatch_publish == 'true'");
+    expect(dispatchJob).toContain("needs.patch-release.outputs.tag != ''");
     expect(dispatchJob).toContain('actions: write');
     expect(dispatchJob).toContain('contents: read');
     expect(dispatchJob).toContain('ref: master');

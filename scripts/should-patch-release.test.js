@@ -218,8 +218,11 @@ describe('daily workflow wiring', () => {
     expect(dailyWorkflow).toContain('secrets.RELEASE_APP_ID');
     expect(dailyWorkflow).toContain('secrets.RELEASE_APP_PRIVATE_KEY');
     expect(dailyWorkflow).toContain('id: release_auth');
-    expect(dailyWorkflow).toContain('dispatch_publish=false');
+    expect(dailyWorkflow).toContain('permission-contents: write');
+    expect(dailyWorkflow).toContain('tag_push_triggers_publish=true');
+    expect(dailyWorkflow).toContain('id: release_dispatch');
     expect(dailyWorkflow).not.toContain('secrets.RELEASE_PUSH_TOKEN || github.token');
+    expect(dailyWorkflow).not.toMatch(/if:.*secrets\./);
   });
 
   it('bumps with an explicit next patch, not pnpm run release --release-as patch', () => {

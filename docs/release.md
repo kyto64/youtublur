@@ -22,7 +22,7 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 
 1. **`RELEASE_APP_ID` と `RELEASE_APP_PRIVATE_KEY`**（GitHub App `youtublur-release-bot`。ruleset `master-ci` の bypass 対象）。`actions/create-github-app-token` で発行したトークンを使う。コミット／タグの author は App の bot（`youtublur-release-bot[bot]`）。tag push が `publish.yml` の `on: push tags` を起動するため、**`dispatch-publish` は実行しない**（二重公開防止）。
 2. **`RELEASE_PUSH_TOKEN`**（legacy。`contents: write` 付き classic PAT など）。tag push で `publish.yml` が起動するため dispatch は行わない。
-3. **上記いずれも未設定**（`GITHUB_TOKEN` のみ）。`master` への push が ruleset で拒否される環境ではリリース自体が失敗しうるが、従来どおり tag push のあと別ジョブ `dispatch-publish` から `publish.yml` を **`workflow_dispatch`** で起動し、作成したタグ名を `inputs.tag` に渡す。同時に `build_from_tag=true` を指定し、拡張は **タグ付きコミット**からビルドする（`GITHUB_TOKEN` で `actions: write` が必要。UI の boolean `true` でも `gh workflow run -f build_from_tag=true` の文字列 `"true"` でもタグを checkout する）。dispatch の前にタグが origin にあることを確認する。
+3. **上記いずれも未設定**（`GITHUB_TOKEN` のみ）。`master` への push が ruleset で拒否される環境ではリリース自体が失敗しうるが、**パッチリリースを実際に作ったときだけ**、tag push のあと別ジョブ `dispatch-publish` から `publish.yml` を **`workflow_dispatch`** で起動し、作成したタグ名を `inputs.tag` に渡す。App のトークン発行に失敗した場合は PAT へ自動フォールバックしない（ジョブは失敗する）。同時に `build_from_tag=true` を指定し、拡張は **タグ付きコミット**からビルドする（`GITHUB_TOKEN` で `actions: write` が必要。UI の boolean `true` でも `gh workflow run -f build_from_tag=true` の文字列 `"true"` でもタグを checkout する）。dispatch の前にタグが origin にあることを確認する。
 
 `master-ci` など PR 必須の ruleset 下では、**推奨は 1 の GitHub App**（App 権限は Contents read/write のみ。Secrets は **Settings → Secrets and variables → Actions** に登録）。
 
