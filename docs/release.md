@@ -11,7 +11,7 @@
 
 設定は [.github/dependabot.yml](.github/dependabot.yml)。
 
-- **semver major** は Dependabot `fetch-metadata` の `version-update:semver-major` で判定する。ワークフローでは自動承認・自動マージしない。[dependabot-auto-merge.yml](../.github/workflows/dependabot-auto-merge.yml) がラベル `needs-ai-review` と `dependency-major` を付与（未作成なら作成）する。`kyto64` へのレビュー依頼はしない。コメントはマーカー `<!-- dependabot-major-hold -->` で一度だけ投稿し、rebase / 再実行では重複しない。Cursor Bugbot は Dependabot PR をレビューしない。AI リスク判定は CI 外のアシスタントが行い、低リスクはメンテ bot がマージし、リスクがあるものだけ kyto にエスカレーションする。[dependabot-merge.mjs](../scripts/dependabot-merge.mjs) も本文の `from X to Y` または上記ラベルで major をスキップする（マージスクリプトに承認や `ai-reviewed` ゲートは置かない。major はワークフローでは手動マージ扱い）。
+- **semver major** は Dependabot `fetch-metadata` の `version-update:semver-major` で判定する。ワークフローでは自動承認・自動マージしない。[dependabot-auto-merge.yml](../.github/workflows/dependabot-auto-merge.yml) がラベル `needs-ai-review` と `dependency-major` を付与（未作成なら作成）する。`kyto64` へのレビュー依頼はしない。コメントはマーカー `<!-- dependabot-major-hold -->` で一度だけ投稿し、rebase / 再実行では重複しない。リスク評価は月・木の見回りで行い、低リスクはメンテ bot がマージし、リスクがあるものだけ kyto にエスカレーションする。[dependabot-merge.mjs](../scripts/dependabot-merge.mjs) も本文の `from X to Y` または上記ラベルで major をスキップする（マージスクリプトに承認や `ai-reviewed` ゲートは置かない。major はワークフローでは手動マージ扱い）。
 - **patch / minor** は [.github/workflows/dependabot-auto-merge.yml](../.github/workflows/dependabot-auto-merge.yml) が承認し、続けて `gh pr merge --auto --squash` で **GitHub の auto-merge** を有効にする。必須チェックの待ち合わせと squash マージは GitHub が行う（CI 側で `workflow_run` のポーリングや `gh pr merge` による直接マージはしない）。リポジトリ設定 **Allow auto-merge** がオンであること。ruleset `master-ci` に **required status checks**（各ジョブ名。下表）を追加しないと、auto-merge は必須チェックを待たずにマージしうる。**極めて高リスク**とみなすのは、必須チェックが失敗する場合、または既存の Test / Lint / E2E / Semgrep スイートが検証できない変更。semver major の除外はワークフローの `fetch-metadata` と [`scripts/dependabot-merge.mjs`](../scripts/dependabot-merge.mjs)（本文 `from X to Y` / hold ラベル）が担う（patch/minor の auto-merge ジョブは major では走らない）。
 - **自動パッチリリース**は [.github/workflows/dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) が **最大 1 日 1 回**（cron、既定で **UTC 15:00**）だけ実行する。直前の `v*` タグ以降にリリース対象の変更がない場合は **スキップ**（その日はリリースコミットを作らない）。判定は [`scripts/should-patch-release.mjs`](../scripts/should-patch-release.mjs)。**リリースする**のは、Conventional Commits の `feat` / `fix` / `perf`（スコープが `ci` / `docs` / `test` / `chore` だけのものは除く）、または配布する拡張ファイル（`src/`、`manifest.json`、`popup.html`、`style.css`、ルートの拡張 JS、`_locales/`、`icons/`）や `package.json` / `pnpm-lock.yaml` に触れた変更。docs / CI / テスト / chore だけの差分は出さない。バンプは常に **patch** で、`commit-and-tag-version --release-as <next patch>` に次のパッチ番号（例: `1.12.30`）を明示する。`pnpm run release -- --release-as patch` は使わない（feat が混ざると minor に上がることがある）。同日に複数マージしても、その日の自動実行は高々 1 回にまとまる。**すぐにパッチを出したいとき**は GitHub Actions で同ワークフローを **`workflow_dispatch`** 手動実行できる。
 - **major を手動マージしたあと**も、日次の自動パッチリリースが `package.json` / `pnpm-lock.yaml` の差分を見て patch を上げる。手動で semver を選ぶ必要がある場合は従来どおりローカルで `pnpm run release` して push する。
@@ -55,13 +55,11 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 | タグ後の `publish.yml` まで自動化 | **Settings → Secrets and variables → Actions** | **`RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KEY`**（推奨）または `RELEASE_PUSH_TOKEN` を設定すると tag push で `publish.yml` が起動し、`dispatch-publish` はスキップされる。未設定時は日次ワークフローが `workflow_dispatch` で起動 |
 | 日次 cron の時刻 | [dependabot-daily-patch-release.yml](.github/workflows/dependabot-daily-patch-release.yml) の `cron` | GitHub は **UTC**。変更する場合はこの行を編集する |
 
-### Bugbot（PR レビュー）
+### PR レビュー
 
-PR 作成前のレビューは `reviewer` subagent が正。Cursor Bugbot は停止しており、kyto が PR に `bugbot run` とコメントしたときだけ走る（push では自動実行しない）。エージェントは起動コメントを書かない。Bugbot が動いた場合の基準は [`.cursor/BUGBOT.md`](../.cursor/BUGBOT.md)。
+PR 作成前のレビューは、実装とは別の新しい Devin セッションが [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) に従って行う（[AGENTS.md](../AGENTS.md) の Workflow）。Cursor Bugbot は停止中で、`bugbot run` / `cursor review` / `@codex` は使わない。
 
-- 実行回数は、レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびにコメントしない（1 回ごとに費用がかかる）。
-- 結果は GitHub のチェック run `Cursor Bugbot`。`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー。
-- Dependabot の PR は Bugbot ではレビューしない。patch / minor は GitHub auto-merge が ruleset の必須チェック（上表）を待って squash する。semver major はワークフローでは自動マージしない。
+- Dependabot の PR はレビューセッションの対象外。patch / minor は GitHub auto-merge が ruleset の必須チェック（上表）を待って squash する。semver major はワークフローでは自動マージしない。
 
 ---
 

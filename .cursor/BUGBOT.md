@@ -1,16 +1,14 @@
 # Bugbot レビュールール（youtublur）
 
-このファイルは、kyto が PR に `bugbot run` したときだけ適用する Bugbot 用の基準である。
-通常の PR 作成前レビューの正は `reviewer` subagent（`.cursor/agents/reviewer.md`）であり、このファイルではない。
+Cursor Bugbot は停止中で、このファイルは現在どのレビューにも適用しない（参考として残している）。
+PR 作成前レビューの正は、実装とは別の新しい Devin セッションが従う [`.cursor/agents/reviewer.md`](./agents/reviewer.md) であり、このファイルではない。
 
 Bugbot は `.cursor/rules/*.mdc` を適用しない。`AGENTS.md` を読むかも未確認なので、Bugbot が動くときに必要な方針はここに自己完結で書いてある。変更行と、その変更が壊しうる呼び出し元だけを見る。無関係な既存コードの一括改修は求めない。
 
 ## 起動
 
-Cursor Bugbot は停止しており、push では自動実行しない。日常の PR レビューには使わない。
-動くのは kyto が PR に `bugbot run` とコメントしたときだけ。エージェントは起動コメントを書かない。
-
-kyto が起動した場合の回数: レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。細かい push のたびに要求しない（1 回ごとに費用がかかる）。結果はチェック run `Cursor Bugbot`（`success` は指摘なし、`neutral` は指摘あり・キャンセル・エラー）。Dependabot の PR はレビューしない。
+Cursor Bugbot は停止中。`bugbot run` / `cursor review` / `@codex` は使わず、エージェントも起動コメントを書かない。
+以下は Bugbot を再開する場合に備えた旧基準である（再開時の回数の目安: レビュー可能になったときに 1 回、その指摘への修正を push したあとに 1 回。結果はチェック run `Cursor Bugbot`）。
 
 ## レビューコメントの言語
 
