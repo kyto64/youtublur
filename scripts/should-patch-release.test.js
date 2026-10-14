@@ -211,6 +211,20 @@ describe('daily workflow wiring', () => {
     expect(dailyWorkflow).toContain("needs.patch-release.outputs.dispatch_publish == 'true'");
   });
 
+  it('issues a GitHub App token for master push when App secrets are set', () => {
+    expect(dailyWorkflow).toContain(
+      'actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2'
+    );
+    expect(dailyWorkflow).toContain('secrets.RELEASE_APP_ID');
+    expect(dailyWorkflow).toContain('secrets.RELEASE_APP_PRIVATE_KEY');
+    expect(dailyWorkflow).toContain('id: release_auth');
+    expect(dailyWorkflow).toContain('permission-contents: write');
+    expect(dailyWorkflow).toContain('tag_push_triggers_publish=true');
+    expect(dailyWorkflow).toContain('id: release_dispatch');
+    expect(dailyWorkflow).not.toContain('secrets.RELEASE_PUSH_TOKEN || github.token');
+    expect(dailyWorkflow).not.toMatch(/if:.*secrets\./);
+  });
+
   it('bumps with an explicit next patch, not pnpm run release --release-as patch', () => {
     expect(dailyWorkflow).toContain('pnpm exec commit-and-tag-version --release-as');
     expect(dailyWorkflow).toContain('steps.need.outputs.next_version');
