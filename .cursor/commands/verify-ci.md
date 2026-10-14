@@ -10,7 +10,7 @@ pnpm exec vp lint
 pnpm typecheck
 ```
 
-`pnpm test` は Vite+ のテスト（`vp test` と同等）を実行する。CI の [publish.yml](.github/workflows/publish.yml) および PR 用ワークフローでも同様に `vp lint`、テスト、型チェックが走る。
+`pnpm test` は Vite+ のテスト（`vp test` と同等）を実行する。CI の [publish.yml](../../.github/workflows/publish.yml) および PR 用ワークフローでも同様に `vp lint`、テスト、型チェックが走る。
 
 ## 失敗時
 

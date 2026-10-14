@@ -104,7 +104,7 @@ alwaysApply: true
 4. Test の必須コマンドは `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
 5. コミット: `git add <変更ファイル> && git commit -m "type: message"`
 6. プッシュ: `git push -u origin <branch>`
-7. Review（別の新しい Devin セッション）を通してから PR を作成する（Devin は GitHub 連携、人手は `gh pr create`）。`bugbot run` / `cursor review` / `@codex` は書かない
+7. Review（別の新しい Devin セッション）を通してから PR を作成する（Devin の GitHub 連携か `gh pr create`）。`bugbot run` / `cursor review` / `@codex` は書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
 8. **cleanup**（worktree を使った場合）: `git worktree remove ../youtublur-<name>`
 
 ## 注意
@@ -112,7 +112,7 @@ alwaysApply: true
 - Lint エラーはコミット前に解消すること
 - 未コミットの変更が残ったまま `pnpm run release` を実行しない
 - AIエージェントによるコード生成も含め、すべてのコード変更はレビューとテストを経ること
-- PR 前の検証とレビューは Workflow の Verify（実装セッション）と Review（別の新しい Devin セッション）が正。7 視点の自己レビューや Bugbot 起動は使わない
+- PR 前の検証とレビューは Workflow の Verify（実装セッション）と Review（別の新しい Devin セッション）が正。7 視点の自己レビューやエージェントによる Bugbot 起動は使わない
 
 ## 参考資料
 - 設計原則: [DESIGN.md](../DESIGN.md)

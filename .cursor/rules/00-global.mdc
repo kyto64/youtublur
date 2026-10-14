@@ -12,6 +12,6 @@ alwaysApply: true
 - 変更作業の順序と品質ゲートは [AGENTS.md](../../AGENTS.md) の **Workflow（必須）** が正
 - コード変更後は必ず `pnpm test` と `pnpm typecheck` を実行する
 - コミット前に `pnpm exec vp lint` を実行する
-- GitHub 操作は Devin の GitHub 連携か `gh` CLI を使用（PAT/ブラウザは禁止）
-- `bugbot run` / `cursor review` / `@codex` は PR に書かない（停止中）
+- GitHub 操作は Devin の GitHub 連携か `gh` CLI を使う
+- `bugbot run` / `cursor review` / `@codex` は PR に書かない（レビューボットは使わない。例外は kyto 本人が手動で `bugbot run` する場合だけ）
 - バージョンは `pnpm run release` フローで管理（手動変更禁止）

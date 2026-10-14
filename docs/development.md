@@ -76,10 +76,11 @@ pnpm install
 | [`.cursor/agents/reviewer.md`](../.cursor/agents/reviewer.md) | 実装とは別の新しい Devin セッション（クリーンコンテキスト）が Review で従う。base との `git diff` だけを見て、編集・push はしない |
 | [`.cursor/commands/`](../.cursor/commands/) | 定型作業の手順（`self-review` など）。Devin にはファイル名で指示する |
 | [`.cursor/rules/*.mdc`](../.cursor/rules/) | パス別のルール。Devin CLI と Devin Review も読む |
-| [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | `engines` を満たす Node（不足時は `$HOME/.youtublur-node` に 22.22.2 を展開。`/usr/local` のシステム Node は上書きしない）、`~/.bashrc` / `~/.profile` に PATH を冪等追記、corepack の pnpm、`pnpm install --frozen-lockfile`。Devin の VM（Node 無し）でもそのまま動く |
-| [`.cursor/environment.json`](../.cursor/environment.json) | Cursor Cloud Agent 用の install 設定。現在は未使用 |
+| [`scripts/cloud-agent-install.sh`](../scripts/cloud-agent-install.sh) | `engines` を満たす Node（不足時は `$HOME/.youtublur-node` に 22.22.2 を展開。`/usr/local` のシステム Node は上書きしない）、`~/.bashrc` / `~/.profile` に PATH を冪等追記、corepack の pnpm、`pnpm install --frozen-lockfile`。Devin の環境設定（blueprint）から呼ぶ前提。Node の無い VM でもそのまま動く |
 
-Devin の環境（blueprint）は Devin 側の設定で管理し、リポジトリには置かない。依存セットアップは `scripts/cloud-agent-install.sh` を使う。シークレットはリポジトリに置かない。Playwright ブラウザは既定では入れない。既定の `pnpm test` は jsdom であり、`pnpm run test:e2e` は UI 変更時だけ必要で、Chromium / Firefox の取得が重いため。E2E が要るときはエージェントが `pnpm exec playwright install --with-deps` を実行する。
+Devin の環境（blueprint）は Devin 側の設定で管理し、リポジトリには置かない。依存セットアップは blueprint から `bash scripts/cloud-agent-install.sh` を呼ぶ前提とする。シークレットはリポジトリに置かない。Playwright ブラウザは既定では入れない。既定の `pnpm test` は jsdom であり、`pnpm run test:e2e` は UI 変更時だけ必要で、Chromium / Firefox の取得が重いため。E2E が要るときはエージェントが `pnpm exec playwright install --with-deps` を実行する。
+
+手順書は当面 `.cursor/` に置く。Devin ネイティブの `.devin/skills/<name>/SKILL.md` への移行は今後の課題。
 
 ## コード構造
 

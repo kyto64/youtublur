@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# クラウドエージェント（Devin の VM、旧 Cursor Cloud Agent）の依存セットアップ用。依存を入れ、pnpm test がすぐ走るようにする。
+# Devin の環境設定（blueprint）から呼ぶ依存セットアップ用（Node の無い VM・ローカルでも可）。依存を入れ、pnpm test がすぐ走るようにする。
 # 冪等。シークレットは扱わない。Playwright ブラウザは入れない（下記コメント）。
 # システムの /usr/local や VM 同梱 Node は上書きしない（エージェント runtime 破損防止）。
 

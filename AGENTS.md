@@ -8,7 +8,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 計画・実装・PR 前レビューはすべて Devin のセッションで行う。リポジトリ側ではモデル名を指定しない。Devin のモードはタスクの重さで選ぶ。
 
-- **normal**（既定）: ドキュメント、小さな修正、ルール編集、レビュー
+- **normal**（既定）: ドキュメント、小さな修正、ルール編集、レビュー（重い PR のレビューだけ fusion 可）
 - **fusion**: 複雑なロジック、複数ファイルにまたがる大きな変更、難しいバグだけ
 - **ultra**: kyto の承認なしでは使わない
 - セッション起動時の報告に、使ったモードと理由を一言添える（例: 「normal（ドキュメントのみの変更のため）」）
@@ -25,7 +25,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
    - UI の挙動を変える場合は `pnpm run test:e2e`
    - UI 変更はスクリーンショットを残す
 4. **Verify**（実装セッション）: [`.cursor/agents/verifier.md`](./.cursor/agents/verifier.md) の手順で、テスト結果と差分を要件と照合し `passed` / `incomplete` を出す。`incomplete` なら Implement に戻る。
-5. **Review**（別の新しい Devin セッション）: ブランチを push したあと、実装とは別の新しい Devin セッション（normal、クリーンコンテキスト）に [`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md) の手順で base との `git diff` をレビューさせる。渡すのはブランチ名・base・要件の箇条書きだけで、実装の経緯は渡さない。レビューセッションはファイル編集・コミット・push をしない。blocking / medium は実装セッションで直し、Test からやり直してから PR を出す。
+5. **Review**（別の新しい Devin セッション）: ブランチを push したあと、実装とは別の新しい Devin セッション（普段は normal、重い PR だけ fusion 可。クリーンコンテキスト）に [`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md) の手順で base との `git diff` をレビューさせる。渡すのはブランチ名・base・要件の箇条書きだけで、実装の経緯は渡さない。レビューセッションはファイル編集・コミット・push をしない。blocking / medium は実装セッションで直し、Test からやり直してから PR を出す。
 6. **Report**（実装セッション）: PR 本文に計画・実施したテストと結果・Verify 結果・レビュー結果（レビューセッションの URL）・未解決事項を書く。
 
 ## リポジトリ構造
@@ -71,7 +71,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 3. **実装以降**: コード・ドキュメントの変更、Test、Verify は Workflow に従う
 4. **コミット・プッシュ**: `git add <変更ファイル>` → `git commit -m "type: message"` → `git push -u origin <branch>`
 5. **Review**: 別の新しい Devin セッションでレビューし、指摘を直す
-6. **PR 作成**: Devin の GitHub 連携で作成する（draft 可）。`bugbot run` / `cursor review` / `@codex` は書かない
+6. **PR 作成**: Devin の GitHub 連携か `gh` で作成する（draft 可）。`bugbot run` / `cursor review` / `@codex` は書かない（Bugbot は停止中。例外は kyto 本人が手動で `bugbot run` する場合だけ）
 
 **人手のローカル作業**（git worktree を使う）
 
@@ -145,7 +145,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 - **手順書**: [`.cursor/agents/`](./.cursor/agents/)（`implementer`, `verifier`, `reviewer`）。Workflow の各ステップで Devin セッションが従う。モデル指定は書かない
 - **定型作業の手順**: [`.cursor/commands/`](./.cursor/commands/)（`self-review`, `feedback-review`, `verify-ci`, `release-app`）。Devin には「`.cursor/commands/self-review.md` に従って」のようにファイルで指示する
 - **ルールファイル**: [`.cursor/rules/*.mdc`](./.cursor/rules/)（グローバルルールは `alwaysApply: true`）。Devin CLI と Devin Review も読む
-- **環境**: Devin の環境（blueprint）は Devin 側の設定で管理し、リポジトリには置かない。依存セットアップは [`scripts/cloud-agent-install.sh`](./scripts/cloud-agent-install.sh)
+- **環境**: Devin の環境（blueprint）は Devin 側の設定で管理し、リポジトリには置かない。依存セットアップは blueprint から [`scripts/cloud-agent-install.sh`](./scripts/cloud-agent-install.sh) を呼ぶ前提
 
 ## Do / Don't
 
@@ -177,13 +177,16 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 PR 作成前のレビューは Workflow の **Review**（実装とは別の新しい Devin セッション、[`.cursor/agents/reviewer.md`](./.cursor/agents/reviewer.md)、base との `git diff`）が正。指摘を直してから PR を出す。
 
-- Cursor Bugbot は停止中。`bugbot run` / `cursor review` / `@codex` は使わない。旧 Bugbot 基準 [`.cursor/BUGBOT.md`](./.cursor/BUGBOT.md) は参考として残している
+- Cursor Bugbot などのレビューボットは使わない。エージェントは `bugbot run` / `cursor review` / `@codex` を書かない。例外は kyto 本人が手動で `bugbot run` する場合だけ
 - Dependabot の PR はレビューセッションの対象外。patch / minor は CI のみで auto-merge、major は下記「Dependabot 自動化」
 
 ### マージ基準
 
-- **軽い PR**: CI 成功でセルフマージ
-- **重い / 致命的な PR**: CI 成功 + kyto の承認
+迷ったら重い扱いにする。
+
+- **軽い PR**（CI 成功でセルフマージ）: docs、typo、小さな修正、設定
+- **重い PR**（CI 成功 + kyto の承認）: 約 100 行を超えるロジック変更、セキュリティ・権限・データ・ビルド・リリース・CI に関わる変更、publish 直前の変更
+- **致命的な PR**（必ず kyto の承認）: データ損失の恐れ、セキュリティ / 認証 / secret、リリース・デプロイ・リポジトリ設定、破壊的変更・major 依存更新、不可逆な操作
 
 ### レビューコメントの言語
 - PR 上のレビュー指摘・提案・説明・要約はすべて日本語で書くこと。
@@ -203,9 +206,9 @@ PR 作成前のレビューは Workflow の **Review**（実装とは別の新�
 
 詳細（ワークフロー、判定スクリプト、シークレット、必須チェック一覧）は [`docs/release.md`](./docs/release.md)。
 
-- **patch / minor**: [`dependabot-auto-merge.yml`](./.github/workflows/dependabot-auto-merge.yml) が承認し GitHub auto-merge（squash）。必須チェックは ruleset `master-ci` の required status checks 8 本
+- **patch / minor**: [`dependabot-auto-merge.yml`](./.github/workflows/dependabot-auto-merge.yml) が承認し GitHub auto-merge（squash）。必須チェックは ruleset `master-ci` の required status checks 8 本。semver major の除外は [`scripts/dependabot-merge.mjs`](./scripts/dependabot-merge.mjs) が actor `app/dependabot` と `dependabot[bot]` の両方で判定する（major は triage ワークフローが hold）
 - **major**: ワークフローでは自動マージしない（ラベル `needs-ai-review` / `dependency-major`）。月・木の見回りでリスク評価し、低リスクはメンテ bot がマージ、リスクがあるものだけ kyto にエスカレーション。`kyto64` へのレビュー依頼はしない
-- **日次パッチリリース**: 最大 1 日 1 回（UTC 15:00）。`master` への push は GitHub App `youtublur-release-bot` のトークンで行う
+- **日次パッチリリース**: 最大 1 日 1 回（UTC 15:00）。`master` への push は GitHub App `youtublur-release-bot` のトークンで行う。代替経路は legacy の `RELEASE_PUSH_TOKEN`、どちらも無ければ `GITHUB_TOKEN` で push し、タグ後に `dispatch-publish` ジョブが `publish.yml` を `workflow_dispatch` で起動する
 - **手動対応**: リスクありの major、CI が失敗する更新、既存テストがカバーしない変更
 
 ## 主なパス
@@ -226,7 +229,7 @@ PR 作成前のレビューは Workflow の **Review**（実装とは別の新�
 | E2E テスト | [`e2e/`](./e2e/) |
 | AI 検証ハーネス | [`e2e/ai-verify/`](./e2e/ai-verify/)（`pnpm run verify:ai-blur`、ブラー描画の証跡採取） |
 | 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token, dependabot-merge, should-patch-release, cloud-agent-install） |
-| エージェントハーネス | [`AGENTS.md`](./AGENTS.md)、[`.cursor/agents/`](./.cursor/agents/)、[`.cursor/commands/`](./.cursor/commands/)、[`scripts/cloud-agent-install.sh`](./scripts/cloud-agent-install.sh)。[`.cursor/environment.json`](./.cursor/environment.json) は Cursor 用で現在は未使用。説明は [docs/development.md](./docs/development.md) |
+| エージェントハーネス | [`AGENTS.md`](./AGENTS.md)、[`.cursor/agents/`](./.cursor/agents/)、[`.cursor/commands/`](./.cursor/commands/)、[`scripts/cloud-agent-install.sh`](./scripts/cloud-agent-install.sh)（Devin の blueprint から呼ぶ）。説明は [docs/development.md](./docs/development.md) |
 | CI/CD | [`.github/workflows/publish.yml`](./.github/workflows/publish.yml) |
 
 ## 設計理念

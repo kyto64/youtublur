@@ -10,12 +10,12 @@
    - 実行するもの: `pnpm test` / `pnpm exec vp lint` / `pnpm typecheck`（UI 変更時は `pnpm run test:e2e`）
    - `incomplete` なら Implement に戻って直し、やり直す
 
-2. **Review**（別の新しい Devin セッション）: ブランチを push し、実装とは別の新しい Devin セッション（normal、クリーンコンテキスト）に [`.cursor/agents/reviewer.md`](../agents/reviewer.md) の手順でレビューさせる。
+2. **Review**（別の新しい Devin セッション）: ブランチを push し、実装とは別の新しい Devin セッション（普段は normal、重い PR だけ fusion 可。クリーンコンテキスト）に [`.cursor/agents/reviewer.md`](../agents/reviewer.md) の手順でレビューさせる。
    - 渡すもの: ブランチ名、base（無指定なら `origin/master`）、要件の箇条書き
    - blocking / medium を実装セッションで直してから PR を出す
 
 3. **しないこと**
-   - PR への `bugbot run` / `cursor review` / `@codex`（Bugbot などは停止中）
+   - PR への `bugbot run` / `cursor review` / `@codex`（レビューボットは使わない。例外は kyto 本人が手動で `bugbot run` する場合だけ）
    - 実装セッション内だけで Review を済ませること（レビューは必ず別セッション）
    - レビューセッションによる編集・コミット・プッシュ
 
