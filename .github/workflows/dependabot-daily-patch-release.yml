@@ -85,7 +85,7 @@ jobs:
 
       - name: Setup Vite+
         if: steps.need.outputs.need_release == 'true'
-        uses: voidzero-dev/setup-vp@250f29ce396baf5e8f24498e17c0dfdebabc26eb # v1
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           # Release stays on one Node line. Latest 22.x satisfies engines
           # ^22.22.2. The Test workflow covers 22.22.2, 24, and 26.
