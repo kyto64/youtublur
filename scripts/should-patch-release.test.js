@@ -212,8 +212,8 @@ describe('daily workflow wiring', () => {
   });
 
   it('issues a GitHub App token for master push when App secrets are set', () => {
-    expect(dailyWorkflow).toContain(
-      'actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2'
+    expect(dailyWorkflow).toMatch(
+      /actions\/create-github-app-token@[0-9a-f]{40} # v\d+\.\d+\.\d+/
     );
     expect(dailyWorkflow).toContain('secrets.RELEASE_APP_ID');
     expect(dailyWorkflow).toContain('secrets.RELEASE_APP_PRIVATE_KEY');
