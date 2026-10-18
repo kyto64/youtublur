@@ -17,15 +17,61 @@ jobs:
       contents: write
     outputs:
       tag: ${{ steps.release.outputs.tag }}
-      dispatch_publish: ${{ steps.publish_mode.outputs.dispatch_publish }}
+      dispatch_publish: ${{ steps.release_dispatch.outputs.dispatch_publish }}
     steps:
+      - name: Detect release App secrets
+        id: release_app_config
+        env:
+          RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+          RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -n "${RELEASE_APP_ID}" ] && [ -n "${RELEASE_APP_PRIVATE_KEY}" ]; then
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create GitHub App token
+        id: app_token
+        if: steps.release_app_config.outputs.configured == 'true'
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2.2.2
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Resolve release push credentials
+        id: release_auth
+        env:
+          APP_TOKEN: ${{ steps.app_token.outputs.token }}
+          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
+        run: |
+          set -euo pipefail
+          if [ -n "${APP_TOKEN}" ]; then
+            echo "token=${APP_TOKEN}" >> "$GITHUB_OUTPUT"
+            echo "auth_source=app" >> "$GITHUB_OUTPUT"
+            echo "tag_push_triggers_publish=true" >> "$GITHUB_OUTPUT"
+            echo "Using GitHub App token for checkout and push; tag push triggers publish.yml."
+          elif [ -n "${RELEASE_PUSH_TOKEN}" ]; then
+            echo "token=${RELEASE_PUSH_TOKEN}" >> "$GITHUB_OUTPUT"
+            echo "auth_source=pat" >> "$GITHUB_OUTPUT"
+            echo "tag_push_triggers_publish=true" >> "$GITHUB_OUTPUT"
+            echo "Using RELEASE_PUSH_TOKEN for checkout and push; tag push triggers publish.yml."
+          else
+            echo "token=${{ github.token }}" >> "$GITHUB_OUTPUT"
+            echo "auth_source=github_token" >> "$GITHUB_OUTPUT"
+            echo "tag_push_triggers_publish=false" >> "$GITHUB_OUTPUT"
+            echo "No App or PAT secret; will dispatch publish.yml after push (GITHUB_TOKEN tag push does not trigger workflows)."
+          fi
+
       - name: Checkout master
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: master
           fetch-depth: 0
           fetch-tags: true
-          token: ${{ secrets.RELEASE_PUSH_TOKEN || github.token }}
+          token: ${{ steps.release_auth.outputs.token }}
 
       - name: Fetch tags from origin
         run: git fetch origin --tags
@@ -39,7 +85,7 @@ jobs:
 
       - name: Setup Vite+
         if: steps.need.outputs.need_release == 'true'
-        uses: voidzero-dev/setup-vp@237a7eda494c3466dcb53e9f067142b9218d64a1 # v1
+        uses: voidzero-dev/setup-vp@68f39c78aaf39be468cabd2afb09c162574c84af # v1.21.2
         with:
           # Release stays on one Node line. Latest 22.x satisfies engines
           # ^22.22.2. The Test workflow covers 22.22.2, 24, and 26.
@@ -52,9 +98,19 @@ jobs:
 
       - name: Configure git committer
         if: steps.need.outputs.need_release == 'true'
+        env:
+          AUTH_SOURCE: ${{ steps.release_auth.outputs.auth_source }}
+          GH_TOKEN: ${{ steps.release_auth.outputs.token }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          set -euo pipefail
+          if [ "${AUTH_SOURCE}" = "app" ]; then
+            BOT_USER_ID=$(gh api /users/youtublur-release-bot%5Bbot%5D --jq .id)
+            git config user.name "youtublur-release-bot[bot]"
+            git config user.email "${BOT_USER_ID}+youtublur-release-bot[bot]@users.noreply.github.com"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          fi
 
       - name: Bump patch version, changelog, manifest, and tag
         if: steps.need.outputs.need_release == 'true'
@@ -79,23 +135,23 @@ jobs:
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
           echo "Created release tag: ${TAG}"
 
-      - name: Decide publish trigger mode
+      - name: Decide publish dispatch after release
         if: steps.need.outputs.need_release == 'true'
-        id: publish_mode
+        id: release_dispatch
         env:
-          RELEASE_PUSH_TOKEN: ${{ secrets.RELEASE_PUSH_TOKEN }}
+          TAG_PUSH_TRIGGERS_PUBLISH: ${{ steps.release_auth.outputs.tag_push_triggers_publish }}
         run: |
           set -euo pipefail
-          if [ -n "${RELEASE_PUSH_TOKEN}" ]; then
+          if [ "${TAG_PUSH_TRIGGERS_PUBLISH}" = "true" ]; then
             echo "dispatch_publish=false" >> "$GITHUB_OUTPUT"
-            echo "RELEASE_PUSH_TOKEN is set; tag push should trigger publish.yml."
           else
             echo "dispatch_publish=true" >> "$GITHUB_OUTPUT"
-            echo "RELEASE_PUSH_TOKEN is unset; will dispatch publish.yml after push."
           fi
 
       - name: Push release commit and tags
         if: steps.need.outputs.need_release == 'true'
+        env:
+          GH_TOKEN: ${{ steps.release_auth.outputs.token }}
         run: git push origin master --follow-tags
 
   # Separate job so a failed dispatch can be re-run without another version bump.
@@ -103,7 +159,7 @@ jobs:
   # commits since the new tag and skips.
   dispatch-publish:
     needs: patch-release
-    if: needs.patch-release.outputs.dispatch_publish == 'true'
+    if: needs.patch-release.outputs.dispatch_publish == 'true' && needs.patch-release.outputs.tag != ''
     runs-on: ubuntu-latest
     permissions:
       actions: write

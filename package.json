@@ -1,6 +1,6 @@
 {
   "name": "youtublur",
-  "version": "1.12.30",
+  "version": "1.12.32",
   "description": "YouTubeを、もっと目に優しく。動画のブラー背景でやわらかな視聴体験を提供するChrome拡張機能です。",
   "main": "content.js",
   "scripts": {
@@ -22,7 +22,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
   "bugs": {
     "url": "https://github.com/kyto64/youtublur/issues"
   },
@@ -31,13 +32,13 @@
     "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.63.0",
-    "@types/chrome": "0.3.4",
+    "@playwright/test": "1.64.0",
+    "@types/chrome": "0.3.5",
     "@vitest/coverage-v8": "5.0.3",
     "@voidzero-dev/vite-plus-core": "1.1.0",
     "@voidzero-dev/vite-plus-test": "0.1.24",
     "chrome-webstore-upload": "6.0.1",
-    "commit-and-tag-version": "13.2.1",
+    "commit-and-tag-version": "13.2.2",
     "jsdom": "30.1.2",
     "typescript": "6.0.3",
     "vite-plus": "1.1.0"
