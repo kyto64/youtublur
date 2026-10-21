@@ -286,7 +286,7 @@ function solidBackgroundNeedsPaint(container: HTMLElement | null | undefined): b
   if (currentMode !== 'solid' || !container) return false;
   const color = effectiveSolidCssColor();
   if (container.dataset.ytLightBgMode !== 'solid' || container.dataset.ytSolidColor !== color) return true;
-  const host = getBackgroundHost(container);
+  const host = resolveBackgroundHost(container);
   return host !== container && host.dataset.ytSolidColor !== color;
 }
 
@@ -308,7 +308,7 @@ function clearSolidHostPaint() {
 function paintSolidBackground(container: HTMLElement) {
   const color = effectiveSolidCssColor();
   applySolidPaint(container, color);
-  const host = getBackgroundHost(container);
+  const host = resolveBackgroundHost(container);
   if (solidPaintedHost && solidPaintedHost !== host) clearSolidHostPaint();
   if (host !== container) {
     applySolidPaint(host, color);
@@ -513,6 +513,35 @@ function getBackgroundHost(player: HTMLElement): HTMLElement {
   }
 }
 
+/**
+ * getBackgroundHost の結果キャッシュ。rAF ループや documentElement 監視の MutationObserver から
+ * 毎回計測すると強制同期レイアウトになるため、同じプレイヤーについて短時間は再利用する。
+ */
+let backgroundHostCache: { player: HTMLElement; host: HTMLElement; time: number } | null = null;
+const BACKGROUND_HOST_CACHE_MS = 500;
+
+function backgroundHostNow() {
+  return typeof performance !== 'undefined' && typeof performance.now === 'function'
+    ? performance.now()
+    : Date.now();
+}
+
+function invalidateBackgroundHostCache() {
+  backgroundHostCache = null;
+}
+
+/** 内部の呼び出し元はすべてこちらを使う（getBackgroundHost は計測専用） */
+function resolveBackgroundHost(player: HTMLElement): HTMLElement {
+  const cached = backgroundHostCache;
+  const now = backgroundHostNow();
+  if (cached && cached.player === player && cached.host.isConnected && now - cached.time < BACKGROUND_HOST_CACHE_MS) {
+    return cached.host;
+  }
+  const host = getBackgroundHost(player);
+  backgroundHostCache = { player, host, time: now };
+  return host;
+}
+
 function markBlurHost(host: HTMLElement, player: HTMLElement) {
   if (blurHost && blurHost !== host) delete blurHost.dataset.ytLightBgHost;
   blurHost = host === player ? null : host;
@@ -528,7 +557,7 @@ function hasCurrentBlurCanvas(container: HTMLElement | null | undefined) {
   if (!container || !blurCanvas || !blurCtx) return false;
   if (!document.contains(blurCanvas)) return false;
   // ホストが変わった（レイアウト切替・SPA 遷移）ときは作り直させる
-  return blurCanvas.parentElement === getBackgroundHost(container);
+  return blurCanvas.parentElement === resolveBackgroundHost(container);
 }
 
 function discardStaleBlurCanvas(container: HTMLElement | null | undefined) {
@@ -588,7 +617,7 @@ function releaseGeckoVideoSnapCanvas() {
 function createBlurCanvas(container: HTMLElement | null | undefined) {
   if (!container) return null;
   discardStaleBlurCanvas(container);
-  const host = getBackgroundHost(container);
+  const host = resolveBackgroundHost(container);
   const existing = host.querySelector('#yt-light-bg-blur-canvas') as HTMLCanvasElement | null;
   if (existing && existing.parentElement === host) {
     blurCtx = existing.getContext('2d');
@@ -757,7 +786,7 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
 function resizeCanvas(container: HTMLElement | null | undefined) {
   if (!hasCurrentBlurCanvas(container) || !container || !blurCanvas) return;
   const canvas = blurCanvas;
-  const host = getBackgroundHost(container);
+  const host = resolveBackgroundHost(container);
   const w = Math.max(1, Math.ceil(host.clientWidth));
   const h = Math.max(1, Math.ceil(host.clientHeight));
   canvas.width = w;
@@ -778,13 +807,14 @@ function attachPlayerResizeObserver(container: Element | null | undefined) {
   detachPlayerResizeObserver();
   playerResizeObserver = new ResizeObserver(() => {
     if (currentMode !== 'blur') return;
+    invalidateBackgroundHostCache();
     const c = getPlayerContainer();
     discardStaleBlurCanvas(c);
     if (hasCurrentBlurCanvas(c)) resizeCanvas(c);
   });
   playerResizeObserver.observe(container);
   // 背景ホストはプレイヤーと独立に伸縮しうるので両方を監視する
-  const host = getBackgroundHost(container as HTMLElement);
+  const host = resolveBackgroundHost(container as HTMLElement);
   if (host !== container) playerResizeObserver.observe(host);
 }
 
@@ -931,6 +961,7 @@ function teardownPlayerPageBlur() {
   clearSolidHostPaint();
   frameCount = 0;
   releaseGeckoVideoSnapCanvas();
+  invalidateBackgroundHostCache();
 }
 
 function observePlayer() {
@@ -1052,6 +1083,7 @@ function installYoutubeNavigationHooks() {
 }
 
 function handleResize() {
+  invalidateBackgroundHostCache();
   if (currentMode === 'blur') {
     const container = getPlayerContainer();
     discardStaleBlurCanvas(container);
@@ -1145,6 +1177,9 @@ function initExtension() {
   if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
     window.addEventListener('resize', handleResize);
   }
+  if (typeof document !== 'undefined' && typeof document.addEventListener === 'function') {
+    document.addEventListener('fullscreenchange', invalidateBackgroundHostCache);
+  }
   installDocumentLifecycleHooks();
 }
 
@@ -1165,6 +1200,7 @@ if (typeof module !== 'undefined' && module.exports) {
     applyStoredSolidColor,
     getPlayerContainer,
     getBackgroundHost,
+    invalidateBackgroundHostCache,
     getVideoElement,
     createBlurCanvas,
     drawBlurFrame,
@@ -1194,6 +1230,7 @@ if (typeof module !== 'undefined' && module.exports) {
       blurCanvas = null;
       blurCtx = null;
       clearBlurHostMark();
+      invalidateBackgroundHostCache();
       clearSolidHostPaint();
       activeBlurStrengthPx = BLUR_STRENGTH_PX;
       clearCommandedBlurStrength();

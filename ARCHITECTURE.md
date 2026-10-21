@@ -169,6 +169,8 @@ YouTube のプレイヤー DOM は SPA 遷移や遅延描画で差し替わる�
 - 単色: `#movie_player` に加えてホストにも背景色を塗る。ホスト変更・ブラー復帰・破棄時に前のホストの塗りを戻す
 - ホストが変わると `hasCurrentBlurCanvas` が false になり、canvas は破棄して作り直される。ResizeObserver はプレイヤーとホストの両方を監視する
 - `style.css` はホストとプレイヤーの間のラッパー（`#player-container-outer` など）を透過させる
+- 探索結果は `resolveBackgroundHost` が 500ms キャッシュする（rAF ループや documentElement 監視の MutationObserver から
+  毎フレーム計測すると強制同期レイアウトになるため）。window resize / ResizeObserver / `fullscreenchange` / 破棄時に無効化する
 
 ##### SPA ナビゲーション検知（issue #107）
 
