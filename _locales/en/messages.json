@@ -89,17 +89,29 @@
     "message": "Leave a review",
     "description": "Primary button on the review prompt."
   },
-  "reviewNudgeNotNow": {
-    "message": "Not now",
-    "description": "Secondary dismiss on the review prompt; hides it for a cooldown period."
-  },
-  "reviewNudgeDontAskAgain": {
-    "message": "Don't ask again",
-    "description": "Permanent dismiss on the review prompt."
-  },
   "reviewNudgeSaveFailed": {
     "message": "Couldn't save that choice. This stays here so you can try again.",
     "description": "Shown on the review prompt when the dismiss or review choice could not be saved. The prompt stays visible."
+  },
+  "reviewNudgeClose": {
+    "message": "Close",
+    "description": "Dismiss button on the review prompt. The prompt is shown only once, so this hides it for good."
+  },
+  "welcomeTitle": {
+    "message": "youtublur is ready",
+    "description": "Heading on the welcome page opened once after a fresh install."
+  },
+  "welcomeTheaterHint": {
+    "message": "The effect shows in theater mode. On a YouTube video, press the t key (or the theater mode button) to see the soft background around the player.",
+    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+  },
+  "welcomePopupHint": {
+    "message": "Click the youtublur icon in the toolbar to switch between blur and solid color.",
+    "description": "Welcome page: where to switch between blur and solid."
+  },
+  "welcomeClose": {
+    "message": "Got it",
+    "description": "Welcome page button that closes the tab."
   },
   "commandToggleMode": {
     "message": "Switch blur and solid",

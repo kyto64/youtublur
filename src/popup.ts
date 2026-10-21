@@ -37,13 +37,11 @@ function applyLocalizedStrings() {
   const reviewTitle = document.getElementById('reviewNudgeTitle');
   const reviewBody = document.getElementById('reviewNudgeBody');
   const reviewLeave = document.getElementById('reviewNudgeLeave');
-  const reviewNotNow = document.getElementById('reviewNudgeNotNow');
-  const reviewNever = document.getElementById('reviewNudgeNever');
+  const reviewClose = document.getElementById('reviewNudgeClose');
   if (reviewTitle) reviewTitle.textContent = chrome.i18n.getMessage('reviewNudgeTitle');
   if (reviewBody) reviewBody.textContent = chrome.i18n.getMessage('reviewNudgeBody');
   if (reviewLeave) reviewLeave.textContent = chrome.i18n.getMessage('reviewNudgeLeaveReview');
-  if (reviewNotNow) reviewNotNow.textContent = chrome.i18n.getMessage('reviewNudgeNotNow');
-  if (reviewNever) reviewNever.textContent = chrome.i18n.getMessage('reviewNudgeDontAskAgain');
+  if (reviewClose) reviewClose.textContent = chrome.i18n.getMessage('reviewNudgeClose');
   const reviewSaveNotice = document.getElementById('reviewNudgeSaveNotice');
   if (reviewSaveNotice) reviewSaveNotice.textContent = chrome.i18n.getMessage('reviewNudgeSaveFailed');
 }
@@ -189,13 +187,18 @@ function showReviewNudge() {
 function initReviewNudge() {
   const nudge = document.getElementById('reviewNudge');
   const leaveBtn = document.getElementById('reviewNudgeLeave');
-  const notNowBtn = document.getElementById('reviewNudgeNotNow');
-  const neverBtn = document.getElementById('reviewNudgeNever');
-  if (!nudge || !leaveBtn || !notNowBtn || !neverBtn) return;
+  const closeBtn = document.getElementById('reviewNudgeClose');
+  if (!nudge || !leaveBtn || !closeBtn) return;
+
+  // Opening the popup clears the badge that pointed here.
+  if (typeof clearReviewBadge === 'function') clearReviewBadge();
 
   ensureFirstUseTimestamp().then(() => {
     shouldShowReviewNudge().then((show) => {
-      if (show) showReviewNudge();
+      if (!show) return;
+      showReviewNudge();
+      // Shown once: later popups skip it even if this one is closed without a choice.
+      markReviewNudgeShown();
     });
   });
 
@@ -206,14 +209,7 @@ function initReviewNudge() {
     );
   });
 
-  notNowBtn.addEventListener('click', () => {
-    dismissReviewNudgeForNow().then(
-      (saved) => finishReviewNudgeChoice(saved),
-      () => showReviewNudgeSaveFailure()
-    );
-  });
-
-  neverBtn.addEventListener('click', () => {
+  closeBtn.addEventListener('click', () => {
     dismissReviewNudgePermanently().then(
       (saved) => finishReviewNudgeChoice(saved),
       () => showReviewNudgeSaveFailure()

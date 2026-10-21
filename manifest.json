@@ -66,6 +66,8 @@
     "scripts": [
       "storage-mode.js",
       "shortcut-actions.js",
+      "review-nudge.js",
+      "onboarding.js",
       "background.js"
     ],
     "service_worker": "background.js"

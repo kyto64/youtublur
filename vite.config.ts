@@ -16,7 +16,9 @@ export default defineConfig({
         'popup-color.js',
         'storage-mode.js',
         'shortcut-actions.js',
-        'background.js'
+        'background.js',
+        'review-nudge.js',
+        'onboarding.js'
       ]
     }
   }

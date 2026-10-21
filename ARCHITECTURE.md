@@ -66,7 +66,8 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - **キー（モード）**: `playerBackgroundMode`, `playerBackgroundModeTimestamp`（`storage-mode.js`）
 - **キー（ブラー強度）**: `playerBlurStrengthPx`, `playerBlurStrengthPxTimestamp`（既定 40px、8–72px、4px 刻み。未設定の利用者は従来どおり 40px）。ローカルのスライダー操作より前の書き込みは無視し、それより新しいタイムスタンプ（別タブの変更を含む）はすぐ適用する。抑制が切れてもストレージを読み直し、操作以降のタイムスタンプだけを適用する。読み込み開始後に新しいスライダー指示が届いた結果は適用しない
 - **キー（単色）**: `playerSolidColor`, `playerSolidColorTimestamp`（`#rrggbb` のみ。未設定なら従来のテーマ色のまま。ライト `#f1f1f1`、ダーク `#181818`）。不正な値は CSS に入れず、保存時は `#f1f1f1` に落とす。選んだあとはテーマ変更で上書きしない
-- **キー（レビュー促し・local のみ）**: `firstUseTimestamp`, `reviewNudgeHandled`, `reviewNudgeNeverAsk`, `reviewNudgeCooldownUntil`（`review-nudge.js`）
+- **キー（レビュー促し・local のみ）**: `installTimestamp`, `firstUseTimestamp`, `reviewNudgeShown`, `reviewNudgeHandled`, `reviewNudgeNeverAsk`, `reviewNudgeCooldownUntil`（`review-nudge.js`。`reviewNudgeCooldownUntil` は旧「あとで」の値を読むだけ）
+- **キー（初回案内・local のみ）**: `welcomeShown`（`onboarding.js`）
 
 #### 2. ビジネスロジックレイヤー（中間）
 - **`src/content.ts` → `content.js`**:
@@ -87,13 +88,14 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
   - モード切替ハンドラ
   - ブラー強度スライダー（ブラーモードのときだけ表示。ドラッグ中の保存は間引き、離したときは即保存）
   - 単色の色（単色モードのときだけ。プリセットと `<input type="color">`。ドラッグ中の保存は間引き、プリセットと確定時は即保存）
-  - 任意のレビュー促し（`review-nudge.js` 経由。初回ポップアップから 7 日後に一度だけ表示候補）
+  - 任意のレビュー促し（`review-nudge.js` 経由。インストール日（無ければ初回ポップアップ）から 7 日後に一度だけ表示。開いたらバッジを消す）
   - キーボードショートカットの現在の割り当て表示（`popup-shortcuts.js`。`chrome.commands.getAll`）
 - **`src/background.ts` → `background.js`**:
   - Manifest `commands` の `chrome.commands.onCommand` を受け取る
   - モードとブラー強度はポップアップと同じ `saveModeToStorage` / `saveBlurStrengthToStorage` で保存する（キーの形は変えない）
   - 開いている全タブへ既存メッセージ `BG_MODE_CHANGED` / `BLUR_STRENGTH_CHANGED` を送る。タブ URL は読まない（`tabs` 権限や `host_permissions` を足さない）。コンテンツスクリプトがある YouTube タブだけが受け取る
-  - Chrome は `background.service_worker`（`importScripts` で `storage-mode.js` と `shortcut-actions.js` を読む）。Firefox は `background.scripts` のイベントページ（Chrome 121 以降は `scripts` を無視する）
+  - `runtime.onInstalled` は `reason === 'install'` のときだけ `installTimestamp` を保存し、ウェルカムページ（`welcome.html`）を 1 回だけ開く。`update` などでは案内を出さない。`onInstalled` と `onStartup` でレビュー促しの時期を判定し、アクションのバッジを付け外しする（`onboarding.js`）
+  - Chrome は `background.service_worker`（`importScripts` で `storage-mode.js`、`shortcut-actions.js`、`review-nudge.js`、`onboarding.js` を読む）。Firefox は `background.scripts` のイベントページ（Chrome 121 以降は `scripts` を無視する）
 - **popup.html**:
   - シンプルな操作インターフェース
   - モードボタンとカラーピッカー
@@ -174,18 +176,21 @@ YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購�
 
 #### レビュー促し（`review-nudge.js`）
 
-ポップアップ開封時に `ensureFirstUseTimestamp()` で初回利用時刻を `chrome.storage.local` に記録する。約 7 日経過後、未処理かつクールダウン外のときだけコンパクトなレビュー促しを表示する。
+起点はインストール時に background が保存する `installTimestamp`。それより前からの利用者は `installTimestamp` が無いので、従来どおりポップアップ初回開封時の `firstUseTimestamp`（`ensureFirstUseTimestamp()`）を起点にする。約 7 日経過後、未処理のときだけコンパクトなレビュー促しを表示する。表示した時点で `reviewNudgeShown = true` を保存し、以後は出さない（1 回きり）。
+
+ポップアップを開かない利用者にも気づけるよう、background が `onInstalled` / `onStartup` で `shouldShowReviewNudge()` を評価し、表示時期ならアクションアイコンに `1` のバッジを付ける。ポップアップを開くとバッジを消す。外部通信はしない。
 
 | ユーザー操作 | 保存キー | 効果 |
 |--------------|----------|------|
-| （初回ポップアップ） | `firstUseTimestamp` | 以降の 7 日カウント開始 |
+| （インストール） | `installTimestamp` | 7 日カウント開始（新規インストールのみ） |
+| （初回ポップアップ） | `firstUseTimestamp` | `installTimestamp` が無い既存利用者の 7 日カウント開始 |
+| （促しを表示） | `reviewNudgeShown = true` | 以後は表示しない |
 | **レビューを書く** | `reviewNudgeHandled = true` | 保存できたときだけストアを新規タブで開き、再表示しない |
-| **あとで** | `reviewNudgeCooldownUntil` | 保存できたとき 7 日間非表示 |
-| **今後表示しない** | `reviewNudgeNeverAsk = true` | 保存できたとき恒久非表示 |
+| **閉じる** | `reviewNudgeNeverAsk = true` | 保存できたとき恒久非表示 |
 
 `chrome.storage.local` の読み取りが `lastError` または例外で失敗したときは促しを出さない（fail closed）。初回時刻の書き込みに失敗したときも時刻を捏造せず、促しは出さない。
 
-「あとで」「今後表示しない」「レビューを書く」の保存が失敗したときは、選択が残ったように促しを消さない。促しは表示したまま、短い案内（`reviewNudgeSaveFailed`）を出す。「レビューを書く」は保存できたときだけストアを開く。保存できないままタブだけ開くと、ユーザーは対応済みだと思って戻ったあとに同じ促しが再表示される。
+「閉じる」「レビューを書く」の保存が失敗したときは、選択が残ったように促しを消さない。促しは表示したまま、短い案内（`reviewNudgeSaveFailed`）を出す。「レビューを書く」は保存できたときだけストアを開く。保存できないままタブだけ開くと、ユーザーは対応済みだと思って戻ったあとに同じ促しが再表示される。
 
 ストア URL は manifest の `gecko` ブロックでは判定しない（Chrome ビルドにも gecko 設定が含まれる）。`CSS.supports('-moz-appearance', 'none')` で Gecko ランタイムを検出し、Chrome Web Store / Firefox AMO を切り替える（`content.ts` の `isGeckoLayoutEngine()` と同手法）。
 

@@ -27,6 +27,9 @@ export const SHIPPED_ZIP_PATHS = [
   'popup-shortcuts.js',
   'popup-color.js',
   'review-nudge.js',
+  'onboarding.js',
+  'welcome.html',
+  'welcome.js',
   '_locales/',
   'icons/',
 ];

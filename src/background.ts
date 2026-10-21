@@ -3,14 +3,20 @@
 // (an event page). Listeners are registered synchronously so the worker can wake on a command.
 
 function loadShortcutWorkerScripts() {
-  if (typeof applyShortcutCommand === 'function' && typeof saveModeToStorage === 'function') return;
+  if (
+    typeof applyShortcutCommand === 'function' &&
+    typeof saveModeToStorage === 'function' &&
+    typeof handleExtensionInstalled === 'function'
+  ) {
+    return;
+  }
   // Call as a method. A detached importScripts loses its worker `this` and throws.
   const scope = globalThis as typeof globalThis & {
     importScripts?: (...paths: string[]) => void;
   };
   if (typeof scope.importScripts !== 'function') return;
   try {
-    scope.importScripts('storage-mode.js', 'shortcut-actions.js');
+    scope.importScripts('storage-mode.js', 'shortcut-actions.js', 'review-nudge.js', 'onboarding.js');
   } catch (error) {
     console.warn('[youtublur] failed to load shortcut scripts:', error);
   }
@@ -117,6 +123,31 @@ function registerShortcutCommands() {
 }
 
 registerShortcutCommands();
+
+function registerOnboarding() {
+  const runtime = typeof chrome !== 'undefined' ? chrome.runtime : undefined;
+  if (!runtime) return;
+  const refreshBadge = () => {
+    if (typeof refreshReviewBadge !== 'function') return Promise.resolve();
+    return refreshReviewBadge().then(
+      () => undefined,
+      (error) => console.warn('[youtublur] review badge check failed:', error)
+    );
+  };
+  // Only reason === 'install' opens the welcome page. Updates just re-check the badge.
+  runtime.onInstalled?.addListener((details) => {
+    const install =
+      typeof handleExtensionInstalled === 'function'
+        ? handleExtensionInstalled(details)
+        : Promise.resolve(false);
+    return install
+      .catch((error) => console.warn('[youtublur] install handling failed:', error))
+      .then(refreshBadge);
+  });
+  runtime.onStartup?.addListener(() => refreshBadge());
+}
+
+registerOnboarding();
 
 if (typeof globalThis !== 'undefined') {
   Object.assign(globalThis, { runShortcutCommand });

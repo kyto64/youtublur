@@ -89,17 +89,29 @@
     "message": "レビューを書く",
     "description": "レビュー促しの主ボタン。"
   },
-  "reviewNudgeNotNow": {
-    "message": "あとで",
-    "description": "レビュー促しの一時的な非表示（クールダウン期間）。"
-  },
-  "reviewNudgeDontAskAgain": {
-    "message": "今後表示しない",
-    "description": "レビュー促しの恒久的な非表示。"
-  },
   "reviewNudgeSaveFailed": {
     "message": "選択を保存できませんでした。もう一度試せるよう、この表示は残します。",
     "description": "レビュー促しの選択を保存できなかったときに表示する短い案内。促し自体は残す。"
+  },
+  "reviewNudgeClose": {
+    "message": "閉じる",
+    "description": "レビュー促しを閉じるボタン。促しは1回きりなので、閉じたら再表示しない。"
+  },
+  "welcomeTitle": {
+    "message": "youtublur の準備ができました",
+    "description": "新規インストール直後に1回だけ開くウェルカムページの見出し。"
+  },
+  "welcomeTheaterHint": {
+    "message": "効果はシアターモードで表示されます。YouTube の動画ページで t キー（またはシアターモードボタン）を押すと、プレイヤーの周りにやわらかな背景が出ます。",
+    "description": "ウェルカムページ: 効果はシアターモード（YouTube の t キー）で見えることの案内。"
+  },
+  "welcomePopupHint": {
+    "message": "ツールバーの youtublur アイコンから、ブラーと単色を切り替えられます。",
+    "description": "ウェルカムページ: ブラーと単色の切り替え場所の案内。"
+  },
+  "welcomeClose": {
+    "message": "OK",
+    "description": "ウェルカムページのタブを閉じるボタン。"
   },
   "commandToggleMode": {
     "message": "ブラーと単色を切り替える",
