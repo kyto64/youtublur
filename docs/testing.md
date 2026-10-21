@@ -240,6 +240,21 @@ E2E を素通りした事例があるため、以下の前提と手順で検証�
 `storage-mode.js` + `content.js` を `addInitScript` で**手動注入**すれば、実 YouTube DOM 上で
 content script ロジックを検証できる（`e2e/ai-verify/capture-blur-evidence.mjs` 参照）。
 
+## 新しい視聴ページレイアウトの検証
+
+新しい視聴ページレイアウト（シアター切替ボタンが無く、プレイヤーの左右に余白が出る）は段階的
+ロールアウト中で、**開発 VM の実 YouTube では再現しない**（確認時は常に旧レイアウトだった）。
+そのため E2E（`e2e/new-watch-layout.spec.js`）では実ページに CSS を流し込んで模擬する。
+
+- `page.addStyleTag` で `.ytp-size-button` を隠し、`ytd-player #container` を `width: 60%` にして
+  `#movie_player` をラッパーより狭くする。その後 `window` に `resize` を発火させてプレイヤーを再レイアウトさせる
+- ブラー: canvas の親が `#movie_player` より広いこと、`canvas.width ≈ 親の clientWidth`（±1）、
+  左余白の画素がブラー描画され中央（動画領域）が透明であることを検証する
+- 単色: ホスト（`[data-yt-light-bg-host]`）とプレイヤーの双方が `#000000` で塗られることを検証する。
+  Firefox は実拡張を使えないため、fixture が記録した `window.__youtublurE2eMessageListeners` を
+  直接呼んで `BG_MODE_CHANGED` / `SOLID_COLOR_CHANGED` を注入する
+- 回帰: 模擬 CSS を当てない場合は canvas の親が `#movie_player` のままであることを検証する
+
 ## 統合テスト
 
 ### ストレージ同期のテスト

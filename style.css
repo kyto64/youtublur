@@ -24,3 +24,11 @@ ytd-player:has([data-yt-light-bg-mode="blur"]) {
 #player-container-inner {
     box-shadow: 0 0 40px rgba(0, 0, 0, 0.05) !important;
 }
+
+/* 新しい視聴ページレイアウト：プレイヤー左右の余白を含むホスト要素に背景を描くため、
+   ホストとプレイヤーの間のラッパーを透過させる（ブラーは canvas、単色はホストの背景色を見せる） */
+[data-yt-light-bg-host]:has([data-yt-light-bg-mode="blur"]),
+[data-yt-light-bg-host]:has([data-yt-light-bg-mode="blur"]) :is(#player-container-outer, #player-container-inner, #player-container, ytd-player, #container),
+[data-yt-light-bg-host]:has([data-yt-light-bg-mode="solid"]) :is(#player-container-outer, #player-container-inner, #player-container, ytd-player, #container) {
+    background-color: transparent !important;
+}

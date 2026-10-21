@@ -58,7 +58,13 @@ const test = base.extend({
               },
             },
             runtime: {
-              onMessage: { addListener: function () {} },
+              // E2E からメッセージ（モード・色変更）を注入できるようリスナーを公開する
+              onMessage: {
+                addListener: function (listener) {
+                  window.__youtublurE2eMessageListeners = window.__youtublurE2eMessageListeners || [];
+                  window.__youtublurE2eMessageListeners.push(listener);
+                },
+              },
               lastError: undefined,
             },
           };

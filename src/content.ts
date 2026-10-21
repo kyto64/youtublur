@@ -186,6 +186,10 @@ let geckoVideoSnapCtx: CanvasRenderingContext2D | null = null;
 let currentMode: BackgroundMode = 'blur';
 let blurCanvas: HTMLCanvasElement | null = null;
 let blurCtx: CanvasRenderingContext2D | null = null;
+/** canvas を載せている背景ホスト（プレイヤー自身のときは null） */
+let blurHost: HTMLElement | null = null;
+/** 単色モードで塗った背景ホスト（プレイヤー自身のときは null） */
+let solidPaintedHost: HTMLElement | null = null;
 
 function stampActiveBlurStrength() {
   if (!blurCanvas) return;
@@ -280,14 +284,37 @@ function effectiveSolidCssColor(): string {
 /** 単色の保存色はプレイヤーが現れてから塗る。ホーム初期化のあと SPA で遅れて届く。 */
 function solidBackgroundNeedsPaint(container: HTMLElement | null | undefined): boolean {
   if (currentMode !== 'solid' || !container) return false;
-  return container.dataset.ytLightBgMode !== 'solid'
-    || container.dataset.ytSolidColor !== effectiveSolidCssColor();
+  const color = effectiveSolidCssColor();
+  if (container.dataset.ytLightBgMode !== 'solid' || container.dataset.ytSolidColor !== color) return true;
+  const host = getBackgroundHost(container);
+  return host !== container && host.dataset.ytSolidColor !== color;
+}
+
+function applySolidPaint(el: HTMLElement, color: string) {
+  el.style.setProperty('background-color', color, 'important');
+  el.dataset.ytSolidColor = color;
+}
+
+/** 直前に塗った背景ホスト。ホスト変更・ブラー移行・破棄時にここだけ塗りを戻す。 */
+function clearSolidHostPaint() {
+  if (solidPaintedHost) {
+    solidPaintedHost.style.removeProperty('background-color');
+    delete solidPaintedHost.dataset.ytSolidColor;
+    delete solidPaintedHost.dataset.ytLightBgHost;
+  }
+  solidPaintedHost = null;
 }
 
 function paintSolidBackground(container: HTMLElement) {
   const color = effectiveSolidCssColor();
-  container.style.setProperty('background-color', color, 'important');
-  container.dataset.ytSolidColor = color;
+  applySolidPaint(container, color);
+  const host = getBackgroundHost(container);
+  if (solidPaintedHost && solidPaintedHost !== host) clearSolidHostPaint();
+  if (host !== container) {
+    applySolidPaint(host, color);
+    host.dataset.ytLightBgHost = '1';
+    solidPaintedHost = host;
+  }
 }
 
 function setActiveSolidColor(color: string | null) {
@@ -449,10 +476,59 @@ function getVideoElement(container: Element | null | undefined) {
   return container?.querySelector('video') as HTMLVideoElement | null | undefined;
 }
 
+/** 背景ホスト探索の打ち切り要素（この要素自身はホストにしない） */
+function isBackgroundHostBoundary(el: HTMLElement) {
+  const tag = el.tagName.toLowerCase();
+  return tag === 'body' || tag.startsWith('ytd-watch') || el.id === 'columns' || el.id === 'primary';
+}
+
+/**
+ * 背景（ブラー canvas / 単色）を載せる要素を決める。
+ * 新しい視聴ページレイアウトでは #movie_player がラッパーより狭く、左右に余白が出る。
+ * プレイヤーと同じ高さ（±2px）でプレイヤーを水平に含み、明確に広い（+8px 超）祖先があれば
+ * その中で最も広いものを返す。旧レイアウト（既定 / シアター / 全画面）では該当が無く
+ * プレイヤー自身を返すため、挙動は変わらない。
+ */
+function getBackgroundHost(player: HTMLElement): HTMLElement {
+  try {
+    if (typeof document !== 'undefined' && document.fullscreenElement) return player;
+    if (typeof location !== 'undefined' && location.pathname.startsWith('/shorts/')) return player;
+    const base = player.getBoundingClientRect();
+    if (base.width <= 0 || base.height <= 0) return player;
+    let best: HTMLElement | null = null;
+    let bestWidth = base.width + 8;
+    let el = player.parentElement;
+    while (el && !isBackgroundHostBoundary(el)) {
+      const rect = el.getBoundingClientRect();
+      if (Math.abs(rect.height - base.height) > 2) break;
+      if (rect.width > bestWidth && rect.left <= base.left + 1 && rect.right >= base.right - 1) {
+        best = el;
+        bestWidth = rect.width;
+      }
+      el = el.parentElement;
+    }
+    return best || player;
+  } catch {
+    return player;
+  }
+}
+
+function markBlurHost(host: HTMLElement, player: HTMLElement) {
+  if (blurHost && blurHost !== host) delete blurHost.dataset.ytLightBgHost;
+  blurHost = host === player ? null : host;
+  if (blurHost) blurHost.dataset.ytLightBgHost = '1';
+}
+
+function clearBlurHostMark() {
+  if (blurHost) delete blurHost.dataset.ytLightBgHost;
+  blurHost = null;
+}
+
 function hasCurrentBlurCanvas(container: HTMLElement | null | undefined) {
   if (!container || !blurCanvas || !blurCtx) return false;
   if (!document.contains(blurCanvas)) return false;
-  return container.querySelector('#yt-light-bg-blur-canvas') === blurCanvas;
+  // ホストが変わった（レイアウト切替・SPA 遷移）ときは作り直させる
+  return blurCanvas.parentElement === getBackgroundHost(container);
 }
 
 function discardStaleBlurCanvas(container: HTMLElement | null | undefined) {
@@ -460,6 +536,7 @@ function discardStaleBlurCanvas(container: HTMLElement | null | undefined) {
   if (!document.contains(blurCanvas)) {
     blurCanvas = null;
     blurCtx = null;
+    clearBlurHostMark();
     detachPlayerResizeObserver();
     stopBlurLoop();
     releaseGeckoVideoSnapCanvas();
@@ -474,6 +551,7 @@ function discardStaleBlurCanvas(container: HTMLElement | null | undefined) {
   blurCanvas.remove();
   blurCanvas = null;
   blurCtx = null;
+  clearBlurHostMark();
   detachPlayerResizeObserver();
   stopBlurLoop();
   releaseGeckoVideoSnapCanvas();
@@ -510,14 +588,18 @@ function releaseGeckoVideoSnapCanvas() {
 function createBlurCanvas(container: HTMLElement | null | undefined) {
   if (!container) return null;
   discardStaleBlurCanvas(container);
-  const existing = container.querySelector('#yt-light-bg-blur-canvas') as HTMLCanvasElement | null;
-  if (existing) {
+  const host = getBackgroundHost(container);
+  const existing = host.querySelector('#yt-light-bg-blur-canvas') as HTMLCanvasElement | null;
+  if (existing && existing.parentElement === host) {
     blurCtx = existing.getContext('2d');
     if (blurCtx) {
       blurCanvas = existing;
+      markBlurHost(host, container);
       stampActiveBlurStrength();
       return blurCanvas;
     }
+    existing.remove();
+  } else if (existing) {
     existing.remove();
   }
   if (blurCanvas && !document.contains(blurCanvas)) {
@@ -535,23 +617,47 @@ function createBlurCanvas(container: HTMLElement | null | undefined) {
     inset: 0;
     width: auto;
     height: auto;
-    z-index: 1;
+    z-index: ${host === container ? 1 : 0};
     pointer-events: none;
   `;
 
-  if (container.style.position !== 'relative' && container.style.position !== 'absolute') {
-    container.style.position = 'relative';
+  if (host === container) {
+    if (host.style.position !== 'relative' && host.style.position !== 'absolute') {
+      host.style.position = 'relative';
+    }
+  } else if (typeof getComputedStyle === 'function' && getComputedStyle(host).position === 'static') {
+    host.style.position = 'relative';
   }
-  container.insertBefore(blurCanvas, container.firstChild);
+  host.insertBefore(blurCanvas, host.firstChild);
+  markBlurHost(host, container);
 
   blurCtx = blurCanvas.getContext('2d');
   if (!blurCtx) {
     blurCanvas.remove();
     blurCanvas = null;
+    clearBlurHostMark();
     return null;
   }
   stampActiveBlurStrength();
   return blurCanvas;
+}
+
+/**
+ * 背景ホストに描く場合、canvas はプレイヤーより広いので映像領域は canvas のアスペクトから
+ * 計算できない。実際に表示されている video 要素の矩形を canvas 座標に写してクリアする。
+ */
+function clearHostVideoRect(video: HTMLVideoElement, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+  const cRect = canvas.getBoundingClientRect();
+  const vRect = video.getBoundingClientRect();
+  if (cRect.width <= 0 || cRect.height <= 0 || vRect.width <= 0 || vRect.height <= 0) return false;
+  const scaleX = canvas.width / cRect.width;
+  const scaleY = canvas.height / cRect.height;
+  const x1 = Math.floor((vRect.left - cRect.left) * scaleX);
+  const y1 = Math.floor((vRect.top - cRect.top) * scaleY);
+  const x2 = Math.ceil((vRect.right - cRect.left) * scaleX);
+  const y2 = Math.ceil((vRect.bottom - cRect.top) * scaleY);
+  ctx.clearRect(x1, y1, x2 - x1, y2 - y1);
+  return true;
 }
 
 function clearVideoContentRect(video: HTMLVideoElement, canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
@@ -560,6 +666,9 @@ function clearVideoContentRect(video: HTMLVideoElement, canvas: HTMLCanvasElemen
   const vw = video.videoWidth;
   const vh = video.videoHeight;
   if (cw === 0 || ch === 0 || vw === 0 || vh === 0) return;
+
+  const parent = canvas.parentElement as HTMLElement | null;
+  if (parent?.dataset?.ytLightBgHost === '1' && clearHostVideoRect(video, canvas, ctx)) return;
 
   const videoAspect = vw / vh;
   const canvasAspect = cw / ch;
@@ -648,8 +757,9 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
 function resizeCanvas(container: HTMLElement | null | undefined) {
   if (!hasCurrentBlurCanvas(container) || !container || !blurCanvas) return;
   const canvas = blurCanvas;
-  const w = Math.max(1, Math.ceil(container.clientWidth));
-  const h = Math.max(1, Math.ceil(container.clientHeight));
+  const host = getBackgroundHost(container);
+  const w = Math.max(1, Math.ceil(host.clientWidth));
+  const h = Math.max(1, Math.ceil(host.clientHeight));
   canvas.width = w;
   canvas.height = h;
   canvas.style.width = `${w}px`;
@@ -673,6 +783,9 @@ function attachPlayerResizeObserver(container: Element | null | undefined) {
     if (hasCurrentBlurCanvas(c)) resizeCanvas(c);
   });
   playerResizeObserver.observe(container);
+  // 背景ホストはプレイヤーと独立に伸縮しうるので両方を監視する
+  const host = getBackgroundHost(container as HTMLElement);
+  if (host !== container) playerResizeObserver.observe(host);
 }
 
 function startBlurLoop(container: HTMLElement | null | undefined) {
@@ -743,6 +856,7 @@ function showBlurMode(container: HTMLElement | null | undefined) {
   canvas.style.display = '';
   canvas.style.visibility = 'visible';
   container.dataset.ytLightBgMode = 'blur';
+  clearSolidHostPaint();
   startBlurLoop(container);
 }
 
@@ -791,6 +905,7 @@ function initBlurForPlayer(container: HTMLElement | null | undefined) {
     canvas.style.display = '';
     canvas.style.visibility = 'visible';
     container.dataset.ytLightBgMode = 'blur';
+    clearSolidHostPaint();
     startBlurLoop(container);
   }
 }
@@ -812,6 +927,8 @@ function teardownPlayerPageBlur() {
   }
   blurCanvas = null;
   blurCtx = null;
+  clearBlurHostMark();
+  clearSolidHostPaint();
   frameCount = 0;
   releaseGeckoVideoSnapCanvas();
 }
@@ -1047,6 +1164,7 @@ if (typeof module !== 'undefined' && module.exports) {
     paintSolidBackground,
     applyStoredSolidColor,
     getPlayerContainer,
+    getBackgroundHost,
     getVideoElement,
     createBlurCanvas,
     drawBlurFrame,
@@ -1075,6 +1193,8 @@ if (typeof module !== 'undefined' && module.exports) {
       }
       blurCanvas = null;
       blurCtx = null;
+      clearBlurHostMark();
+      clearSolidHostPaint();
       activeBlurStrengthPx = BLUR_STRENGTH_PX;
       clearCommandedBlurStrength();
       blurStrengthStorageListenerInstalled = false;

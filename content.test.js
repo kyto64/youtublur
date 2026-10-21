@@ -8,6 +8,9 @@ const {
   createBlurCanvas,
   applyMode,
   getPlayerContainer,
+  getBackgroundHost,
+  paintSolidBackground,
+  showBlurMode,
   getVideoElement,
   resetState,
   getMode,
@@ -1486,6 +1489,78 @@ describe('content.js', () => {
         window.getComputedStyle = originalGetComputedStyle;
         vi.restoreAllMocks();
         vi.unstubAllGlobals();
+      });
+    });
+
+    describe('getBackgroundHost（新しい視聴ページレイアウト）', () => {
+      const PLAYER_WIDTH = 600;
+      const HEIGHT = 340;
+
+      function mockRect(el, left, width, height) {
+        el.getBoundingClientRect = () => ({
+          left, right: left + width, top: 0, bottom: height, width, height, x: left, y: 0, toJSON: () => ({})
+        });
+      }
+
+      /** wrapper > inner > #movie_player の三段構成を作り、矩形をモックする */
+      function buildLayout(wrapperWidth, innerWidth) {
+        document.body.innerHTML =
+          '<div id="wrapper"><div id="inner"><div id="movie_player"><video></video></div></div></div>';
+        const wrapper = document.getElementById('wrapper');
+        const inner = document.getElementById('inner');
+        const player = document.getElementById('movie_player');
+        mockRect(wrapper, 0, wrapperWidth, HEIGHT);
+        mockRect(inner, (wrapperWidth - innerWidth) / 2, innerWidth, HEIGHT);
+        mockRect(player, (wrapperWidth - PLAYER_WIDTH) / 2, PLAYER_WIDTH, HEIGHT);
+        vi.stubGlobal('ResizeObserver', class {
+          observe() {}
+          disconnect() {}
+        });
+        return { wrapper, inner, player };
+      }
+
+      afterEach(() => {
+        vi.unstubAllGlobals();
+      });
+
+      test('旧レイアウト（祖先が同じ幅）ではプレイヤー自身がホストになる', () => {
+        const { player } = buildLayout(PLAYER_WIDTH, PLAYER_WIDTH);
+        expect(getBackgroundHost(player)).toBe(player);
+
+        setMode('blur');
+        showBlurMode(player);
+        const canvas = document.getElementById('yt-light-bg-blur-canvas');
+        expect(canvas.parentElement).toBe(player);
+      });
+
+      test('同じ高さで広いラッパーがある場合はそのラッパーに canvas と単色を載せる', () => {
+        const { wrapper, inner, player } = buildLayout(1000, 800);
+        expect(getBackgroundHost(player)).toBe(wrapper);
+        expect(getBackgroundHost(player)).not.toBe(inner);
+
+        setMode('blur');
+        showBlurMode(player);
+        const canvas = document.getElementById('yt-light-bg-blur-canvas');
+        expect(canvas.parentElement).toBe(wrapper);
+        expect(wrapper.dataset.ytLightBgHost).toBe('1');
+
+        setMode('solid');
+        paintSolidBackground(player);
+        expect(wrapper.dataset.ytSolidColor).toBe('#f1f1f1');
+        expect(wrapper.style.getPropertyValue('background-color')).toBe('rgb(241, 241, 241)');
+        expect(player.dataset.ytSolidColor).toBe('#f1f1f1');
+      });
+
+      test('単色からブラーに戻すとホストに塗った背景色を取り除く', () => {
+        const { wrapper, player } = buildLayout(1000, 800);
+        setMode('solid');
+        paintSolidBackground(player);
+        expect(wrapper.style.getPropertyValue('background-color')).toBe('rgb(241, 241, 241)');
+
+        setMode('blur');
+        showBlurMode(player);
+        expect(wrapper.style.getPropertyValue('background-color')).toBe('');
+        expect(wrapper.dataset.ytSolidColor).toBeUndefined();
       });
     });
   });

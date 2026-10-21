@@ -156,6 +156,20 @@ YouTube のプレイヤー DOM は SPA 遷移や遅延描画で差し替わる�
 | `scheduleBlurInitRetryIfNeeded()` | video / canvas 未準備時に指数バックオフで再初期化（最大 25 回）。上限到達後は `blurInitRetryExhausted` で停止し、MutationObserver 等の再評価まで待つ |
 | `startBlurLoop()` | 描画 rAF。canvas が完全に欠落した場合は rAF を止め、プレイヤーセレクタ一時消失時のみ rAF を継続 |
 
+##### 背景ホスト（新しい視聴ページレイアウト）
+
+`getBackgroundHost(player)` が「背景を載せる要素」を決める。`#movie_player` から親をたどり、
+`ytd-watch-*` / `#columns` / `#primary` / `body` の手前まで、プレイヤーと同じ高さ（±2px）で
+プレイヤーを水平に含み、明確に広い（+8px 超）祖先があれば**その中で最も広いもの**をホストにする。
+
+- 旧レイアウト（既定 / シアター / 全画面）と `/shorts/`、全画面表示中は該当が無く `#movie_player` 自身を返すため挙動は変わらない
+- 新しい視聴ページレイアウト（シアター切替が無く、プレイヤー左右に余白が出る）では、余白を含むラッパーがホストになる
+- ブラー: canvas をホストに挿入（`data-yt-light-bg-host="1"`、`z-index: 0`）。canvas がホスト全体を覆うため、
+  クリアする矩形は canvas のアスペクトからではなく **`video` 要素の表示矩形**から求める（`clearHostVideoRect`）
+- 単色: `#movie_player` に加えてホストにも背景色を塗る。ホスト変更・ブラー復帰・破棄時に前のホストの塗りを戻す
+- ホストが変わると `hasCurrentBlurCanvas` が false になり、canvas は破棄して作り直される。ResizeObserver はプレイヤーとホストの両方を監視する
+- `style.css` はホストとプレイヤーの間のラッパー（`#player-container-outer` など）を透過させる
+
 ##### SPA ナビゲーション検知（issue #107）
 
 `installYoutubeNavigationHooks()` は `popstate` と `history.pushState`/`replaceState` のラッパーに加え、
