@@ -50,5 +50,5 @@ if (typeof document !== 'undefined') {
     }
 }
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { initWelcomePage, applyWelcomeStrings };
+    module.exports = { initWelcomePage, applyWelcomeStrings, closeWelcomeTab };
 }

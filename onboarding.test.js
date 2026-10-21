@@ -137,11 +137,18 @@ describe('onboarding.js', () => {
       expect(chrome.action.setBadgeText).toHaveBeenLastCalledWith({ text: '' });
     });
 
-    test('update does not open the welcome page but refreshes the badge for existing users', async () => {
+    test('update opens nothing and keeps the badge off for users without an install time', async () => {
       localData[FIRST_USE_TIMESTAMP_KEY] = Date.now() - NUDGE_DELAY_MS - 1000;
       await installedListener({ reason: 'update', previousVersion: '1.0.0' });
       expect(chrome.tabs.create).not.toHaveBeenCalled();
       expect(localData[INSTALL_TIMESTAMP_KEY]).toBeUndefined();
+      expect(chrome.action.setBadgeText).toHaveBeenLastCalledWith({ text: '' });
+    });
+
+    test('update keeps the badge for users installed with this version', async () => {
+      localData[INSTALL_TIMESTAMP_KEY] = Date.now() - NUDGE_DELAY_MS - 1000;
+      await installedListener({ reason: 'update', previousVersion: '1.0.0' });
+      expect(chrome.tabs.create).not.toHaveBeenCalled();
       expect(chrome.action.setBadgeText).toHaveBeenLastCalledWith({ text: REVIEW_BADGE_TEXT });
     });
 

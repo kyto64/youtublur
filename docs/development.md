@@ -121,6 +121,7 @@ youtublur/
 ├── solid-color.test.js           # 単色の色のユニットテスト
 ├── review-nudge.test.js          # ユニットテスト
 ├── onboarding.test.js            # ユニットテスト
+├── welcome.test.js               # ユニットテスト
 ├── _locales/                     # i18n（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）
 ├── e2e/                          # Playwright E2E と AI 検証
 ├── scripts/                      # 補助スクリプト

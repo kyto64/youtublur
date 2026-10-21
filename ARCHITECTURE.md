@@ -178,7 +178,7 @@ YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購�
 
 起点はインストール時に background が保存する `installTimestamp`。それより前からの利用者は `installTimestamp` が無いので、従来どおりポップアップ初回開封時の `firstUseTimestamp`（`ensureFirstUseTimestamp()`）を起点にする。約 7 日経過後、未処理のときだけコンパクトなレビュー促しを表示する。表示した時点で `reviewNudgeShown = true` を保存し、以後は出さない（1 回きり）。
 
-ポップアップを開かない利用者にも気づけるよう、background が `onInstalled` / `onStartup` で `shouldShowReviewNudge()` を評価し、表示時期ならアクションアイコンに `1` のバッジを付ける。ポップアップを開くとバッジを消す。外部通信はしない。
+ポップアップを開かない利用者にも気づけるよう、background が `onInstalled` / `onStartup` で `shouldShowReviewNudge()` を評価し、表示時期ならアクションアイコンに `1` のバッジを付ける。バッジは `installTimestamp` がある利用者（この仕組みの導入後にインストールした人）だけに付け、それ以前からの利用者には更新時に突然バッジを出さない（ポップアップ内の促しは従来どおり 1 回出る）。ポップアップを開くとバッジを消す。外部通信はしない。
 
 | ユーザー操作 | 保存キー | 効果 |
 |--------------|----------|------|

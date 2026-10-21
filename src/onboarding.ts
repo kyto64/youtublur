@@ -72,7 +72,11 @@ function setReviewBadgeText(text: string): void {
 
 /** Show the badge while the review prompt is waiting in the popup. Clear it otherwise. */
 async function refreshReviewBadge(now = Date.now()): Promise<boolean> {
-  const show = await shouldShowReviewNudge(now);
+  // Only installs with a recorded install time get the badge; older users keep the in-popup nudge.
+  const read = await storageLocalGet([INSTALL_TIMESTAMP_KEY]);
+  const installedAt = read.ok ? read.data[INSTALL_TIMESTAMP_KEY] : undefined;
+  const show =
+    typeof installedAt === 'number' && installedAt > 0 && (await shouldShowReviewNudge(now));
   setReviewBadgeText(show ? REVIEW_BADGE_TEXT : '');
   return show;
 }
