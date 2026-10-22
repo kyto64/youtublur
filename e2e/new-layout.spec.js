@@ -29,6 +29,16 @@ async function applyNewLayout(page) {
   );
 }
 
+// 単色は最外側の候補祖先（#player が無ければ #player-container-outer）に塗られる。
+// どちらが選ばれても検証できるよう、インライン背景色が付いた候補を返す。
+const PAINTED_MARGIN_HOST_SCRIPT = () => {
+  const hosts = ['#player', '#player-container-outer']
+    .map((sel) => document.querySelector(sel))
+    .filter(Boolean);
+  const painted = hosts.find((h) => h.style.getPropertyValue('background-color'));
+  return painted ? getComputedStyle(painted).backgroundColor : '';
+};
+
 test.describe('New layout (no theater toggle, side margins)', () => {
   test.describe.configure({ timeout: 45000 });
 
@@ -102,17 +112,11 @@ test.describe('New layout (no theater toggle, side margins)', () => {
     await expect
       .poll(
         async () =>
-          page.evaluate(() => {
-            const host = document.querySelector('#player-container-outer');
-            return host ? host.style.getPropertyValue('background-color') : null;
-          }),
+          page.evaluate(PAINTED_MARGIN_HOST_SCRIPT),
         { timeout: 10000 }
       )
       .not.toBe('');
-    const hostColor = await page.evaluate(() => {
-      const host = document.querySelector('#player-container-outer');
-      return host ? getComputedStyle(host).backgroundColor : null;
-    });
+    const hostColor = await page.evaluate(PAINTED_MARGIN_HOST_SCRIPT);
     expect(hostColor).not.toBeNull();
     const expected = await page.evaluate((hex) => {
       const probe = document.createElement('div');
@@ -166,10 +170,7 @@ test.describe('New layout (no theater toggle, side margins)', () => {
     await expect
       .poll(
         async () =>
-          page.evaluate(() => {
-            const host = document.querySelector('#player-container-outer');
-            return host ? host.style.getPropertyValue('background-color') : null;
-          }),
+          page.evaluate(PAINTED_MARGIN_HOST_SCRIPT),
         { timeout: 10000 }
       )
       .not.toBe('');
