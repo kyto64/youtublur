@@ -281,6 +281,9 @@ function paintSolidBackground(container) {
     const color = effectiveSolidCssColor();
     container.style.setProperty('background-color', color, 'important');
     container.dataset.ytSolidColor = color;
+    const host = getMarginHost(container);
+    if (host)
+        host.style.setProperty('background-color', color, 'important');
 }
 function setActiveSolidColor(color) {
     activeSolidColor = color === null ? null : normalizeSolidColor(color);
@@ -425,6 +428,82 @@ function getPlayerContainer() {
     return (document.querySelector('#movie_player')
         || document.querySelector('.html5-video-player'));
 }
+/**
+ * 新レイアウト（シアター切替なし）ではプレイヤーの左右に余白が出る。その余白はプレイヤーの外側の
+ * 祖先要素なので、プレイヤー内の canvas / 背景色では塗れない。プレイヤーより広い祖先があれば
+ * 余白の描画先（host）として返す。旧レイアウトでは該当しないので null。
+ * 実 YouTube の DOM は未確認で、セレクタは推測（docs/testing.md 参照）。
+ */
+const MARGIN_HOST_SELECTORS = ['#player-container-outer', '#player'];
+const MARGIN_CANVAS_ID = 'yt-light-bg-blur-margin-canvas';
+let marginCanvas = null;
+let marginCtx = null;
+function getMarginHost(container) {
+    if (!container)
+        return null;
+    for (const selector of MARGIN_HOST_SELECTORS) {
+        const host = container.closest(selector);
+        if (host && host !== container && host.clientWidth > container.clientWidth)
+            return host;
+    }
+    return null;
+}
+function removeMarginCanvas() {
+    if (marginCanvas) {
+        try {
+            marginCanvas.width = 0;
+            marginCanvas.height = 0;
+        }
+        catch { /* noop */ }
+        marginCanvas.remove();
+    }
+    marginCanvas = null;
+    marginCtx = null;
+}
+/** ブラー時に余白へ描く canvas。host の背面（z-index:-1）に置き、プレイヤーより下に出す。 */
+function ensureMarginCanvas(container) {
+    const host = getMarginHost(container);
+    if (!host) {
+        removeMarginCanvas();
+        return;
+    }
+    host.style.removeProperty('background-color');
+    if (marginCanvas && marginCanvas.parentElement !== host)
+        removeMarginCanvas();
+    if (!marginCanvas) {
+        const canvas = document.createElement('canvas');
+        canvas.id = MARGIN_CANVAS_ID;
+        canvas.style.cssText = `
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+  `;
+        const ctx = canvas.getContext('2d');
+        if (!ctx)
+            return;
+        if (getComputedStyle(host).position === 'static')
+            host.style.position = 'relative';
+        host.style.isolation = 'isolate';
+        host.insertBefore(canvas, host.firstChild);
+        marginCanvas = canvas;
+        marginCtx = ctx;
+    }
+    marginCanvas.style.display = '';
+    marginCanvas.style.visibility = 'visible';
+    const w = Math.max(1, Math.ceil(host.clientWidth));
+    const h = Math.max(1, Math.ceil(host.clientHeight));
+    marginCanvas.width = w;
+    marginCanvas.height = h;
+    marginCanvas.style.width = `${w}px`;
+    marginCanvas.style.height = `${h}px`;
+}
+function hideMarginCanvas() {
+    if (marginCanvas) {
+        marginCanvas.style.display = 'none';
+        marginCanvas.style.visibility = 'hidden';
+    }
+}
 function getVideoElement(container) {
     return container?.querySelector('video');
 }
@@ -560,7 +639,7 @@ function clearVideoContentRect(video, canvas, ctx) {
     const y2 = Math.ceil(dy + dh);
     ctx.clearRect(x1, y1, x2 - x1, y2 - y1);
 }
-function drawBlurFrame(video, canvas, ctx) {
+function drawBlurFrame(video, canvas, ctx, useGeckoSnap = true) {
     if (!video || !canvas || !ctx || video.readyState < 2)
         return;
     const cw = canvas.width;
@@ -584,7 +663,7 @@ function drawBlurFrame(video, canvas, ctx) {
         sx = 0;
         sy = (vh - sh) / 2;
     }
-    if (geckoLayout) {
+    if (geckoLayout && useGeckoSnap) {
         const snapCtx = ensureGeckoVideoSnapCanvas(cw, ch);
         if (snapCtx) {
             snapCtx.filter = 'none';
@@ -633,6 +712,7 @@ function resizeCanvas(container) {
     canvas.height = h;
     canvas.style.width = `${w}px`;
     canvas.style.height = `${h}px`;
+    ensureMarginCanvas(container);
 }
 function detachPlayerResizeObserver() {
     if (playerResizeObserver) {
@@ -645,6 +725,13 @@ function attachPlayerResizeObserver(container) {
         return;
     detachPlayerResizeObserver();
     playerResizeObserver = new ResizeObserver(() => {
+        if (currentMode === 'solid') {
+            // 余白（host）は後からプレイヤーより広くなることがあるので、サイズ変化で塗り直す。
+            const sc = getPlayerContainer();
+            if (sc)
+                paintSolidBackground(sc);
+            return;
+        }
         if (currentMode !== 'blur')
             return;
         const c = getPlayerContainer();
@@ -653,6 +740,9 @@ function attachPlayerResizeObserver(container) {
             resizeCanvas(c);
     });
     playerResizeObserver.observe(container);
+    const host = getMarginHost(container);
+    if (host)
+        playerResizeObserver.observe(host);
 }
 function startBlurLoop(container) {
     stopBlurLoop();
@@ -683,6 +773,9 @@ function startBlurLoop(container) {
         updateFPS(timestamp);
         if (video && frameCount % currentDrawInterval === 0) {
             drawBlurFrame(video, blurCanvas, blurCtx);
+            if (marginCanvas && document.contains(marginCanvas)) {
+                drawBlurFrame(video, marginCanvas, marginCtx, false);
+            }
         }
         adjustDrawInterval();
         animationId = requestAnimationFrame(loop);
@@ -711,6 +804,7 @@ function showBlurMode(container) {
     const canvas = blurCanvas;
     if (!canvas)
         return;
+    ensureMarginCanvas(container);
     resizeCanvas(container);
     attachPlayerResizeObserver(container);
     canvas.style.display = '';
@@ -728,9 +822,11 @@ function hideBlurMode(container) {
         blurCanvas.style.display = 'none';
         blurCanvas.style.visibility = 'hidden';
     }
+    hideMarginCanvas();
     if (container) {
         container.dataset.ytLightBgMode = 'solid';
         paintSolidBackground(container);
+        attachPlayerResizeObserver(container);
     }
 }
 function applyMode(mode, container) {
@@ -760,6 +856,7 @@ function initBlurForPlayer(container) {
         if (!canvas)
             return;
         stopBlurInitRetryCompletely();
+        ensureMarginCanvas(container);
         resizeCanvas(container);
         attachPlayerResizeObserver(container);
         canvas.style.display = '';
@@ -786,6 +883,7 @@ function teardownPlayerPageBlur() {
     }
     blurCanvas = null;
     blurCtx = null;
+    removeMarginCanvas();
     frameCount = 0;
     releaseGeckoVideoSnapCanvas();
 }
@@ -1006,6 +1104,7 @@ if (typeof module !== 'undefined' && module.exports) {
         getActiveSolidColor: () => activeSolidColor,
         setActiveSolidColor,
         paintSolidBackground,
+        getMarginHost,
         applyStoredSolidColor,
         getPlayerContainer,
         getVideoElement,

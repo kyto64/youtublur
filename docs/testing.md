@@ -536,6 +536,11 @@ open coverage/index.html
 - [Vitestドキュメント](https://vitest.dev/)
 - [Playwrightドキュメント](https://playwright.dev/)
 - [jsdomドキュメント](https://github.com/jsdom/jsdom)
+
 ## 新レイアウト（シアター切替なし・左右余白）
 
-`e2e/new-layout.spec.js` は、実ページから `.ytp-size-button` を外しプレイヤーに幅と左右余白を与えて新レイアウトを近似する。実 DOM は段階配信のため、実機での確認は手動で行う。ユニットは `content.test.js` の「new layout」ケース。`style.css` は `#player` / `#player-container-outer` / `#player-container-inner` も透明化の対象にする。
+新レイアウトではプレイヤー（`#movie_player`）の左右に余白が出る。その余白はプレイヤー外側の祖先要素なので、`src/content.ts` の `getMarginHost()` が `#player-container-outer` / `#player` のうちプレイヤーより広いものを余白の描画先として選ぶ。ブラーは host の背面に `#yt-light-bg-blur-margin-canvas` を置いて動画をブラー描画し、単色は host に `background-color` を設定する。プレイヤーより広い祖先が無い旧レイアウト（通常・シアター・全画面）では host は `null` で、挙動は変わらない。
+
+`e2e/new-layout.spec.js` は、実ページから `.ytp-size-button` を外し `#player-container-outer` に左右 padding を与えて新レイアウトを近似し、余白の canvas（ブラー）と背景色（単色）を検証する。ユニットは `content.test.js` の「new layout」ケース。
+
+**注意**: 実 YouTube の新レイアウト DOM は実行環境から youtube.com に到達できず未確認。host のセレクタは PR 説明とレビュー指摘（余白は `#player-container-outer` の padding という推測）に基づく。実機での確認は手動で行う。

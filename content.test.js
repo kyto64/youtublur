@@ -18,6 +18,7 @@ const {
   drawBlurFrame,
   resizeCanvas,
   handleResize,
+  getMarginHost,
   setMode,
   initExtension,
   startBlurLoop,
@@ -365,6 +366,66 @@ describe('content.js', () => {
     expect(container.dataset.ytLightBgMode).toBe('solid');
     expect(container.dataset.ytSolidColor).toBeTruthy();
     expect(canvas.style.display).toBe('none');
+  });
+
+  describe('new layout side margins', () => {
+    function setupMargins() {
+      document.body.innerHTML = `
+        <div id="player"><div id="player-container-outer" style="padding: 0 48px">
+          <div id="movie_player" class="html5-video-player"><video></video></div>
+        </div></div>`;
+      const container = document.querySelector('#movie_player');
+      const host = document.querySelector('#player-container-outer');
+      Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true });
+      Object.defineProperty(container, 'clientHeight', { value: 450, configurable: true });
+      Object.defineProperty(host, 'clientWidth', { value: 896, configurable: true });
+      Object.defineProperty(host, 'clientHeight', { value: 450, configurable: true });
+      return { container, host };
+    }
+
+    test('blur draws a canvas sized to the margin host behind the player', () => {
+      const { container, host } = setupMargins();
+      expect(getMarginHost(container)).toBe(host);
+
+      applyMode('blur', container);
+      const margin = host.querySelector('#yt-light-bg-blur-margin-canvas');
+      expect(margin).not.toBeNull();
+      expect(margin.parentElement).toBe(host);
+      expect(margin.width).toBe(896);
+      expect(margin.height).toBe(450);
+      expect(margin.style.zIndex).toBe('-1');
+      expect(container.querySelector('#yt-light-bg-blur-canvas').width).toBe(800);
+    });
+
+    test('solid paints the margin host and hides the margin canvas', () => {
+      const { container, host } = setupMargins();
+      applyMode('blur', container);
+      applyMode('solid', container);
+
+      const probe = document.createElement('div');
+      probe.style.setProperty('background-color', container.dataset.ytSolidColor);
+      expect(host.style.getPropertyValue('background-color')).toBe(probe.style.getPropertyValue('background-color'));
+      expect(host.style.getPropertyValue('background-color')).not.toBe('');
+      expect(host.style.getPropertyPriority('background-color')).toBe('important');
+      expect(host.querySelector('#yt-light-bg-blur-margin-canvas').style.display).toBe('none');
+
+      applyMode('blur', container);
+      expect(host.style.getPropertyValue('background-color')).toBe('');
+      expect(host.querySelector('#yt-light-bg-blur-margin-canvas').style.display).toBe('');
+    });
+
+    test('old layout (no wider ancestor) has no margin host or margin canvas', () => {
+      document.body.innerHTML = '<div id="movie_player" class="html5-video-player"><video></video></div>';
+      const container = document.querySelector('#movie_player');
+      Object.defineProperty(container, 'clientWidth', { value: 800, configurable: true });
+      Object.defineProperty(container, 'clientHeight', { value: 450, configurable: true });
+      expect(getMarginHost(container)).toBeNull();
+
+      applyMode('blur', container);
+      expect(document.querySelector('#yt-light-bg-blur-margin-canvas')).toBeNull();
+      applyMode('solid', container);
+      expect(container.dataset.ytSolidColor).toBeTruthy();
+    });
   });
 
   test('resizeCanvas ceils fractional client dimensions', () => {
