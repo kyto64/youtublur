@@ -94,6 +94,8 @@ youtublur/
 │   ├── popup-color.ts            # 単色モードの色（プリセットとカラーピッカー）
 │   ├── popup-shortcuts.ts        # ポップアップのショートカット一覧
 │   ├── review-nudge.ts           # レビュー促し（ポップアップ）
+│   ├── onboarding.ts             # インストール時の案内とレビュー促しのバッジ
+│   ├── welcome.ts                # ウェルカムページ
 │   ├── shortcut-actions.ts       # ショートカットの次状態（純粋関数）
 │   ├── background.ts             # commands の受信と YouTube タブへの配信
 │   └── storage-mode.ts           # ストレージ同期ユーティリティ
@@ -101,12 +103,15 @@ youtublur/
 ├── tsconfig.json                 # TypeScript 設定
 ├── manifest.json                 # 拡張機能マニフェスト
 ├── popup.html                    # ポップアップUI
+├── welcome.html                  # ウェルカムページ（インストール時に 1 回だけ開く）
 ├── style.css                     # スタイルシート
 ├── content.js                    # コンパイル成果物（編集禁止）
 ├── popup.js                      # コンパイル成果物（編集禁止）
 ├── popup-color.js                # コンパイル成果物（編集禁止）
 ├── popup-shortcuts.js            # コンパイル成果物（編集禁止）
 ├── review-nudge.js               # コンパイル成果物（編集禁止）
+├── onboarding.js                 # コンパイル成果物（編集禁止）
+├── welcome.js                    # コンパイル成果物（編集禁止）
 ├── shortcut-actions.js           # コンパイル成果物（編集禁止）
 ├── background.js                 # コンパイル成果物（編集禁止）
 ├── storage-mode.js               # コンパイル成果物（編集禁止）
@@ -115,6 +120,8 @@ youtublur/
 ├── shortcuts.test.js             # ショートカットのユニットテスト
 ├── solid-color.test.js           # 単色の色のユニットテスト
 ├── review-nudge.test.js          # ユニットテスト
+├── onboarding.test.js            # ユニットテスト
+├── welcome.test.js               # ユニットテスト
 ├── _locales/                     # i18n（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）
 ├── e2e/                          # Playwright E2E と AI 検証
 ├── scripts/                      # 補助スクリプト

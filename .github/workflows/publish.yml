@@ -66,6 +66,9 @@ jobs:
             popup-shortcuts.js \
             popup-color.js \
             review-nudge.js \
+            onboarding.js \
+            welcome.html \
+            welcome.js \
             _locales/ \
             icons/
           cp extension.zip extension-firefox.zip

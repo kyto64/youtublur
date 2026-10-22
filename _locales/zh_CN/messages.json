@@ -89,17 +89,29 @@
     "message": "去写评价",
     "description": "评价提示的主按钮。"
   },
-  "reviewNudgeNotNow": {
-    "message": "以后再说",
-    "description": "暂时关闭评价提示；在冷却期内不再显示。"
-  },
-  "reviewNudgeDontAskAgain": {
-    "message": "不再提示",
-    "description": "永久关闭评价提示。"
-  },
   "reviewNudgeSaveFailed": {
     "message": "这个选择没能保存。提示会留在这里，方便你再试一次。",
     "description": "评价提示的选择未能保存时显示的简短说明。提示本身保持可见。"
+  },
+  "reviewNudgeClose": {
+    "message": "关闭",
+    "description": "Dismiss button on the review prompt. The prompt is shown only once, so this hides it for good."
+  },
+  "welcomeTitle": {
+    "message": "youtublur 已就绪",
+    "description": "Heading on the welcome page opened once after a fresh install."
+  },
+  "welcomeTheaterHint": {
+    "message": "效果在剧场模式下显示。在 YouTube 视频页面按 t 键（或点击剧场模式按钮），即可看到播放器周围的柔和背景。",
+    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+  },
+  "welcomePopupHint": {
+    "message": "点击工具栏中的 youtublur 图标，可在模糊和纯色之间切换。",
+    "description": "Welcome page: where to switch between blur and solid."
+  },
+  "welcomeClose": {
+    "message": "知道了",
+    "description": "Welcome page button that closes the tab."
   },
   "commandToggleMode": {
     "message": "在模糊和纯色之间切换",

@@ -92,11 +92,12 @@ Manifest V3 に基づくブラウザ拡張機能は、以下のコンポーネ�
 
 **利用するストレージ:**
 - `chrome.storage.sync`: メインの設定保存（アカウント同期）
-- `chrome.storage.local`: 一時的なデータ、バックアップ、レビュー促し状態（`firstUseTimestamp` など）
+- `chrome.storage.local`: 一時的なデータ、バックアップ、レビュー促し状態（`installTimestamp`、`firstUseTimestamp`、`reviewNudgeShown` など）、初回案内の `welcomeShown`
 
 **レビュー促し（`review-nudge.js`）:**
-- 初回ポップアップ開封で `firstUseTimestamp` を記録
-- 7 日経過後に一度だけ表示候補（「あとで」はさらに 7 日クールダウン）
+- 起点はインストール時に保存する `installTimestamp`。無い既存利用者は初回ポップアップ開封時の `firstUseTimestamp`
+- 7 日経過後に一度だけ表示（表示したら `reviewNudgeShown`。ボタンは「レビューを書く」と「閉じる」だけで、閉じたら再表示しない）
+- background が表示時期ならアイコンにバッジを付け、ポップアップを開くと消す（バッジは `installTimestamp` がある利用者だけ。既存利用者には更新時にバッジを出さない）
 - ストア URL はランタイムの Gecko 検出で CWS / AMO を切り替え（manifest の gecko ブロックは共用のため使用しない）
 - ストレージを読めないときは表示しない。選択の保存に失敗したときは促しを残し、`reviewNudgeSaveFailed` を出す。「レビューを書く」は保存できたときだけストアを開く
 

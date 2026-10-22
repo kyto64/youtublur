@@ -89,17 +89,29 @@
     "message": "撰寫評論",
     "description": "評價提示的主要按鈕。"
   },
-  "reviewNudgeNotNow": {
-    "message": "之後再說",
-    "description": "暫時關閉評價提示；在冷卻期間不再顯示。"
-  },
-  "reviewNudgeDontAskAgain": {
-    "message": "不再顯示",
-    "description": "永久關閉評價提示。"
-  },
   "reviewNudgeSaveFailed": {
     "message": "這個選擇沒能儲存。提示會留在這裡，方便你再試一次。",
     "description": "評價提示的選擇未能儲存時顯示的簡短說明。提示本身保持可見。"
+  },
+  "reviewNudgeClose": {
+    "message": "關閉",
+    "description": "Dismiss button on the review prompt. The prompt is shown only once, so this hides it for good."
+  },
+  "welcomeTitle": {
+    "message": "youtublur 已準備就緒",
+    "description": "Heading on the welcome page opened once after a fresh install."
+  },
+  "welcomeTheaterHint": {
+    "message": "效果會在劇院模式中顯示。在 YouTube 影片頁面按下 t 鍵（或點選劇院模式按鈕），即可看到播放器周圍的柔和背景。",
+    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+  },
+  "welcomePopupHint": {
+    "message": "點選工具列中的 youtublur 圖示，即可在模糊與純色之間切換。",
+    "description": "Welcome page: where to switch between blur and solid."
+  },
+  "welcomeClose": {
+    "message": "知道了",
+    "description": "Welcome page button that closes the tab."
   },
   "commandToggleMode": {
     "message": "在模糊與純色之間切換",

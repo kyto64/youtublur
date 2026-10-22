@@ -89,17 +89,29 @@
     "message": "Dejar una reseña",
     "description": "Botón principal del aviso de reseña."
   },
-  "reviewNudgeNotNow": {
-    "message": "Ahora no",
-    "description": "Descarte temporal del aviso de reseña; lo oculta durante un periodo de espera."
-  },
-  "reviewNudgeDontAskAgain": {
-    "message": "No volver a preguntar",
-    "description": "Descarte permanente del aviso de reseña."
-  },
   "reviewNudgeSaveFailed": {
     "message": "No se pudo guardar esa elección. El aviso se queda aquí para que puedas intentarlo de nuevo.",
     "description": "Aviso breve cuando no se pudo guardar la elección del aviso de reseña. El aviso permanece visible."
+  },
+  "reviewNudgeClose": {
+    "message": "Cerrar",
+    "description": "Dismiss button on the review prompt. The prompt is shown only once, so this hides it for good."
+  },
+  "welcomeTitle": {
+    "message": "youtublur está listo",
+    "description": "Heading on the welcome page opened once after a fresh install."
+  },
+  "welcomeTheaterHint": {
+    "message": "El efecto se ve en el modo cine. En un video de YouTube, pulsa la tecla t (o el botón de modo cine) para ver el fondo suave alrededor del reproductor.",
+    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+  },
+  "welcomePopupHint": {
+    "message": "Haz clic en el icono de youtublur en la barra de herramientas para cambiar entre desenfoque y color sólido.",
+    "description": "Welcome page: where to switch between blur and solid."
+  },
+  "welcomeClose": {
+    "message": "Entendido",
+    "description": "Welcome page button that closes the tab."
   },
   "commandToggleMode": {
     "message": "Alternar desenfoque y color sólido",

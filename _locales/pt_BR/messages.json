@@ -89,17 +89,29 @@
     "message": "Deixar uma avaliação",
     "description": "Botão principal do aviso de avaliação."
   },
-  "reviewNudgeNotNow": {
-    "message": "Agora não",
-    "description": "Dispensa temporária do aviso de avaliação; oculta durante um período de espera."
-  },
-  "reviewNudgeDontAskAgain": {
-    "message": "Não perguntar de novo",
-    "description": "Dispensa permanente do aviso de avaliação."
-  },
   "reviewNudgeSaveFailed": {
     "message": "Não foi possível salvar essa escolha. O aviso fica aqui para você tentar de novo.",
     "description": "Aviso curto quando a escolha do pedido de avaliação não pôde ser salva. O pedido permanece visível."
+  },
+  "reviewNudgeClose": {
+    "message": "Fechar",
+    "description": "Dismiss button on the review prompt. The prompt is shown only once, so this hides it for good."
+  },
+  "welcomeTitle": {
+    "message": "O youtublur está pronto",
+    "description": "Heading on the welcome page opened once after a fresh install."
+  },
+  "welcomeTheaterHint": {
+    "message": "O efeito aparece no modo teatro. Em um vídeo do YouTube, pressione a tecla t (ou o botão de modo teatro) para ver o fundo suave ao redor do player.",
+    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+  },
+  "welcomePopupHint": {
+    "message": "Clique no ícone do youtublur na barra de ferramentas para alternar entre desfoque e cor sólida.",
+    "description": "Welcome page: where to switch between blur and solid."
+  },
+  "welcomeClose": {
+    "message": "Entendi",
+    "description": "Welcome page button that closes the tab."
   },
   "commandToggleMode": {
     "message": "Alternar desfoque e cor sólida",

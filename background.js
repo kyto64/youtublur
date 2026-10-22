@@ -3,14 +3,17 @@
 // Firefox loads storage-mode.js and shortcut-actions.js first via background.scripts
 // (an event page). Listeners are registered synchronously so the worker can wake on a command.
 function loadShortcutWorkerScripts() {
-    if (typeof applyShortcutCommand === 'function' && typeof saveModeToStorage === 'function')
+    if (typeof applyShortcutCommand === 'function' &&
+        typeof saveModeToStorage === 'function' &&
+        typeof handleExtensionInstalled === 'function') {
         return;
+    }
     // Call as a method. A detached importScripts loses its worker `this` and throws.
     const scope = globalThis;
     if (typeof scope.importScripts !== 'function')
         return;
     try {
-        scope.importScripts('storage-mode.js', 'shortcut-actions.js');
+        scope.importScripts('storage-mode.js', 'shortcut-actions.js', 'review-nudge.js', 'onboarding.js');
     }
     catch (error) {
         console.warn('[youtublur] failed to load shortcut scripts:', error);
@@ -109,6 +112,61 @@ function registerShortcutCommands() {
     });
 }
 registerShortcutCommands();
+function registerOnboarding() {
+    const runtime = typeof chrome !== 'undefined' ? chrome.runtime : undefined;
+    if (!runtime)
+        return;
+    const refreshBadge = () => {
+        if (typeof refreshReviewBadge !== 'function')
+            return Promise.resolve();
+        return refreshReviewBadge().then(() => undefined, (error) => console.warn('[youtublur] review badge check failed:', error));
+    };
+    // Only reason === 'install' opens the welcome page. Updates just re-check the badge.
+    runtime.onInstalled?.addListener((details) => {
+        const install = typeof handleExtensionInstalled === 'function'
+            ? handleExtensionInstalled(details)
+            : Promise.resolve(false);
+        return install
+            .catch((error) => console.warn('[youtublur] install handling failed:', error))
+            .then(refreshBadge);
+    });
+    runtime.onStartup?.addListener(() => refreshBadge());
+    registerBadgeAlarm(refreshBadge);
+}
+// Re-check the badge periodically so a browser that stays open past the 7-day mark still
+// shows it. The alarms permission adds no install-time warning in Chrome or Firefox.
+const REVIEW_BADGE_ALARM = 'review-badge-check';
+const REVIEW_BADGE_ALARM_PERIOD_MINUTES = 6 * 60;
+function registerBadgeAlarm(refreshBadge) {
+    const alarms = typeof chrome !== 'undefined' ? chrome.alarms : undefined;
+    if (!alarms || typeof alarms.create !== 'function')
+        return;
+    try {
+        // Listeners must be registered synchronously so a sleeping worker wakes on the alarm.
+        alarms.onAlarm?.addListener((alarm) => {
+            if (alarm.name === REVIEW_BADGE_ALARM)
+                return refreshBadge();
+        });
+        // Alarms may be dropped on restart or update, so (re)create when missing. Creating one
+        // with an existing name would reset its schedule, hence the get() check.
+        const create = () => alarms.create(REVIEW_BADGE_ALARM, {
+            delayInMinutes: 1,
+            periodInMinutes: REVIEW_BADGE_ALARM_PERIOD_MINUTES
+        });
+        const result = alarms.get(REVIEW_BADGE_ALARM, (existing) => {
+            void (chrome.runtime && chrome.runtime.lastError);
+            if (!existing)
+                create();
+        });
+        if (result && typeof result.then === 'function') {
+            result.catch(() => undefined);
+        }
+    }
+    catch (error) {
+        console.warn('[youtublur] failed to register the badge alarm:', error);
+    }
+}
+registerOnboarding();
 if (typeof globalThis !== 'undefined') {
     Object.assign(globalThis, { runShortcutCommand });
 }

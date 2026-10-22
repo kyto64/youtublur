@@ -1,12 +1,15 @@
 "use strict";
 const FIRST_USE_TIMESTAMP_KEY = 'firstUseTimestamp';
+/** Saved by runtime.onInstalled on a fresh install. Older installs only have firstUseTimestamp. */
+const INSTALL_TIMESTAMP_KEY = 'installTimestamp';
 const REVIEW_NUDGE_HANDLED_KEY = 'reviewNudgeHandled';
 const REVIEW_NUDGE_NEVER_ASK_KEY = 'reviewNudgeNeverAsk';
+/** Set when the popup first shows the nudge. The nudge is shown only once. */
+const REVIEW_NUDGE_SHOWN_KEY = 'reviewNudgeShown';
+/** Written by the old "Not now" button. Still read so a running cooldown is kept. */
 const REVIEW_NUDGE_COOLDOWN_UNTIL_KEY = 'reviewNudgeCooldownUntil';
-/** Wait ~7 days after first popup open before showing the nudge. */
+/** Wait ~7 days after install (or the first popup open for older installs). */
 const NUDGE_DELAY_MS = 7 * 24 * 60 * 60 * 1000;
-/** "Not now" hides the nudge for another 7 days. */
-const NUDGE_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 const STORE_URL_CHROME = 'https://chromewebstore.google.com/detail/youtublur/npkiobfoclnkmobjhgadnjepceofjenj';
 const STORE_URL_FIREFOX = 'https://addons.mozilla.org/firefox/addon/youtublur/';
 function storageLocalGet(keys) {
@@ -86,9 +89,11 @@ async function ensureFirstUseTimestamp() {
 }
 async function shouldShowReviewNudge(now = Date.now()) {
     const keys = [
+        INSTALL_TIMESTAMP_KEY,
         FIRST_USE_TIMESTAMP_KEY,
         REVIEW_NUDGE_HANDLED_KEY,
         REVIEW_NUDGE_NEVER_ASK_KEY,
+        REVIEW_NUDGE_SHOWN_KEY,
         REVIEW_NUDGE_COOLDOWN_UNTIL_KEY
     ];
     const read = await storageLocalGet(keys);
@@ -96,23 +101,25 @@ async function shouldShowReviewNudge(now = Date.now()) {
         return false;
     }
     const result = read.data;
-    if (result[REVIEW_NUDGE_HANDLED_KEY] === true || result[REVIEW_NUDGE_NEVER_ASK_KEY] === true) {
+    if (result[REVIEW_NUDGE_HANDLED_KEY] === true ||
+        result[REVIEW_NUDGE_NEVER_ASK_KEY] === true ||
+        result[REVIEW_NUDGE_SHOWN_KEY] === true) {
         return false;
     }
     const cooldownUntil = result[REVIEW_NUDGE_COOLDOWN_UNTIL_KEY];
     if (typeof cooldownUntil === 'number' && now < cooldownUntil) {
         return false;
     }
+    const installedAt = result[INSTALL_TIMESTAMP_KEY];
     const firstUse = result[FIRST_USE_TIMESTAMP_KEY];
-    if (typeof firstUse !== 'number' || firstUse <= 0) {
+    const start = typeof installedAt === 'number' && installedAt > 0 ? installedAt : firstUse;
+    if (typeof start !== 'number' || start <= 0) {
         return false;
     }
-    return now - firstUse >= NUDGE_DELAY_MS;
+    return now - start >= NUDGE_DELAY_MS;
 }
-async function dismissReviewNudgeForNow(now = Date.now()) {
-    return storageLocalSet({
-        [REVIEW_NUDGE_COOLDOWN_UNTIL_KEY]: now + NUDGE_COOLDOWN_MS
-    });
+async function markReviewNudgeShown() {
+    return storageLocalSet({ [REVIEW_NUDGE_SHOWN_KEY]: true });
 }
 async function dismissReviewNudgePermanently() {
     return storageLocalSet({ [REVIEW_NUDGE_NEVER_ASK_KEY]: true });
@@ -131,16 +138,19 @@ function openReviewStorePage() {
 }
 const reviewNudgeApi = {
     FIRST_USE_TIMESTAMP_KEY,
+    INSTALL_TIMESTAMP_KEY,
     REVIEW_NUDGE_HANDLED_KEY,
     REVIEW_NUDGE_NEVER_ASK_KEY,
+    REVIEW_NUDGE_SHOWN_KEY,
     REVIEW_NUDGE_COOLDOWN_UNTIL_KEY,
     NUDGE_DELAY_MS,
-    NUDGE_COOLDOWN_MS,
     STORE_URL_CHROME,
     STORE_URL_FIREFOX,
+    storageLocalGet,
+    storageLocalSet,
     ensureFirstUseTimestamp,
     shouldShowReviewNudge,
-    dismissReviewNudgeForNow,
+    markReviewNudgeShown,
     dismissReviewNudgePermanently,
     markReviewNudgeHandled,
     getReviewStoreUrl,

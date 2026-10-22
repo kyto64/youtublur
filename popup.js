@@ -45,18 +45,15 @@ function applyLocalizedStrings() {
     const reviewTitle = document.getElementById('reviewNudgeTitle');
     const reviewBody = document.getElementById('reviewNudgeBody');
     const reviewLeave = document.getElementById('reviewNudgeLeave');
-    const reviewNotNow = document.getElementById('reviewNudgeNotNow');
-    const reviewNever = document.getElementById('reviewNudgeNever');
+    const reviewClose = document.getElementById('reviewNudgeClose');
     if (reviewTitle)
         reviewTitle.textContent = chrome.i18n.getMessage('reviewNudgeTitle');
     if (reviewBody)
         reviewBody.textContent = chrome.i18n.getMessage('reviewNudgeBody');
     if (reviewLeave)
         reviewLeave.textContent = chrome.i18n.getMessage('reviewNudgeLeaveReview');
-    if (reviewNotNow)
-        reviewNotNow.textContent = chrome.i18n.getMessage('reviewNudgeNotNow');
-    if (reviewNever)
-        reviewNever.textContent = chrome.i18n.getMessage('reviewNudgeDontAskAgain');
+    if (reviewClose)
+        reviewClose.textContent = chrome.i18n.getMessage('reviewNudgeClose');
     const reviewSaveNotice = document.getElementById('reviewNudgeSaveNotice');
     if (reviewSaveNotice)
         reviewSaveNotice.textContent = chrome.i18n.getMessage('reviewNudgeSaveFailed');
@@ -198,23 +195,28 @@ function showReviewNudge() {
 function initReviewNudge() {
     const nudge = document.getElementById('reviewNudge');
     const leaveBtn = document.getElementById('reviewNudgeLeave');
-    const notNowBtn = document.getElementById('reviewNudgeNotNow');
-    const neverBtn = document.getElementById('reviewNudgeNever');
-    if (!nudge || !leaveBtn || !notNowBtn || !neverBtn)
+    const closeBtn = document.getElementById('reviewNudgeClose');
+    if (!nudge || !leaveBtn || !closeBtn)
         return;
+    // Opening the popup clears the badge that pointed here.
+    if (typeof clearReviewBadge === 'function')
+        clearReviewBadge();
     ensureFirstUseTimestamp().then(() => {
         shouldShowReviewNudge().then((show) => {
-            if (show)
-                showReviewNudge();
+            if (!show)
+                return;
+            // Shown once: persist the flag first and show only if it was saved, so a failed
+            // write (e.g. quota exceeded) cannot make the nudge reappear on every popup open.
+            markReviewNudgeShown().then((saved) => {
+                if (saved)
+                    showReviewNudge();
+            }, () => { });
         });
     });
     leaveBtn.addEventListener('click', () => {
         markReviewNudgeHandled().then((saved) => finishReviewNudgeChoice(saved, openReviewStorePage), () => showReviewNudgeSaveFailure());
     });
-    notNowBtn.addEventListener('click', () => {
-        dismissReviewNudgeForNow().then((saved) => finishReviewNudgeChoice(saved), () => showReviewNudgeSaveFailure());
-    });
-    neverBtn.addEventListener('click', () => {
+    closeBtn.addEventListener('click', () => {
         dismissReviewNudgePermanently().then((saved) => finishReviewNudgeChoice(saved), () => showReviewNudgeSaveFailure());
     });
 }

@@ -6,12 +6,13 @@ const {
   REVIEW_NUDGE_NEVER_ASK_KEY,
   REVIEW_NUDGE_COOLDOWN_UNTIL_KEY,
   NUDGE_DELAY_MS,
-  NUDGE_COOLDOWN_MS,
+  INSTALL_TIMESTAMP_KEY,
+  REVIEW_NUDGE_SHOWN_KEY,
   STORE_URL_CHROME,
   STORE_URL_FIREFOX,
   ensureFirstUseTimestamp,
   shouldShowReviewNudge,
-  dismissReviewNudgeForNow,
+  markReviewNudgeShown,
   dismissReviewNudgePermanently,
   markReviewNudgeHandled,
   getReviewStoreUrl,
@@ -100,7 +101,7 @@ describe('review-nudge.js', () => {
     const firstUse = 1_700_000_000_000;
     const now = firstUse + NUDGE_DELAY_MS + 1000;
     localData[FIRST_USE_TIMESTAMP_KEY] = firstUse;
-    localData[REVIEW_NUDGE_COOLDOWN_UNTIL_KEY] = now + NUDGE_COOLDOWN_MS;
+    localData[REVIEW_NUDGE_COOLDOWN_UNTIL_KEY] = now + NUDGE_DELAY_MS;
 
     const show = await shouldShowReviewNudge(now);
     expect(show).toBe(false);
@@ -124,10 +125,34 @@ describe('review-nudge.js', () => {
     expect(show).toBe(false);
   });
 
-  test('dismissReviewNudgeForNow sets a 7-day cooldown', async () => {
-    const now = 1_700_000_000_000;
-    await expect(dismissReviewNudgeForNow(now)).resolves.toBe(true);
-    expect(localData[REVIEW_NUDGE_COOLDOWN_UNTIL_KEY]).toBe(now + NUDGE_COOLDOWN_MS);
+  test('markReviewNudgeShown sets the shown flag', async () => {
+    await expect(markReviewNudgeShown()).resolves.toBe(true);
+    expect(localData[REVIEW_NUDGE_SHOWN_KEY]).toBe(true);
+  });
+
+  test('shouldShowReviewNudge is false once the nudge has been shown', async () => {
+    const installedAt = 1_700_000_000_000;
+    localData[INSTALL_TIMESTAMP_KEY] = installedAt;
+    localData[REVIEW_NUDGE_SHOWN_KEY] = true;
+
+    await expect(shouldShowReviewNudge(installedAt + NUDGE_DELAY_MS * 4)).resolves.toBe(false);
+  });
+
+  test('shouldShowReviewNudge counts from the install time when it exists', async () => {
+    const installedAt = 1_700_000_000_000;
+    localData[INSTALL_TIMESTAMP_KEY] = installedAt;
+    localData[FIRST_USE_TIMESTAMP_KEY] = installedAt + NUDGE_DELAY_MS;
+
+    await expect(shouldShowReviewNudge(installedAt + NUDGE_DELAY_MS - 1)).resolves.toBe(false);
+    await expect(shouldShowReviewNudge(installedAt + NUDGE_DELAY_MS)).resolves.toBe(true);
+  });
+
+  test('shouldShowReviewNudge keeps the first popup open as the start for older installs', async () => {
+    const firstUse = 1_700_000_000_000;
+    localData[FIRST_USE_TIMESTAMP_KEY] = firstUse;
+
+    await expect(shouldShowReviewNudge(firstUse + NUDGE_DELAY_MS - 1)).resolves.toBe(false);
+    await expect(shouldShowReviewNudge(firstUse + NUDGE_DELAY_MS)).resolves.toBe(true);
   });
 
   test('dismissReviewNudgePermanently sets never-ask flag', async () => {
@@ -161,15 +186,14 @@ describe('review-nudge.js', () => {
     expect(show).toBe(false);
   });
 
-  test('dismissReviewNudgeForNow reports failure and does not persist when set reports lastError', async () => {
-    const now = 1_700_000_000_000;
+  test('markReviewNudgeShown reports failure when set reports lastError', async () => {
     localSetMock.mockImplementation((_data, cb) => {
       chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
       cb();
     });
 
-    await expect(dismissReviewNudgeForNow(now)).resolves.toBe(false);
-    expect(localData[REVIEW_NUDGE_COOLDOWN_UNTIL_KEY]).toBeUndefined();
+    await expect(markReviewNudgeShown()).resolves.toBe(false);
+    expect(localData[REVIEW_NUDGE_SHOWN_KEY]).toBeUndefined();
   });
 
   test('dismissReviewNudgePermanently reports failure and does not persist when set throws', async () => {
