@@ -94,7 +94,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
   - Manifest `commands` の `chrome.commands.onCommand` を受け取る
   - モードとブラー強度はポップアップと同じ `saveModeToStorage` / `saveBlurStrengthToStorage` で保存する（キーの形は変えない）
   - 開いている全タブへ既存メッセージ `BG_MODE_CHANGED` / `BLUR_STRENGTH_CHANGED` を送る。タブ URL は読まない（`tabs` 権限や `host_permissions` を足さない）。コンテンツスクリプトがある YouTube タブだけが受け取る
-  - `runtime.onInstalled` は `reason === 'install'` のときだけ `installTimestamp` を保存し、ウェルカムページ（`welcome.html`）を 1 回だけ開く。`update` などでは案内を出さない。`onInstalled` と `onStartup` でレビュー促しの時期を判定し、アクションのバッジを付け外しする（`onboarding.js`）
+  - `runtime.onInstalled` は `reason === 'install'` のときだけ `installTimestamp` を保存し、ウェルカムページ（`welcome.html`）を 1 回だけ開く。`update` などでは案内を出さない。`onInstalled`・`onStartup`・`chrome.alarms`（6 時間ごと。ブラウザを開いたまま 7 日経つ場合に備える）でレビュー促しの時期を判定し、アクションのバッジを付け外しする（`onboarding.js`）
   - Chrome は `background.service_worker`（`importScripts` で `storage-mode.js`、`shortcut-actions.js`、`review-nudge.js`、`onboarding.js` を読む）。Firefox は `background.scripts` のイベントページ（Chrome 121 以降は `scripts` を無視する）
 - **popup.html**:
   - シンプルな操作インターフェース
@@ -125,6 +125,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
 - `chrome.tabs` (query, onUpdated)
 - `chrome.sidePanel` (setOptions) - Chrome のみ
 - `chrome.action` (setBadgeText, setTitle)
+- `chrome.alarms`（バッジの定期再評価。6 時間ごと。インストール時の警告は増えない）
 
 ## データフロー
 
@@ -178,7 +179,7 @@ YouTube (Polymer/kevlar) 公式の **`yt-navigate-finish`** イベントを購�
 
 起点はインストール時に background が保存する `installTimestamp`。それより前からの利用者は `installTimestamp` が無いので、従来どおりポップアップ初回開封時の `firstUseTimestamp`（`ensureFirstUseTimestamp()`）を起点にする。約 7 日経過後、未処理のときだけコンパクトなレビュー促しを表示する。表示した時点で `reviewNudgeShown = true` を保存し、以後は出さない（1 回きり）。
 
-ポップアップを開かない利用者にも気づけるよう、background が `onInstalled` / `onStartup` で `shouldShowReviewNudge()` を評価し、表示時期ならアクションアイコンに `1` のバッジを付ける。バッジは `installTimestamp` がある利用者（この仕組みの導入後にインストールした人）だけに付け、それ以前からの利用者には更新時に突然バッジを出さない（ポップアップ内の促しは従来どおり 1 回出る）。ポップアップを開くとバッジを消す。外部通信はしない。
+ポップアップを開かない利用者にも気づけるよう、background が `onInstalled` / `onStartup` / alarms（6 時間ごと）で `shouldShowReviewNudge()` を評価し、表示時期ならアクションアイコンに `1` のバッジを付ける。バッジは `installTimestamp` がある利用者（この仕組みの導入後にインストールした人）だけに付け、それ以前からの利用者には更新時に突然バッジを出さない（ポップアップ内の促しは従来どおり 1 回出る）。ポップアップを開くとバッジを消す。外部通信はしない。
 
 | ユーザー操作 | 保存キー | 効果 |
 |--------------|----------|------|

@@ -145,6 +145,39 @@ function registerOnboarding() {
       .then(refreshBadge);
   });
   runtime.onStartup?.addListener(() => refreshBadge());
+  registerBadgeAlarm(refreshBadge);
+}
+
+// Re-check the badge periodically so a browser that stays open past the 7-day mark still
+// shows it. The alarms permission adds no install-time warning in Chrome or Firefox.
+const REVIEW_BADGE_ALARM = 'review-badge-check';
+const REVIEW_BADGE_ALARM_PERIOD_MINUTES = 6 * 60;
+
+function registerBadgeAlarm(refreshBadge: () => Promise<void>) {
+  const alarms = typeof chrome !== 'undefined' ? chrome.alarms : undefined;
+  if (!alarms || typeof alarms.create !== 'function') return;
+  try {
+    // Listeners must be registered synchronously so a sleeping worker wakes on the alarm.
+    alarms.onAlarm?.addListener((alarm) => {
+      if (alarm.name === REVIEW_BADGE_ALARM) return refreshBadge();
+    });
+    // Alarms may be dropped on restart or update, so (re)create when missing. Creating one
+    // with an existing name would reset its schedule, hence the get() check.
+    const create = () =>
+      alarms.create(REVIEW_BADGE_ALARM, {
+        delayInMinutes: 1,
+        periodInMinutes: REVIEW_BADGE_ALARM_PERIOD_MINUTES
+      });
+    const result = alarms.get(REVIEW_BADGE_ALARM, (existing) => {
+      void (chrome.runtime && chrome.runtime.lastError);
+      if (!existing) create();
+    }) as unknown;
+    if (result && typeof (result as Promise<unknown>).then === 'function') {
+      (result as Promise<unknown>).catch(() => undefined);
+    }
+  } catch (error) {
+    console.warn('[youtublur] failed to register the badge alarm:', error);
+  }
 }
 
 registerOnboarding();

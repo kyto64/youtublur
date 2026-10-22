@@ -163,7 +163,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 
 ### Don't（禁止・注意事項）
 
-- **勝手に権限追加**: `storage` / `activeTab` 以外の権限追加は慎重に
+- **勝手に権限追加**: `storage` / `activeTab` / `alarms`（バッジ再評価用）以外の権限追加は慎重に
 - **マッチパターン拡張**: `*://*.youtube.com/*` を維持
 - **manifest.json 手動変更**: `version` は `pnpm run release` で管理
 - **PAT / ブラウザでの GitHub 操作**: しない（Devin の GitHub 連携か `gh` CLI を使う）

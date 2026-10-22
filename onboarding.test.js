@@ -115,6 +115,8 @@ describe('onboarding.js', () => {
   describe('background lifecycle listeners', () => {
     let installedListener;
     let startupListener;
+    let alarmListener;
+    let existingAlarm;
 
     beforeEach(() => {
       require('./storage-mode.js');
@@ -122,6 +124,12 @@ describe('onboarding.js', () => {
       chrome.commands = { onCommand: { addListener: vi.fn() } };
       chrome.runtime.onInstalled = { addListener: vi.fn((fn) => { installedListener = fn; }) };
       chrome.runtime.onStartup = { addListener: vi.fn((fn) => { startupListener = fn; }) };
+      existingAlarm = undefined;
+      chrome.alarms = {
+        onAlarm: { addListener: vi.fn((fn) => { alarmListener = fn; }) },
+        get: vi.fn((name, cb) => cb(existingAlarm)),
+        create: vi.fn()
+      };
       delete require.cache[require.resolve('./background.js')];
       require('./background.js');
     });
@@ -150,6 +158,26 @@ describe('onboarding.js', () => {
       await installedListener({ reason: 'update', previousVersion: '1.0.0' });
       expect(chrome.tabs.create).not.toHaveBeenCalled();
       expect(chrome.action.setBadgeText).toHaveBeenLastCalledWith({ text: REVIEW_BADGE_TEXT });
+    });
+
+    test('a periodic alarm is created when missing and re-checks the badge', async () => {
+      expect(chrome.alarms.create).toHaveBeenCalledWith(
+        'review-badge-check',
+        expect.objectContaining({ periodInMinutes: expect.any(Number) })
+      );
+      localData[INSTALL_TIMESTAMP_KEY] = Date.now() - NUDGE_DELAY_MS - 1000;
+      await alarmListener({ name: 'other' });
+      expect(chrome.action.setBadgeText).not.toHaveBeenCalled();
+      await alarmListener({ name: 'review-badge-check' });
+      expect(chrome.action.setBadgeText).toHaveBeenLastCalledWith({ text: REVIEW_BADGE_TEXT });
+    });
+
+    test('an existing alarm is not recreated', () => {
+      existingAlarm = { name: 'review-badge-check' };
+      delete require.cache[require.resolve('./background.js')];
+      chrome.alarms.create.mockClear();
+      require('./background.js');
+      expect(chrome.alarms.create).not.toHaveBeenCalled();
     });
 
     test('browser startup re-checks the badge', async () => {
