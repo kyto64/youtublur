@@ -285,21 +285,28 @@ function solidBackgroundNeedsPaint(container) {
  */
 let solidMarginObserver = null;
 let solidMarginObservedContainer = null;
+let solidMarginObservedHosts = [];
 function disconnectSolidMarginObserver() {
     if (solidMarginObserver)
         solidMarginObserver.disconnect();
     solidMarginObserver = null;
     solidMarginObservedContainer = null;
+    solidMarginObservedHosts = [];
 }
 function observeSolidMarginHosts(container) {
     if (typeof ResizeObserver === 'undefined')
         return;
-    if (solidMarginObserver && solidMarginObservedContainer === container)
+    // 候補祖先はプレイヤーが移動した後に現れることがあるので、候補の集合が変わったら付け直す。
+    const hosts = getMarginHostCandidates(container);
+    if (solidMarginObserver
+        && solidMarginObservedContainer === container
+        && hosts.length === solidMarginObservedHosts.length
+        && hosts.every((h, i) => h === solidMarginObservedHosts[i]))
         return;
     disconnectSolidMarginObserver();
     solidMarginObservedContainer = container;
+    solidMarginObservedHosts = hosts;
     solidMarginObserver = new ResizeObserver(() => {
-        console.log('DBGRO', currentMode);
         if (currentMode !== 'solid')
             return;
         const c = getPlayerContainer();
@@ -307,11 +314,10 @@ function observeSolidMarginHosts(container) {
             paintSolidBackground(c);
     });
     solidMarginObserver.observe(container);
-    for (const host of getMarginHostCandidates(container))
+    for (const host of hosts)
         solidMarginObserver.observe(host);
 }
 function paintSolidBackground(container) {
-    console.log('DBGPAINT', container.clientWidth, getMarginHostCandidates(container).map((h) => `${h.id}:${h.clientWidth}`).join(','), String(getMarginHost(container) && getMarginHost(container).id));
     observeSolidMarginHosts(container);
     const color = effectiveSolidCssColor();
     container.style.setProperty('background-color', color, 'important');

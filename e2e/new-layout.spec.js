@@ -131,8 +131,6 @@ test.describe('New layout (no theater toggle, side margins)', () => {
   });
 
   test('solid color paints a host that only widens after init (same-width start)', async ({ page, context, extensionId, browserName }) => {
-    const dbg = [];
-    page.on('console', (m) => { if (m.text().startsWith('DBG')) dbg.push(m.text()); });
     test.skip(
       browserName === 'firefox',
       'Firefox E2E uses a chrome API mock; the real popup and storage are not available.'
@@ -169,27 +167,9 @@ test.describe('New layout (no theater toggle, side margins)', () => {
       host.style.width = `${host.clientWidth + extra}px`;
     }, { extra: MARGIN_PX * 2 });
 
-    try {
-      await expect
-        .poll(
-          async () =>
-            page.evaluate(PAINTED_MARGIN_HOST_SCRIPT),
-          { timeout: 10000 }
-        )
-        .not.toBe('');
-    } catch (err) {
-      const info = await page.evaluate(() => {
-        const p = document.querySelector('#movie_player, .html5-video-player');
-        const w = (el) => (el ? `${el.clientWidth}/${el.style.backgroundColor}` : null);
-        return JSON.stringify({
-          player: p && p.clientWidth,
-          mode: p && p.dataset.ytLightBgMode,
-          outer: w(document.querySelector('#player-container-outer')),
-          player_: w(document.querySelector('#player')),
-        });
-      });
-      throw new Error(`${err.message}\nDIAG ${info}\nDBG ${dbg.slice(-15).join(' | ')}`);
-    }
+    await expect
+      .poll(async () => page.evaluate(PAINTED_MARGIN_HOST_SCRIPT), { timeout: 10000 })
+      .not.toBe('');
   });
 
   test('blur margin canvas goes to the outermost (widest) host when nested', async ({ page }) => {
