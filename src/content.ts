@@ -485,13 +485,27 @@ let marginCtx: CanvasRenderingContext2D | null = null;
 let marginSnapCanvas: HTMLCanvasElement | null = null;
 let marginSnapCtx: CanvasRenderingContext2D | null = null;
 
-function getMarginHost(container: HTMLElement | null | undefined): HTMLElement | null {
-  if (!container) return null;
+/** 余白 host の候補祖先（幅は問わない）。後から広がるケースを監視するために使う。 */
+function getMarginHostCandidates(container: HTMLElement | null | undefined): HTMLElement[] {
+  if (!container) return [];
+  const hosts: HTMLElement[] = [];
   for (const selector of MARGIN_HOST_SELECTORS) {
     const host = container.closest(selector) as HTMLElement | null;
-    if (host && host !== container && host.clientWidth > container.clientWidth) return host;
+    if (host && host !== container && !hosts.includes(host)) hosts.push(host);
   }
-  return null;
+  return hosts;
+}
+
+/** プレイヤーより広い候補のうち最も外側（最も広い。同幅なら DOM 上の外側）を返す。 */
+function getMarginHost(container: HTMLElement | null | undefined): HTMLElement | null {
+  if (!container) return null;
+  let best: HTMLElement | null = null;
+  for (const host of getMarginHostCandidates(container)) {
+    if (host.clientWidth <= container.clientWidth) continue;
+    if (!best || host.clientWidth > best.clientWidth
+      || (host.clientWidth === best.clientWidth && host.contains(best))) best = host;
+  }
+  return best;
 }
 
 function removeMarginCanvas() {
@@ -504,6 +518,10 @@ function removeMarginCanvas() {
   }
   marginCanvas = null;
   marginCtx = null;
+  releaseMarginSnapCanvas();
+}
+
+function releaseMarginSnapCanvas() {
   if (marginSnapCanvas) {
     try {
       marginSnapCanvas.width = 0;
@@ -630,6 +648,7 @@ function releaseGeckoVideoSnapCanvas() {
   }
   geckoVideoSnapCanvas = null;
   geckoVideoSnapCtx = null;
+  releaseMarginSnapCanvas();
 }
 
 function createBlurCanvas(container: HTMLElement | null | undefined) {
@@ -807,8 +826,9 @@ function attachPlayerResizeObserver(container: Element | null | undefined) {
     if (hasCurrentBlurCanvas(c)) resizeCanvas(c);
   });
   playerResizeObserver.observe(container);
-  const host = getMarginHost(container as HTMLElement);
-  if (host) playerResizeObserver.observe(host);
+  for (const host of getMarginHostCandidates(container as HTMLElement)) {
+    playerResizeObserver.observe(host);
+  }
 }
 
 function startBlurLoop(container: HTMLElement | null | undefined) {
