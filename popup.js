@@ -205,9 +205,12 @@ function initReviewNudge() {
         shouldShowReviewNudge().then((show) => {
             if (!show)
                 return;
-            showReviewNudge();
-            // Shown once: later popups skip it even if this one is closed without a choice.
-            markReviewNudgeShown();
+            // Shown once: persist the flag first and show only if it was saved, so a failed
+            // write (e.g. quota exceeded) cannot make the nudge reappear on every popup open.
+            markReviewNudgeShown().then((saved) => {
+                if (saved)
+                    showReviewNudge();
+            }, () => { });
         });
     });
     leaveBtn.addEventListener('click', () => {
