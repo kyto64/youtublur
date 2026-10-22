@@ -167,13 +167,27 @@ test.describe('New layout (no theater toggle, side margins)', () => {
       host.style.width = `${host.clientWidth + extra}px`;
     }, { extra: MARGIN_PX * 2 });
 
-    await expect
-      .poll(
-        async () =>
-          page.evaluate(PAINTED_MARGIN_HOST_SCRIPT),
-        { timeout: 10000 }
-      )
-      .not.toBe('');
+    try {
+      await expect
+        .poll(
+          async () =>
+            page.evaluate(PAINTED_MARGIN_HOST_SCRIPT),
+          { timeout: 10000 }
+        )
+        .not.toBe('');
+    } catch (err) {
+      const info = await page.evaluate(() => {
+        const p = document.querySelector('#movie_player, .html5-video-player');
+        const w = (el) => (el ? `${el.clientWidth}/${el.style.backgroundColor}` : null);
+        return JSON.stringify({
+          player: p && p.clientWidth,
+          mode: p && p.dataset.ytLightBgMode,
+          outer: w(document.querySelector('#player-container-outer')),
+          player_: w(document.querySelector('#player')),
+        });
+      });
+      throw new Error(`${err.message}\nDIAG ${info}`);
+    }
   });
 
   test('blur margin canvas goes to the outermost (widest) host when nested', async ({ page }) => {
