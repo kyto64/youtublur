@@ -911,10 +911,12 @@ function startBlurLoop(container: HTMLElement | null | undefined) {
 
     if (video && frameCount % currentDrawInterval === 0) {
       drawBlurFrame(video, blurCanvas, blurCtx);
-      if (marginCanvas && !document.contains(marginCanvas)) {
-        // 余白 canvas だけが外れたら、本体 canvas と同様に再生成する。
+      const hostMoved = !!marginCanvas && getMarginHost(initialContainer) !== marginCanvasHost;
+      if (marginCanvas && (hostMoved || !document.contains(marginCanvas))) {
+        // 余白 canvas だけが外れた、またはプレイヤーが別の host の下へ移されたら、新しい host へ作り直す。
         removeMarginCanvas();
         ensureMarginCanvas(initialContainer);
+        if (hostMoved) attachPlayerResizeObserver(initialContainer);
       }
       if (marginCanvas && document.contains(marginCanvas)) {
         drawBlurFrame(video, marginCanvas, marginCtx, true);
