@@ -817,16 +817,19 @@ function resizeCanvas(container) {
     canvas.style.height = `${h}px`;
     ensureMarginCanvas(container);
 }
+let resizeObservedContainer = null;
 function detachPlayerResizeObserver() {
     if (playerResizeObserver) {
         playerResizeObserver.disconnect();
         playerResizeObserver = null;
     }
+    resizeObservedContainer = null;
 }
 function attachPlayerResizeObserver(container) {
     if (typeof ResizeObserver === 'undefined' || !container)
         return;
     detachPlayerResizeObserver();
+    resizeObservedContainer = container;
     playerResizeObserver = new ResizeObserver(() => {
         if (currentMode === 'solid') {
             // 余白（host）は後からプレイヤーより広くなることがあるので、サイズ変化で塗り直す。
@@ -1043,6 +1046,12 @@ function observePlayer() {
             if (!c)
                 return;
             discardStaleBlurCanvas(c);
+            // 単色モードの余白追従は ResizeObserver 頼み。ブラー canvas の破棄などで外れた場合や、
+            // プレイヤー要素が差し替わった場合は、現在のプレイヤーに付け直して塗り直す。
+            if (currentMode === 'solid' && resizeObservedContainer !== c) {
+                attachPlayerResizeObserver(c);
+                paintSolidBackground(c);
+            }
             // プレイヤー DOM は yt-navigate-finish より後に出ることがある。ブラーは canvas が無いとき再初期化し、
             // 単色はリトライが無いので、保存色が未反映のときだけ塗る。
             if (solidBackgroundNeedsPaint(c) || (currentMode === 'blur' && !hasCurrentBlurCanvas(c))) {
