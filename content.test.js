@@ -341,6 +341,32 @@ describe('content.js', () => {
     expect(canvas.height).toBe(720);
   });
 
+  test('new layout (no theater toggle, side margins around the player) keeps blur and solid working', () => {
+    document.body.innerHTML = `
+      <div id="player"><div id="player-container-outer" style="padding: 0 48px">
+        <div id="movie_player" class="html5-video-player"><video></video></div>
+      </div></div>`;
+    const container = document.querySelector('#movie_player');
+    expect(document.querySelector('.ytp-size-button')).toBeNull();
+    Object.defineProperty(container, 'clientWidth', { value: 960, configurable: true });
+    Object.defineProperty(container, 'clientHeight', { value: 540, configurable: true });
+
+    applyMode('blur', container);
+    const canvas = container.querySelector('#yt-light-bg-blur-canvas');
+    expect(canvas).not.toBeNull();
+    expect(canvas.width).toBe(960);
+    expect(container.dataset.ytLightBgMode).toBe('blur');
+
+    Object.defineProperty(container, 'clientWidth', { value: 1100, configurable: true });
+    handleResize();
+    expect(canvas.width).toBe(1100);
+
+    applyMode('solid', container);
+    expect(container.dataset.ytLightBgMode).toBe('solid');
+    expect(container.dataset.ytSolidColor).toBeTruthy();
+    expect(canvas.style.display).toBe('none');
+  });
+
   test('resizeCanvas ceils fractional client dimensions', () => {
     const container = document.createElement('div');
     const video = document.createElement('video');

@@ -536,3 +536,6 @@ open coverage/index.html
 - [Vitestドキュメント](https://vitest.dev/)
 - [Playwrightドキュメント](https://playwright.dev/)
 - [jsdomドキュメント](https://github.com/jsdom/jsdom)
+## 新レイアウト（シアター切替なし・左右余白）
+
+`e2e/new-layout.spec.js` は、実ページから `.ytp-size-button` を外しプレイヤーに幅と左右余白を与えて新レイアウトを近似する。実 DOM は段階配信のため、実機での確認は手動で行う。ユニットは `content.test.js` の「new layout」ケース。`style.css` は `#player` / `#player-container-outer` / `#player-container-inner` も透明化の対象にする。

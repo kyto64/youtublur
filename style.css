@@ -7,7 +7,10 @@
 .html5-video-player[data-yt-light-bg-mode="solid"] video,
 #player-full-bleed-container:has([data-yt-light-bg-mode="solid"]),
 #player-container:has([data-yt-light-bg-mode="solid"]),
-ytd-player:has([data-yt-light-bg-mode="solid"]) {
+ytd-player:has([data-yt-light-bg-mode="solid"]),
+#player:has([data-yt-light-bg-mode="solid"]),
+#player-container-outer:has([data-yt-light-bg-mode="solid"]),
+#player-container-inner:has([data-yt-light-bg-mode="solid"]) {
     background-color: transparent !important;
 }
 
@@ -16,7 +19,10 @@ ytd-player:has([data-yt-light-bg-mode="solid"]) {
 .html5-video-player[data-yt-light-bg-mode="blur"] video,
 #player-full-bleed-container:has([data-yt-light-bg-mode="blur"]),
 #player-container:has([data-yt-light-bg-mode="blur"]),
-ytd-player:has([data-yt-light-bg-mode="blur"]) {
+ytd-player:has([data-yt-light-bg-mode="blur"]),
+#player:has([data-yt-light-bg-mode="blur"]),
+#player-container-outer:has([data-yt-light-bg-mode="blur"]),
+#player-container-inner:has([data-yt-light-bg-mode="blur"]) {
     background-color: transparent !important;
 }
 
