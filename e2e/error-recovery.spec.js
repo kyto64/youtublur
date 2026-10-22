@@ -8,7 +8,7 @@ const {
 } = require('./helpers');
 
 test.describe('Error recovery and DOM mutation handling', () => {
-  test.use({ timeout: 45000 });
+  test.describe.configure({ timeout: 45000 });
 
   test('blur canvas recovers after being removed from DOM', async ({ page, browserName }) => {
     if (browserName === 'firefox') {

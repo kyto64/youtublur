@@ -30,7 +30,7 @@ async function applyNewLayout(page) {
 }
 
 test.describe('New layout (no theater toggle, side margins)', () => {
-  test.use({ timeout: 45000 });
+  test.describe.configure({ timeout: 45000 });
 
   test('blur is drawn in the side margins as well as inside the player', async ({ page }) => {
     await page.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
@@ -60,15 +60,18 @@ test.describe('New layout (no theater toggle, side margins)', () => {
         hostHeight: Math.ceil(host.clientHeight),
         marginWidth: margin.width,
         marginHeight: margin.height,
+        cssWidth: margin.style.width,
         parentId: margin.parentElement && margin.parentElement.id,
       };
     });
     expect(sizes).not.toBeNull();
     expect(['player-container-outer', 'player']).toContain(sizes.parentId);
-    expect(sizes.marginWidth).toBe(sizes.hostWidth);
-    expect(sizes.marginHeight).toBe(sizes.hostHeight);
+    // 内部解像度は host の 1/4、CSS サイズは host 全面
+    expect(sizes.marginWidth).toBe(Math.ceil(sizes.hostWidth / 4));
+    expect(sizes.marginHeight).toBe(Math.ceil(sizes.hostHeight / 4));
+    expect(sizes.cssWidth).toBe(`${sizes.hostWidth}px`);
     // 余白の分だけプレイヤー内 canvas より広い
-    expect(sizes.marginWidth).toBeGreaterThan(PLAYER_WIDTH_PX);
+    expect(sizes.hostWidth).toBeGreaterThan(PLAYER_WIDTH_PX);
   });
 
   test('solid color fills the side margins', async ({ page, context, extensionId, browserName }) => {

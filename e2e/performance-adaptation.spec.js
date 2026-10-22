@@ -8,7 +8,7 @@ const {
 } = require('./helpers');
 
 test.describe('Performance adaptation', () => {
-  test.use({ timeout: 60000 });
+  test.describe.configure({ timeout: 60000 });
 
   test('should adapt draw interval based on device performance', async ({
     page,

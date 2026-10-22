@@ -8,7 +8,7 @@ const {
 } = require('./helpers');
 
 test.describe('Storage conflict resolution', () => {
-  test.use({ timeout: 60000 });
+  test.describe.configure({ timeout: 60000 });
 
   test('should resolve storage conflict when timestamps differ (sync wins)', async ({
     page,

@@ -8,7 +8,7 @@ const {
 } = require('./helpers');
 
 test.describe('User interaction scenarios', () => {
-  test.use({ timeout: 60000 });
+  test.describe.configure({ timeout: 60000 });
 
   test('rapid mode switching between blur and solid', async ({ page, context, extensionId, browserName }) => {
     if (browserName === 'firefox') {

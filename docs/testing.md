@@ -539,8 +539,11 @@ open coverage/index.html
 
 ## 新レイアウト（シアター切替なし・左右余白）
 
-新レイアウトではプレイヤー（`#movie_player`）の左右に余白が出る。その余白はプレイヤー外側の祖先要素なので、`src/content.ts` の `getMarginHost()` が `#player-container-outer` / `#player` のうちプレイヤーより広いもの（複数ならもっとも外側＝最も広いもの）を余白の描画先として選ぶ。候補祖先は幅に関係なくリサイズ監視し、host だけが後から広がっても塗り直す。ブラーは host の背面に `#yt-light-bg-blur-margin-canvas` を置いて動画をブラー描画し、単色は host に `background-color` を設定する。プレイヤーより広い祖先が無い旧レイアウト（通常・シアター・全画面）では host は `null` で、挙動は変わらない。余白 canvas はプレイヤーの背面にあるため動画矩形を `clearRect` せず、Firefox（Gecko）では専用の snap canvas 経由で描き、ループ停止時は本体用と同様に余白用 snap canvas もサイズ 0 にして解放する。単色で塗った host の元の背景指定と、余白 canvas のために付けた `position` / `isolation` の元のインライン値は、host の切り替え・不成立・teardown 時に戻す。余白 canvas だけが DOM から外れた場合は描画ループが検知して再生成する（`e2e/error-recovery.spec.js`、Firefox はスキップ）。同幅の候補が並ぶときは最外側が host になるため、E2E は親要素を host として検証する。
+新レイアウトではプレイヤー（`#movie_player`）の左右に余白が出る。その余白はプレイヤー外側の祖先要素なので、`src/content.ts` の `getMarginHost()` が `#player-container-outer` / `#player` のうちプレイヤーより広いもの（複数ならもっとも外側＝最も広いもの）を余白の描画先として選ぶ。候補祖先は幅に関係なくリサイズ監視し、host だけが後から広がっても塗り直す。ブラーは host の背面に `#yt-light-bg-blur-margin-canvas` を置いて動画をブラー描画する（CPU 描画の CI で重くならないよう、内部解像度は host の 1/4・ブラー半径も 1/4 で描き、CSS で host 全面に拡大する）。単色は host に `background-color` を設定する。プレイヤーより広い祖先が無い旧レイアウト（通常・シアター・全画面）では host は `null` で、挙動は変わらない。余白 canvas はプレイヤーの背面にあるため動画矩形を `clearRect` せず、Firefox（Gecko）では専用の snap canvas 経由で描き、ループ停止時は本体用と同様に余白用 snap canvas もサイズ 0 にして解放する。単色で塗った host の元の背景指定と、余白 canvas のために付けた `position` / `isolation` の元のインライン値は、host の切り替え・不成立・teardown 時に戻す。余白 canvas だけが DOM から外れた場合は描画ループが検知して再生成する（`e2e/error-recovery.spec.js`、Firefox はスキップ）。同幅の候補が並ぶときは最外側が host になるため、E2E は親要素を host として検証する。
 
 `e2e/new-layout.spec.js` は、実ページから `.ytp-size-button` を外し `#player-container-outer` に左右 padding を与えて新レイアウトを近似し、余白の canvas（ブラー）と背景色（単色）を検証する。host だけが後から広がるケースと、`#player` が `#player-container-outer` より広い入れ子ケースも E2E で確認する。ユニットは `content.test.js` の「new layout」ケース。
 
 **注意**: 実 YouTube の新レイアウト DOM は実行環境から youtube.com に到達できず未確認。host のセレクタは PR 説明とレビュー指摘（余白は `#player-container-outer` の padding という推測）に基づく。実機での確認は手動で行う。
+
+
+> E2E の個別タイムアウトは `test.describe.configure({ timeout })` で指定する。`test.use({ timeout })` は fixture オプションではないため効かず、既定の 30 秒のままになる（CI の chromium が 10 分で cancelled になった原因の一つ）。

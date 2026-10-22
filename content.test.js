@@ -392,8 +392,11 @@ describe('content.js', () => {
       const margin = host.querySelector('#yt-light-bg-blur-margin-canvas');
       expect(margin).not.toBeNull();
       expect(margin.parentElement).toBe(host);
-      expect(margin.width).toBe(896);
-      expect(margin.height).toBe(450);
+      // 内部解像度は 1/4（CSS サイズは host 全面）
+      expect(margin.width).toBe(224);
+      expect(margin.height).toBe(113);
+      expect(margin.style.width).toBe('896px');
+      expect(margin.style.height).toBe('450px');
       expect(margin.style.zIndex).toBe('-1');
       expect(container.querySelector('#yt-light-bg-blur-canvas').width).toBe(800);
     });

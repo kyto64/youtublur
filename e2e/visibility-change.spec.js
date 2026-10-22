@@ -6,7 +6,7 @@ const {
 } = require('./helpers');
 
 test.describe('Page visibility change handling', () => {
-  test.use({ timeout: 45000 });
+  test.describe.configure({ timeout: 45000 });
 
   test('blur canvas handles page visibility toggle (hide/show)', async ({ page, browserName }) => {
     // Firefox mock has limited Page Visibility API support

@@ -6,7 +6,7 @@ const {
 } = require('./helpers');
 
 test.describe('Player resize handling', () => {
-  test.use({ timeout: 45000 });
+  test.describe.configure({ timeout: 45000 });
 
   test('blur canvas resizes when player container dimensions change', async ({ page, browserName }) => {
     // Firefox mock doesn't support real ResizeObserver interactions well

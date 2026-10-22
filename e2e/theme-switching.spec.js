@@ -8,7 +8,7 @@ const {
 } = require('./helpers');
 
 test.describe('Theme switching behavior', () => {
-  test.use({ timeout: 60000 });
+  test.describe.configure({ timeout: 60000 });
 
   test('solid mode background updates when YouTube theme changes to dark', async ({
     page,

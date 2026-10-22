@@ -462,6 +462,8 @@ function getPlayerContainer() {
  */
 const MARGIN_HOST_SELECTORS = ['#player-container-outer', '#player'];
 const MARGIN_CANVAS_ID = 'yt-light-bg-blur-margin-canvas';
+/** 余白 canvas は host 全面で大きく、ブラーは低周波なので内部解像度を 1/N に落として描く（CSS で拡大）。CPU 描画環境での負荷を抑える。 */
+const MARGIN_CANVAS_SCALE = 4;
 let marginCanvas = null;
 let marginCtx = null;
 let marginSnapCanvas = null;
@@ -586,12 +588,12 @@ function ensureMarginCanvas(container) {
     }
     marginCanvas.style.display = '';
     marginCanvas.style.visibility = 'visible';
-    const w = Math.max(1, Math.ceil(host.clientWidth));
-    const h = Math.max(1, Math.ceil(host.clientHeight));
-    marginCanvas.width = w;
-    marginCanvas.height = h;
-    marginCanvas.style.width = `${w}px`;
-    marginCanvas.style.height = `${h}px`;
+    const cssW = Math.max(1, Math.ceil(host.clientWidth));
+    const cssH = Math.max(1, Math.ceil(host.clientHeight));
+    marginCanvas.width = Math.max(1, Math.ceil(cssW / MARGIN_CANVAS_SCALE));
+    marginCanvas.height = Math.max(1, Math.ceil(cssH / MARGIN_CANVAS_SCALE));
+    marginCanvas.style.width = `${cssW}px`;
+    marginCanvas.style.height = `${cssH}px`;
 }
 function hideMarginCanvas() {
     if (marginCanvas) {
@@ -759,6 +761,7 @@ function drawBlurFrame(video, canvas, ctx, isMargin = false) {
         sx = 0;
         sy = (vh - sh) / 2;
     }
+    const blurPx = isMargin ? activeBlurStrengthPx / MARGIN_CANVAS_SCALE : activeBlurStrengthPx;
     if (geckoLayout) {
         const snapCtx = isMargin ? ensureMarginSnapCanvas(cw, ch) : ensureGeckoVideoSnapCanvas(cw, ch);
         const snapCanvas = isMargin ? marginSnapCanvas : geckoVideoSnapCanvas;
@@ -771,7 +774,7 @@ function drawBlurFrame(video, canvas, ctx, isMargin = false) {
                 /* same-origin / decode issues as main path */
                 return;
             }
-            ctx.filter = `blur(${activeBlurStrengthPx}px)`;
+            ctx.filter = `blur(${blurPx}px)`;
             try {
                 if (snapCanvas)
                     ctx.drawImage(snapCanvas, 0, 0);
@@ -789,7 +792,7 @@ function drawBlurFrame(video, canvas, ctx, isMargin = false) {
         }
     }
     // Next frame picks up the slider. The loop is not restarted; a larger radius only changes this filter.
-    ctx.filter = `blur(${activeBlurStrengthPx}px)`;
+    ctx.filter = `blur(${blurPx}px)`;
     try {
         ctx.drawImage(video, sx, sy, sw, sh, 0, 0, cw, ch);
     }

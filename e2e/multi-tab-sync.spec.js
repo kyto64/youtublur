@@ -8,7 +8,7 @@ const {
 } = require('./helpers');
 
 test.describe('Multi-tab synchronization', () => {
-  test.use({ timeout: 60000 });
+  test.describe.configure({ timeout: 60000 });
 
   test('should synchronize mode across multiple YouTube tabs', async ({
     page,
