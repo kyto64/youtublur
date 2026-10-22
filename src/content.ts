@@ -269,6 +269,8 @@ function installBlurStrengthStorageListener() {
 
 /** null: no explicit color yet, so the theme-based fill stays (existing users see no change). */
 let activeSolidColor: string | null = null;
+let marginSolidHost: HTMLElement | null = null;
+let marginSolidPrev: { value: string; priority: string } | null = null;
 let commandedSolidAt: number | null = null;
 let commandedSolidTimer: ReturnType<typeof setTimeout> | null = null;
 let solidCommandGeneration = 0;
@@ -289,7 +291,30 @@ function paintSolidBackground(container: HTMLElement) {
   container.style.setProperty('background-color', color, 'important');
   container.dataset.ytSolidColor = color;
   const host = getMarginHost(container);
-  if (host) host.style.setProperty('background-color', color, 'important');
+  if (!host) {
+    restoreMarginSolidHost();
+    return;
+  }
+  if (marginSolidHost !== host) {
+    restoreMarginSolidHost();
+    marginSolidHost = host;
+    marginSolidPrev = {
+      value: host.style.getPropertyValue('background-color'),
+      priority: host.style.getPropertyPriority('background-color'),
+    };
+  }
+  host.style.setProperty('background-color', color, 'important');
+}
+
+/** 単色で塗った余白 host の元の背景指定を戻す（host の切り替え・不成立・teardown 時）。 */
+function restoreMarginSolidHost() {
+  const host = marginSolidHost;
+  const prev = marginSolidPrev;
+  marginSolidHost = null;
+  marginSolidPrev = null;
+  if (!host || !prev) return;
+  if (prev.value) host.style.setProperty('background-color', prev.value, prev.priority);
+  else host.style.removeProperty('background-color');
 }
 
 function setActiveSolidColor(color: string | null) {
@@ -457,6 +482,8 @@ const MARGIN_HOST_SELECTORS = ['#player-container-outer', '#player'];
 const MARGIN_CANVAS_ID = 'yt-light-bg-blur-margin-canvas';
 let marginCanvas: HTMLCanvasElement | null = null;
 let marginCtx: CanvasRenderingContext2D | null = null;
+let marginSnapCanvas: HTMLCanvasElement | null = null;
+let marginSnapCtx: CanvasRenderingContext2D | null = null;
 
 function getMarginHost(container: HTMLElement | null | undefined): HTMLElement | null {
   if (!container) return null;
@@ -477,6 +504,27 @@ function removeMarginCanvas() {
   }
   marginCanvas = null;
   marginCtx = null;
+  if (marginSnapCanvas) {
+    try {
+      marginSnapCanvas.width = 0;
+      marginSnapCanvas.height = 0;
+    } catch { /* noop */ }
+  }
+  marginSnapCanvas = null;
+  marginSnapCtx = null;
+}
+
+function ensureMarginSnapCanvas(w: number, h: number) {
+  if (!marginSnapCanvas) {
+    marginSnapCanvas = document.createElement('canvas');
+    marginSnapCtx = marginSnapCanvas.getContext('2d');
+    if (!marginSnapCtx) return null;
+  }
+  if (marginSnapCanvas.width !== w || marginSnapCanvas.height !== h) {
+    marginSnapCanvas.width = w;
+    marginSnapCanvas.height = h;
+  }
+  return marginSnapCtx;
 }
 
 /** ブラー時に余白へ描く canvas。host の背面（z-index:-1）に置き、プレイヤーより下に出す。 */
@@ -486,7 +534,7 @@ function ensureMarginCanvas(container: HTMLElement | null | undefined) {
     removeMarginCanvas();
     return;
   }
-  host.style.removeProperty('background-color');
+  restoreMarginSolidHost();
   if (marginCanvas && marginCanvas.parentElement !== host) removeMarginCanvas();
   if (!marginCanvas) {
     const canvas = document.createElement('canvas');
@@ -661,7 +709,7 @@ function clearVideoContentRect(video: HTMLVideoElement, canvas: HTMLCanvasElemen
   ctx.clearRect(x1, y1, x2 - x1, y2 - y1);
 }
 
-function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement | null, ctx: CanvasRenderingContext2D | null, useGeckoSnap = true) {
+function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement | null, ctx: CanvasRenderingContext2D | null, isMargin = false) {
   if (!video || !canvas || !ctx || video.readyState < 2) return;
 
   const cw = canvas.width;
@@ -687,8 +735,9 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
     sy = (vh - sh) / 2;
   }
 
-  if (geckoLayout && useGeckoSnap) {
-    const snapCtx = ensureGeckoVideoSnapCanvas(cw, ch);
+  if (geckoLayout) {
+    const snapCtx = isMargin ? ensureMarginSnapCanvas(cw, ch) : ensureGeckoVideoSnapCanvas(cw, ch);
+    const snapCanvas = isMargin ? marginSnapCanvas : geckoVideoSnapCanvas;
     if (snapCtx) {
       snapCtx.filter = 'none';
       try {
@@ -699,13 +748,14 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
       }
       ctx.filter = `blur(${activeBlurStrengthPx}px)`;
       try {
-        if (geckoVideoSnapCanvas) ctx.drawImage(geckoVideoSnapCanvas, 0, 0);
+        if (snapCanvas) ctx.drawImage(snapCanvas, 0, 0);
       } catch {
         /* skip frame */
       } finally {
         ctx.filter = 'none';
       }
-      clearVideoContentRect(video, canvas, ctx);
+      // 余白 canvas はプレイヤーの背面にある。動画矩形を消すと横長動画で余白が透けるので消さない。
+      if (!isMargin) clearVideoContentRect(video, canvas, ctx);
       return;
     }
   }
@@ -719,7 +769,7 @@ function drawBlurFrame(video: HTMLVideoElement | null, canvas: HTMLCanvasElement
   } finally {
     ctx.filter = 'none';
   }
-  clearVideoContentRect(video, canvas, ctx);
+  if (!isMargin) clearVideoContentRect(video, canvas, ctx);
 }
 
 function resizeCanvas(container: HTMLElement | null | undefined) {
@@ -794,7 +844,7 @@ function startBlurLoop(container: HTMLElement | null | undefined) {
     if (video && frameCount % currentDrawInterval === 0) {
       drawBlurFrame(video, blurCanvas, blurCtx);
       if (marginCanvas && document.contains(marginCanvas)) {
-        drawBlurFrame(video, marginCanvas, marginCtx, false);
+        drawBlurFrame(video, marginCanvas, marginCtx, true);
       }
     }
 
@@ -906,6 +956,7 @@ function teardownPlayerPageBlur() {
   blurCanvas = null;
   blurCtx = null;
   removeMarginCanvas();
+  restoreMarginSolidHost();
   frameCount = 0;
   releaseGeckoVideoSnapCanvas();
 }
@@ -1140,6 +1191,7 @@ if (typeof module !== 'undefined' && module.exports) {
     setActiveSolidColor,
     paintSolidBackground,
     getMarginHost,
+    restoreMarginSolidHost,
     applyStoredSolidColor,
     getPlayerContainer,
     getVideoElement,

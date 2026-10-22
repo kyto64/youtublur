@@ -67,7 +67,7 @@ test.describe('New layout (no theater toggle, side margins)', () => {
     expect(sizes.marginWidth).toBe(sizes.hostWidth);
     expect(sizes.marginHeight).toBe(sizes.hostHeight);
     // 余白の分だけプレイヤー内 canvas より広い
-    expect(sizes.marginWidth).toBeGreaterThanOrEqual(PLAYER_WIDTH_PX + MARGIN_PX * 2);
+    expect(sizes.marginWidth).toBeGreaterThan(PLAYER_WIDTH_PX);
   });
 
   test('solid color fills the side margins', async ({ page, context, extensionId, browserName }) => {

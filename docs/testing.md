@@ -539,7 +539,7 @@ open coverage/index.html
 
 ## 新レイアウト（シアター切替なし・左右余白）
 
-新レイアウトではプレイヤー（`#movie_player`）の左右に余白が出る。その余白はプレイヤー外側の祖先要素なので、`src/content.ts` の `getMarginHost()` が `#player-container-outer` / `#player` のうちプレイヤーより広いものを余白の描画先として選ぶ。ブラーは host の背面に `#yt-light-bg-blur-margin-canvas` を置いて動画をブラー描画し、単色は host に `background-color` を設定する。プレイヤーより広い祖先が無い旧レイアウト（通常・シアター・全画面）では host は `null` で、挙動は変わらない。
+新レイアウトではプレイヤー（`#movie_player`）の左右に余白が出る。その余白はプレイヤー外側の祖先要素なので、`src/content.ts` の `getMarginHost()` が `#player-container-outer` / `#player` のうちプレイヤーより広いものを余白の描画先として選ぶ。ブラーは host の背面に `#yt-light-bg-blur-margin-canvas` を置いて動画をブラー描画し、単色は host に `background-color` を設定する。プレイヤーより広い祖先が無い旧レイアウト（通常・シアター・全画面）では host は `null` で、挙動は変わらない。余白 canvas はプレイヤーの背面にあるため動画矩形を `clearRect` せず、Firefox（Gecko）では専用の snap canvas 経由で描く。単色で塗った host の元の背景指定は、host の切り替え・不成立・teardown 時に戻す。
 
 `e2e/new-layout.spec.js` は、実ページから `.ytp-size-button` を外し `#player-container-outer` に左右 padding を与えて新レイアウトを近似し、余白の canvas（ブラー）と背景色（単色）を検証する。ユニットは `content.test.js` の「new layout」ケース。
 

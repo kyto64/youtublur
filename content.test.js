@@ -16,6 +16,7 @@ const {
   observePlayer,
   isPlayerPagePath,
   drawBlurFrame,
+  teardownPlayerPageBlur,
   resizeCanvas,
   handleResize,
   getMarginHost,
@@ -412,6 +413,39 @@ describe('content.js', () => {
       applyMode('blur', container);
       expect(host.style.getPropertyValue('background-color')).toBe('');
       expect(host.querySelector('#yt-light-bg-blur-margin-canvas').style.display).toBe('');
+    });
+
+    test('solid restores the original background on host switch and teardown', () => {
+      const { container, host } = setupMargins();
+      host.style.setProperty('background-color', 'rgb(1, 2, 3)');
+      applyMode('solid', container);
+      expect(host.style.getPropertyPriority('background-color')).toBe('important');
+
+      // host が不成立（プレイヤーと同幅）になったら元の指定に戻る
+      Object.defineProperty(host, 'clientWidth', { value: 800, configurable: true });
+      applyMode('solid', container);
+      expect(host.style.getPropertyValue('background-color')).toBe('rgb(1, 2, 3)');
+      expect(host.style.getPropertyPriority('background-color')).toBe('');
+
+      Object.defineProperty(host, 'clientWidth', { value: 896, configurable: true });
+      applyMode('solid', container);
+      expect(host.style.getPropertyPriority('background-color')).toBe('important');
+      teardownPlayerPageBlur();
+      expect(host.style.getPropertyValue('background-color')).toBe('rgb(1, 2, 3)');
+    });
+
+    test('margin canvas keeps the area behind the player (no clearRect on it)', () => {
+      const { container, host } = setupMargins();
+      applyMode('blur', container);
+      const margin = host.querySelector('#yt-light-bg-blur-margin-canvas');
+      const ctx = { filter: 'none', drawImage: vi.fn(), clearRect: vi.fn() };
+      const video = container.querySelector('video');
+      Object.defineProperty(video, 'readyState', { value: 4, configurable: true });
+      Object.defineProperty(video, 'videoWidth', { value: 2100, configurable: true });
+      Object.defineProperty(video, 'videoHeight', { value: 900, configurable: true });
+      drawBlurFrame(video, margin, ctx, true);
+      expect(ctx.drawImage).toHaveBeenCalled();
+      expect(ctx.clearRect).not.toHaveBeenCalled();
     });
 
     test('old layout (no wider ancestor) has no margin host or margin canvas', () => {
