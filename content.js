@@ -279,7 +279,38 @@ function solidBackgroundNeedsPaint(container) {
     return container.dataset.ytLightBgMode !== 'solid'
         || container.dataset.ytSolidColor !== effectiveSolidCssColor();
 }
+/**
+ * 単色の余白 host は後からプレイヤーより広くなることがある。ブラー用の resize observer は
+ * ブラー canvas の寿命に引きずられて外れるので、単色専用に持ち、塗るたびにプレイヤーへ付け直す。
+ */
+let solidMarginObserver = null;
+let solidMarginObservedContainer = null;
+function disconnectSolidMarginObserver() {
+    if (solidMarginObserver)
+        solidMarginObserver.disconnect();
+    solidMarginObserver = null;
+    solidMarginObservedContainer = null;
+}
+function observeSolidMarginHosts(container) {
+    if (typeof ResizeObserver === 'undefined')
+        return;
+    if (solidMarginObserver && solidMarginObservedContainer === container)
+        return;
+    disconnectSolidMarginObserver();
+    solidMarginObservedContainer = container;
+    solidMarginObserver = new ResizeObserver(() => {
+        if (currentMode !== 'solid')
+            return;
+        const c = getPlayerContainer();
+        if (c)
+            paintSolidBackground(c);
+    });
+    solidMarginObserver.observe(container);
+    for (const host of getMarginHostCandidates(container))
+        solidMarginObserver.observe(host);
+}
 function paintSolidBackground(container) {
+    observeSolidMarginHosts(container);
     const color = effectiveSolidCssColor();
     container.style.setProperty('background-color', color, 'important');
     container.dataset.ytSolidColor = color;
@@ -817,27 +848,17 @@ function resizeCanvas(container) {
     canvas.style.height = `${h}px`;
     ensureMarginCanvas(container);
 }
-let resizeObservedContainer = null;
 function detachPlayerResizeObserver() {
     if (playerResizeObserver) {
         playerResizeObserver.disconnect();
         playerResizeObserver = null;
     }
-    resizeObservedContainer = null;
 }
 function attachPlayerResizeObserver(container) {
     if (typeof ResizeObserver === 'undefined' || !container)
         return;
     detachPlayerResizeObserver();
-    resizeObservedContainer = container;
     playerResizeObserver = new ResizeObserver(() => {
-        if (currentMode === 'solid') {
-            // 余白（host）は後からプレイヤーより広くなることがあるので、サイズ変化で塗り直す。
-            const sc = getPlayerContainer();
-            if (sc)
-                paintSolidBackground(sc);
-            return;
-        }
         if (currentMode !== 'blur')
             return;
         const c = getPlayerContainer();
@@ -900,6 +921,7 @@ function stopBlurLoop() {
     }
 }
 function showBlurMode(container) {
+    disconnectSolidMarginObserver();
     if (!container)
         return;
     const video = getVideoElement(container);
@@ -995,6 +1017,7 @@ function teardownPlayerPageBlur() {
     blurCanvas = null;
     blurCtx = null;
     removeMarginCanvas();
+    disconnectSolidMarginObserver();
     restoreMarginSolidHost();
     frameCount = 0;
     releaseGeckoVideoSnapCanvas();
@@ -1046,12 +1069,6 @@ function observePlayer() {
             if (!c)
                 return;
             discardStaleBlurCanvas(c);
-            // 単色モードの余白追従は ResizeObserver 頼み。ブラー canvas の破棄などで外れた場合や、
-            // プレイヤー要素が差し替わった場合は、現在のプレイヤーに付け直して塗り直す。
-            if (currentMode === 'solid' && resizeObservedContainer !== c) {
-                attachPlayerResizeObserver(c);
-                paintSolidBackground(c);
-            }
             // プレイヤー DOM は yt-navigate-finish より後に出ることがある。ブラーは canvas が無いとき再初期化し、
             // 単色はリトライが無いので、保存色が未反映のときだけ塗る。
             if (solidBackgroundNeedsPaint(c) || (currentMode === 'blur' && !hasCurrentBlurCanvas(c))) {
@@ -1246,6 +1263,7 @@ if (typeof module !== 'undefined' && module.exports) {
         getMode: () => currentMode,
         resetState: () => {
             currentMode = 'blur';
+            disconnectSolidMarginObserver();
             stopBlurInitRetryCompletely();
             detachPlayerResizeObserver();
             if (playerDomObserver) {
