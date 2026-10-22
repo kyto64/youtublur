@@ -288,6 +288,22 @@ describe('popup.js', () => {
       );
     });
 
+    test('does not show the nudge when saving the shown flag fails', async () => {
+      localGetMock.mockImplementation((_keys, cb) => {
+        cb({ firstUseTimestamp: Date.now() - 8 * 24 * 60 * 60 * 1000 });
+      });
+      localSetMock.mockImplementation((_data, cb) => {
+        chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+        cb();
+      });
+
+      initPopup();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      for (let i = 0; i < 6; i++) await new Promise((resolve) => process.nextTick(resolve));
+
+      expect(document.getElementById('reviewNudge').hidden).toBe(true);
+    });
+
     test('uses the install time as the start point', async () => {
       localGetMock.mockImplementation((keys, cb) => {
         cb({
@@ -357,8 +373,10 @@ describe('popup.js', () => {
       localGetMock.mockImplementation((_keys, cb) => {
         cb({ firstUseTimestamp: firstUse });
       });
-      localSetMock.mockImplementation((_data, cb) => {
-        chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+      localSetMock.mockImplementation((data, cb) => {
+        chrome.runtime.lastError = data.reviewNudgeShown
+          ? undefined
+          : { message: 'QUOTA_BYTES quota exceeded' };
         cb();
       });
 
@@ -380,8 +398,11 @@ describe('popup.js', () => {
       localGetMock.mockImplementation((_keys, cb) => {
         cb({ firstUseTimestamp: firstUse });
       });
-      localSetMock.mockImplementation((_data, cb) => {
-        chrome.runtime.lastError = { message: 'QUOTA_BYTES quota exceeded' };
+      localSetMock.mockImplementation((data, cb) => {
+        // The shown flag is saved so the nudge appears; the user's choice then fails.
+        chrome.runtime.lastError = data.reviewNudgeShown
+          ? undefined
+          : { message: 'QUOTA_BYTES quota exceeded' };
         cb();
       });
       chrome.tabs.create = vi.fn();
