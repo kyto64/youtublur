@@ -466,15 +466,31 @@ let marginCanvas = null;
 let marginCtx = null;
 let marginSnapCanvas = null;
 let marginSnapCtx = null;
+/** 余白 host の候補祖先（幅は問わない）。後から広がるケースを監視するために使う。 */
+function getMarginHostCandidates(container) {
+    if (!container)
+        return [];
+    const hosts = [];
+    for (const selector of MARGIN_HOST_SELECTORS) {
+        const host = container.closest(selector);
+        if (host && host !== container && !hosts.includes(host))
+            hosts.push(host);
+    }
+    return hosts;
+}
+/** プレイヤーより広い候補のうち最も外側（最も広い。同幅なら DOM 上の外側）を返す。 */
 function getMarginHost(container) {
     if (!container)
         return null;
-    for (const selector of MARGIN_HOST_SELECTORS) {
-        const host = container.closest(selector);
-        if (host && host !== container && host.clientWidth > container.clientWidth)
-            return host;
+    let best = null;
+    for (const host of getMarginHostCandidates(container)) {
+        if (host.clientWidth <= container.clientWidth)
+            continue;
+        if (!best || host.clientWidth > best.clientWidth
+            || (host.clientWidth === best.clientWidth && host.contains(best)))
+            best = host;
     }
-    return null;
+    return best;
 }
 function removeMarginCanvas() {
     if (marginCanvas) {
@@ -487,6 +503,9 @@ function removeMarginCanvas() {
     }
     marginCanvas = null;
     marginCtx = null;
+    releaseMarginSnapCanvas();
+}
+function releaseMarginSnapCanvas() {
     if (marginSnapCanvas) {
         try {
             marginSnapCanvas.width = 0;
@@ -617,6 +636,7 @@ function releaseGeckoVideoSnapCanvas() {
     }
     geckoVideoSnapCanvas = null;
     geckoVideoSnapCtx = null;
+    releaseMarginSnapCanvas();
 }
 function createBlurCanvas(container) {
     if (!container)
@@ -794,9 +814,9 @@ function attachPlayerResizeObserver(container) {
             resizeCanvas(c);
     });
     playerResizeObserver.observe(container);
-    const host = getMarginHost(container);
-    if (host)
+    for (const host of getMarginHostCandidates(container)) {
         playerResizeObserver.observe(host);
+    }
 }
 function startBlurLoop(container) {
     stopBlurLoop();
