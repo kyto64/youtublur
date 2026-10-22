@@ -35,6 +35,33 @@ test.describe('Error recovery and DOM mutation handling', () => {
     await expect(newCanvas).toBeAttached({ timeout: 10000 });
   });
 
+  test('margin canvas recovers after only it is removed from DOM', async ({ page, browserName }) => {
+    if (browserName === 'firefox') {
+      test.skip(true, 'DOM mutation handling differs in Firefox mock');
+    }
+
+    await page.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
+    await waitForWatchPlayer(page);
+    await expect(youtublurCanvasLocator(page)).toBeAttached({ timeout: 10000 });
+
+    await page.evaluate(() => {
+      document.querySelectorAll('.ytp-size-button').forEach((el) => el.remove());
+      const player = document.querySelector('#movie_player, .html5-video-player');
+      const host = player.closest('#player-container-outer');
+      host.style.padding = '0 48px';
+      player.style.width = '800px';
+      player.style.height = '450px';
+      player.style.margin = '0 auto';
+    });
+    const margin = page.locator('#yt-light-bg-blur-margin-canvas');
+    await expect(margin).toBeAttached({ timeout: 10000 });
+
+    await page.evaluate(() => {
+      document.querySelector('#yt-light-bg-blur-margin-canvas').remove();
+    });
+    await expect(margin).toBeAttached({ timeout: 10000 });
+  });
+
   test('blur canvas recovers after video element is replaced', async ({ page, browserName }) => {
     if (browserName === 'firefox') {
       test.skip(true, 'DOM mutation handling differs in Firefox mock');

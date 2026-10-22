@@ -398,6 +398,17 @@ describe('content.js', () => {
       expect(container.querySelector('#yt-light-bg-blur-canvas').width).toBe(800);
     });
 
+    test('teardown restores the inline position/isolation set on the margin host', () => {
+      const { container, host } = setupMargins();
+      host.style.isolation = 'auto';
+      applyMode('blur', container);
+      expect(host.style.position).toBe('relative');
+      expect(host.style.isolation).toBe('isolate');
+      teardownPlayerPageBlur();
+      expect(host.style.position).toBe('');
+      expect(host.style.isolation).toBe('auto');
+    });
+
     test('solid paints the margin host and hides the margin canvas', () => {
       const { container, host } = setupMargins();
       applyMode('blur', container);

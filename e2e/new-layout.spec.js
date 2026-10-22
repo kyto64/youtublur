@@ -51,8 +51,9 @@ test.describe('New layout (no theater toggle, side margins)', () => {
     await expect(marginCanvas).toBeAttached({ timeout: 10000 });
     expect(await marginCanvas.count()).toBe(1);
     const sizes = await page.evaluate(() => {
-      const host = document.querySelector('#player-container-outer');
       const margin = document.querySelector('#yt-light-bg-blur-margin-canvas');
+      // 同幅なら最外側の祖先（#player）が余白 host に選ばれるため、親をそのまま host とみなす。
+      const host = margin && margin.parentElement;
       if (!host || !margin) return null;
       return {
         hostWidth: Math.ceil(host.clientWidth),
@@ -63,7 +64,7 @@ test.describe('New layout (no theater toggle, side margins)', () => {
       };
     });
     expect(sizes).not.toBeNull();
-    expect(sizes.parentId).toBe('player-container-outer');
+    expect(['player-container-outer', 'player']).toContain(sizes.parentId);
     expect(sizes.marginWidth).toBe(sizes.hostWidth);
     expect(sizes.marginHeight).toBe(sizes.hostHeight);
     // 余白の分だけプレイヤー内 canvas より広い

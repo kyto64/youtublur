@@ -466,6 +466,9 @@ let marginCanvas = null;
 let marginCtx = null;
 let marginSnapCanvas = null;
 let marginSnapCtx = null;
+/** 余白 canvas のために host へ付けたインライン style の元の値（解除時に戻す）。 */
+let marginCanvasHost = null;
+let marginCanvasHostPrev = null;
 /** 余白 host の候補祖先（幅は問わない）。後から広がるケースを監視するために使う。 */
 function getMarginHostCandidates(container) {
     if (!container)
@@ -503,7 +506,24 @@ function removeMarginCanvas() {
     }
     marginCanvas = null;
     marginCtx = null;
+    restoreMarginCanvasHost();
     releaseMarginSnapCanvas();
+}
+function restoreMarginCanvasHost() {
+    const host = marginCanvasHost;
+    const prev = marginCanvasHostPrev;
+    marginCanvasHost = null;
+    marginCanvasHostPrev = null;
+    if (!host || !prev)
+        return;
+    if (prev.position)
+        host.style.position = prev.position;
+    else
+        host.style.removeProperty('position');
+    if (prev.isolation)
+        host.style.isolation = prev.isolation;
+    else
+        host.style.removeProperty('isolation');
 }
 function releaseMarginSnapCanvas() {
     if (marginSnapCanvas) {
@@ -537,6 +557,7 @@ function ensureMarginCanvas(container) {
         return;
     }
     restoreMarginSolidHost();
+    // host の切り替えや、余白 canvas だけが DOM から外れた場合は作り直す。
     if (marginCanvas && marginCanvas.parentElement !== host)
         removeMarginCanvas();
     if (!marginCanvas) {
@@ -551,6 +572,11 @@ function ensureMarginCanvas(container) {
         const ctx = canvas.getContext('2d');
         if (!ctx)
             return;
+        marginCanvasHost = host;
+        marginCanvasHostPrev = {
+            position: host.style.position,
+            isolation: host.style.isolation,
+        };
         if (getComputedStyle(host).position === 'static')
             host.style.position = 'relative';
         host.style.isolation = 'isolate';
@@ -847,6 +873,11 @@ function startBlurLoop(container) {
         updateFPS(timestamp);
         if (video && frameCount % currentDrawInterval === 0) {
             drawBlurFrame(video, blurCanvas, blurCtx);
+            if (marginCanvas && !document.contains(marginCanvas)) {
+                // 余白 canvas だけが外れたら、本体 canvas と同様に再生成する。
+                removeMarginCanvas();
+                ensureMarginCanvas(initialContainer);
+            }
             if (marginCanvas && document.contains(marginCanvas)) {
                 drawBlurFrame(video, marginCanvas, marginCtx, true);
             }
