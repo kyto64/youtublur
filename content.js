@@ -299,6 +299,7 @@ function observeSolidMarginHosts(container) {
     disconnectSolidMarginObserver();
     solidMarginObservedContainer = container;
     solidMarginObserver = new ResizeObserver(() => {
+        console.log('DBGRO', currentMode);
         if (currentMode !== 'solid')
             return;
         const c = getPlayerContainer();
@@ -310,6 +311,7 @@ function observeSolidMarginHosts(container) {
         solidMarginObserver.observe(host);
 }
 function paintSolidBackground(container) {
+    console.log('DBGPAINT', container.clientWidth, getMarginHostCandidates(container).map((h) => `${h.id}:${h.clientWidth}`).join(','), String(getMarginHost(container) && getMarginHost(container).id));
     observeSolidMarginHosts(container);
     const color = effectiveSolidCssColor();
     container.style.setProperty('background-color', color, 'important');

@@ -131,6 +131,8 @@ test.describe('New layout (no theater toggle, side margins)', () => {
   });
 
   test('solid color paints a host that only widens after init (same-width start)', async ({ page, context, extensionId, browserName }) => {
+    const dbg = [];
+    page.on('console', (m) => { if (m.text().startsWith('DBG')) dbg.push(m.text()); });
     test.skip(
       browserName === 'firefox',
       'Firefox E2E uses a chrome API mock; the real popup and storage are not available.'
@@ -186,7 +188,7 @@ test.describe('New layout (no theater toggle, side margins)', () => {
           player_: w(document.querySelector('#player')),
         });
       });
-      throw new Error(`${err.message}\nDIAG ${info}`);
+      throw new Error(`${err.message}\nDIAG ${info}\nDBG ${dbg.slice(-15).join(' | ')}`);
     }
   });
 
