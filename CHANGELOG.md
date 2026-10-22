@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.34](https://github.com/kyto64/youtublur/compare/v1.12.33...v1.12.34) (2026-10-22)
+
+### Features
+
+* インストール時のウェルカムページとレビュー依頼の起点変更・バッジ ([#210](https://github.com/kyto64/youtublur/issues/210)) ([9a6545e](https://github.com/kyto64/youtublur/commit/9a6545ee9d585602be6fac67cf1f49325fd98548))
+
 ## [1.12.33](https://github.com/kyto64/youtublur/compare/v1.12.32...v1.12.33) (2026-10-18)
 
 ## [1.12.32](https://github.com/kyto64/youtublur/compare/v1.12.31...v1.12.32) (2026-10-17)
