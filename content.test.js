@@ -462,6 +462,40 @@ describe('content.js', () => {
       expect(ctx.clearRect).not.toHaveBeenCalled();
     });
 
+    test('re-attaches the margin canvas when the player moves under another same-width host', () => {
+      vi.restoreAllMocks();
+      const rafCallbacks = [];
+      vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+        rafCallbacks.push(cb);
+        return rafCallbacks.length;
+      });
+      vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => {});
+
+      const { container, host } = setupMargins();
+      const video = container.querySelector('video');
+      Object.defineProperty(video, 'readyState', { value: 4, configurable: true });
+      applyMode('blur', container);
+      expect(host.querySelector('#yt-light-bg-blur-margin-canvas')).not.toBeNull();
+      expect(rafCallbacks.length).toBeGreaterThan(0);
+
+      // 同じ寸法のまま、別の #player-container-outer の下へ移す
+      const newHost = document.createElement('div');
+      newHost.id = 'player-container-outer';
+      Object.defineProperty(newHost, 'clientWidth', { value: 896, configurable: true });
+      Object.defineProperty(newHost, 'clientHeight', { value: 450, configurable: true });
+      document.body.appendChild(newHost);
+      host.id = 'old-host';
+      newHost.appendChild(container);
+      expect(getMarginHost(container)).toBe(newHost);
+
+      // 描画間隔（最大 4 フレームに 1 回）をまたぐよう数フレーム回す
+      for (let i = 0; i < 8; i++) rafCallbacks[rafCallbacks.length - 1](16 * (i + 1));
+
+      expect(newHost.querySelector('#yt-light-bg-blur-margin-canvas')).not.toBeNull();
+      expect(document.querySelectorAll('#yt-light-bg-blur-margin-canvas')).toHaveLength(1);
+      expect(host.querySelector('#yt-light-bg-blur-margin-canvas')).toBeNull();
+    });
+
     test('old layout (no wider ancestor) has no margin host or margin canvas', () => {
       document.body.innerHTML = '<div id="movie_player" class="html5-video-player"><video></video></div>';
       const container = document.querySelector('#movie_player');
