@@ -4,7 +4,7 @@
     "description": "Nombre de la extensión (marca)."
   },
   "extDescription": {
-    "message": "Desenfoque suave que sigue el vídeo, o relleno sólido según el tema, alrededor del reproductor—no es desenfoque de miniaturas.",
+    "message": "Rellena los márgenes vacíos alrededor del reproductor de YouTube con un desenfoque suave que sigue el vídeo, o un color sólido según el tema.",
     "description": "Descripción corta para Chrome Web Store y detalles de la extensión."
   },
   "popupHeading": {

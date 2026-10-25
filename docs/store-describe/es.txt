@@ -1,22 +1,19 @@
-Si te resulta útil esta extensión, considera apoyar su desarrollo: https://buymeacoffee.com/kkyto641
+☕ ¿Disfrutas youtublur? Apoya el desarrollo: https://buymeacoffee.com/kkyto641
 
-Haz que ver YouTube sea más cómodo e inmersivo. Esta extensión personaliza el espacio alrededor del reproductor para ofrecer un entorno de visionado más suave y relajante.
+youtublur rellena el espacio vacío alrededor del reproductor de YouTube.
 
-✨ Funciones principales — Cambia libremente entre dos modos de fondo según tu estado de ánimo o lo que necesites.
+Cuando el vídeo no ocupa toda la ventana, YouTube deja márgenes y huecos laterales alrededor del reproductor. youtublur rellena esos huecos con uno de estos dos estilos:
 
-1. Modo desenfoque (vídeo) El área alrededor del reproductor muestra un desenfoque en tiempo real que sigue los colores del vídeo. La pantalla gana coherencia visual, como en un cine o una habitación con luz indirecta, para una mayor inmersión.
+• Desenfoque: un desenfoque suave que sigue los colores del vídeo en tiempo real, para que los márgenes se fundan con lo que miras.
+• Sólido: un color sólido que eliges, para que los márgenes encajen con tu tema.
 
-2. Modo color sólido (gris claro) El espacio vacío alrededor del reproductor se rellena con un gris claro sencillo y agradable a la vista. Menos ruido visual para centrarte en el contenido del vídeo.
+Solo cambia el área alrededor del reproductor. El vídeo en sí no se toca. No se aplica ningún filtro sobre él, y esto no es un desenfoque de miniaturas.
 
-💡 Cómo usarlo — La configuración es muy sencilla.
+Cómo usarlo
+• Haz clic en el icono de la barra de herramientas para alternar entre Desenfoque y Sólido.
+• Ajusta la intensidad del desenfoque o elige el color sólido.
 
-Tras instalar la extensión, abre una página de reproducción de YouTube.
-Haz clic en el icono de youtublur en la barra de herramientas de Chrome para abrir el menú emergente.
-Elige «Color sólido (gris claro)» o «Desenfoque (vídeo)». ¡Eso es todo!
-Tu elección se guarda automáticamente y se mantiene en las próximas visitas.
+Dónde funciona mejor
+Cualquier diseño que deje márgenes alrededor del reproductor, como el modo cine del YouTube clásico o una ventana ancha con huecos laterales.
 
-🎯 Te puede interesar si…
-
-Quieres una experiencia más bella e inmersiva
-El modo cine oscuro por defecto de YouTube o los fondos muy blancos no te convencen
-Prefieres un diseño más limpio y un entorno más suave para la vista
+Ligero y respetuoso con la privacidad: youtublur no recopila datos.

@@ -4,7 +4,7 @@
     "description": "扩展名称（品牌）。"
   },
   "extDescription": {
-    "message": "仅作用于播放器周围：跟随视频的柔化模糊，或随主题的单色填充。不是缩略图模糊。",
+    "message": "用跟随视频的柔和模糊或与主题匹配的纯色，填补 YouTube 播放器周围的空白。不是缩略图模糊。",
     "description": "Chrome Web Store 和扩展详情中的简短描述。"
   },
   "popupHeading": {
