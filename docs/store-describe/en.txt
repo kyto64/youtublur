@@ -1,22 +1,19 @@
-If you find this extension helpful, consider supporting its development: https://buymeacoffee.com/kkyto641
+☕ Enjoying youtublur? Support development: https://buymeacoffee.com/kkyto641
 
-Make watching YouTube more comfortable and immersive. This extension customizes the area around the video player to create a gentler, more relaxing viewing environment.
+youtublur fills the empty space around the YouTube player.
 
-✨ Main features — Switch freely between two background modes to match your mood or use case.
+When the video doesn't fill the window, YouTube leaves blank margins and side gaps around the player. youtublur fills those gaps with one of two styles:
 
-1. Blur mode (video blur) The area around the player shows a real-time soft blur that follows the colors of the video you're watching. It adds a cohesive look across the screen—like watching in a cinema or a room with soft ambient light—for a more immersive feel.
+• Blur: a soft blur that follows the video's colors in real time, so the margins blend with what you're watching.
+• Solid: a solid color you choose, so the margins match your theme.
 
-2. Solid mode (light gray) The empty space around the player is filled with a simple, eye-friendly light gray. With less visual noise on screen, it's easier to focus on the video itself.
+Only the area around the player changes. The video itself is untouched. No filter is applied to it, and this is not a thumbnail blur.
 
-💡 How to use — Setup is simple.
+How to use
+• Click the toolbar icon to switch between Blur and Solid.
+• Adjust the blur strength, or pick your solid color.
 
-After installing the extension, open a YouTube watch page.
-Click the youtublur icon in the Chrome toolbar to open the popup.
-Choose either "Solid (light gray)" or "Blur (video blur)"—that's it!
-Your choice is saved automatically and carries over the next time you watch.
+Where it works best
+Any layout that leaves margins around the player, such as theater mode on classic YouTube or a wide window with side gaps.
 
-🎯 Recommended if you want…
-
-A more beautiful, immersive viewing experience
-Something softer than YouTube's default dark theater look or stark white backgrounds
-A calmer layout with less clutter and a gentler feel for your eyes
+Lightweight and privacy-friendly: youtublur collects no data.
