@@ -1,22 +1,19 @@
-Se você acha esta extensão útil, considere apoiar seu desenvolvimento: https://buymeacoffee.com/kkyto641
+☕ Gostando do youtublur? Apoie o desenvolvimento: https://buymeacoffee.com/kkyto641
 
-Deixe o YouTube mais confortável e imersivo. Esta extensão personaliza a área ao redor do player para criar um ambiente de visualização mais suave e relaxante.
+youtublur preenche o espaço vazio ao redor do player do YouTube.
 
-✨ Principais recursos — Alterne livremente entre dois modos de fundo conforme o humor ou o uso.
+Quando o vídeo não ocupa toda a janela, o YouTube deixa margens e espaços laterais ao redor do player. youtublur preenche esses espaços com um destes dois estilos:
 
-1. Modo desfoque (vídeo) A região ao redor do player exibe um desfoque em tempo real que acompanha as cores do vídeo. A tela fica mais harmoniosa — como em um cinema ou em um ambiente com luz indireta — para uma sensação mais imersiva.
+• Desfoque: um desfoque suave que acompanha as cores do vídeo em tempo real, para que as margens se misturem ao que você assiste.
+• Sólido: uma cor sólida que você escolhe, para que as margens combinem com o seu tema.
 
-2. Modo cor sólida (cinza claro) O espaço vazio ao redor do player é preenchido com um cinza claro simples e confortável para os olhos. Menos ruído visual para focar no conteúdo do vídeo.
+Só a área ao redor do player muda. O vídeo em si não é alterado. Nenhum filtro é aplicado a ele, e isto não é desfoque de miniaturas.
 
-💡 Como usar — A configuração é bem simples.
+Como usar
+• Clique no ícone da barra de ferramentas para alternar entre Desfoque e Sólido.
+• Ajuste a intensidade do desfoque ou escolha a cor sólida.
 
-Depois de instalar a extensão, abra uma página de reprodução do YouTube.
-Clique no ícone do youtublur na barra de ferramentas do Chrome para abrir o pop-up.
-Escolha «Cor sólida (cinza claro)» ou «Desfoque (vídeo)». Pronto!
-Sua escolha é salva automaticamente e vale nas próximas vezes.
+Onde funciona melhor
+Qualquer layout que deixe margens ao redor do player, como o modo cinema do YouTube clássico ou uma janela larga com espaços laterais.
 
-🎯 Recomendado se você…
-
-Quer uma experiência mais bonita e imersiva
-Acha o modo cinema escuro padrão do YouTube ou fundos muito claros incômodos
-Prefere menos área vazia e um ambiente mais suave para os olhos
+Leve e respeitoso com a privacidade: youtublur não coleta dados.

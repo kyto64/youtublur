@@ -4,7 +4,7 @@
     "description": "Nome da extensão (marca)."
   },
   "extDescription": {
-    "message": "Desfoque suave que segue o vídeo, ou preenchimento sólido conforme o tema, ao redor do player—não é desfoque de miniaturas.",
+    "message": "Preenche as margens vazias ao redor do player do YouTube com um desfoque suave do vídeo, ou uma cor sólida combinando com o tema.",
     "description": "Descrição curta para a Chrome Web Store e detalhes da extensão."
   },
   "popupHeading": {

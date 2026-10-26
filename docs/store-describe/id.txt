@@ -1,22 +1,19 @@
-Jika ekstensi ini bermanfaat bagi Anda, pertimbangkan untuk mendukung pengembangannya: https://buymeacoffee.com/kkyto641
+☕ Suka youtublur? Dukung pengembangannya: https://buymeacoffee.com/kkyto641
 
-Buat menonton YouTube lebih nyaman dan lebih mengesankan. Ekstensi ini menyesuaikan area di sekitar pemutar video agar pengalaman menonton terasa lebih lembut dan santai.
+youtublur mengisi ruang kosong di sekitar pemutar YouTube.
 
-✨ Fitur utama — Beralih bebas antara dua mode latar sesuai suasana atau kebutuhan.
+Saat video tidak memenuhi jendela, YouTube menyisakan margin dan celah di sisi pemutar. youtublur mengisi celah itu dengan salah satu dari dua gaya:
 
-1. Mode buram (video) Area di sekitar pemutar menampilkan efek buram real time yang mengikuti warna video yang diputar. Tampilan terasa menyatu—seperti menonton di bioskop atau ruangan dengan lampu tidak langsung—sehingga lebih imersif.
+• Blur: blur lembut yang mengikuti warna video secara real time, sehingga margin menyatu dengan tayangan.
+• Solid: warna solid pilihan Anda, agar margin cocok dengan tema.
 
-2. Mode warna polos (abu terang) Ruang kosong di sekitar pemutar diisi dengan abu terang yang sederhana dan nyaman di mata. Informasi visual berkurang sehingga lebih mudah fokus pada konten video.
+Hanya area di sekitar pemutar yang berubah. Video itu sendiri tidak disentuh. Tidak ada filter pada video, dan ini bukan blur thumbnail.
 
-💡 Cara memakai — Pengaturannya sangat sederhana.
+Cara memakai
+• Klik ikon bilah alat untuk beralih antara Blur dan Solid.
+• Sesuaikan kekuatan blur, atau pilih warna solid.
 
-Setelah memasang ekstensi, buka halaman putar video YouTube.
-Klik ikon youtublur di bilah alat Chrome untuk membuka pop-up.
-Pilih «Warna polos (abu terang)» atau «Buram (video)»—selesai!
-Pilihan Anda disimpan otomatis dan tetap dipakai saat menonton berikutnya.
+Paling cocok di
+Tata letak apa pun yang menyisakan margin di sekitar pemutar, misalnya mode teater YouTube klasik atau jendela lebar dengan celah samping.
 
-🎯 Cocok jika Anda…
-
-Ingin pengalaman menonton yang lebih indah dan imersif
-Merasa mode teater gelap bawaan YouTube atau latar putih terlalu keras
-Ingin tampilan lebih bersih dan lingkungan yang lebih nyaman untuk mata
+Ringan dan ramah privasi: youtublur tidak mengumpulkan data.
