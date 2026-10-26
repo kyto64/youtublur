@@ -4,7 +4,7 @@
     "description": "Extension name (brand)."
   },
   "extDescription": {
-    "message": "Soft blur that matches the video, or a theme-matched solid fill, around the YouTube player—not thumbnail blur.",
+    "message": "Fill the empty margins around the YouTube player with a soft blur that matches the video, or a theme-matched solid color.",
     "description": "Short description for the Chrome Web Store and extension details."
   },
   "popupHeading": {

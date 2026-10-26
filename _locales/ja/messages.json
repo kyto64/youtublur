@@ -4,7 +4,7 @@
     "description": "拡張機能名（ブランド）。"
   },
   "extDescription": {
-    "message": "YouTubeプレイヤーの周囲だけ。動画色のブラーか、テーマに合わせた塗りつぶし。サムネぼかしではありません。",
+    "message": "YouTubeプレイヤー周りの余白を、動画の色に合わせたブラーかテーマに合う単色で埋めます。サムネぼかしではありません。",
     "description": "ストア・詳細用の短い説明。"
   },
   "popupHeading": {
