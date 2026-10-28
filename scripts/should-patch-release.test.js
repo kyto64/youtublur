@@ -215,7 +215,7 @@ describe('daily workflow wiring', () => {
     expect(dailyWorkflow).toMatch(
       /actions\/create-github-app-token@[0-9a-f]{40} # v\d+\.\d+\.\d+/
     );
-    expect(dailyWorkflow).toContain('secrets.RELEASE_APP_ID');
+    expect(dailyWorkflow).toContain('secrets.RELEASE_APP_CLIENT_ID');
     expect(dailyWorkflow).toContain('secrets.RELEASE_APP_PRIVATE_KEY');
     expect(dailyWorkflow).toContain('id: release_auth');
     expect(dailyWorkflow).toContain('permission-contents: write');

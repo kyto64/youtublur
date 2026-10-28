@@ -22,11 +22,11 @@ jobs:
       - name: Detect release App secrets
         id: release_app_config
         env:
-          RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+          RELEASE_APP_CLIENT_ID: ${{ secrets.RELEASE_APP_CLIENT_ID }}
           RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
         run: |
           set -euo pipefail
-          if [ -n "${RELEASE_APP_ID}" ] && [ -n "${RELEASE_APP_PRIVATE_KEY}" ]; then
+          if [ -n "${RELEASE_APP_CLIENT_ID}" ] && [ -n "${RELEASE_APP_PRIVATE_KEY}" ]; then
             echo "configured=true" >> "$GITHUB_OUTPUT"
           else
             echo "configured=false" >> "$GITHUB_OUTPUT"
@@ -37,7 +37,7 @@ jobs:
         if: steps.release_app_config.outputs.configured == 'true'
         uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
         with:
-          app-id: ${{ secrets.RELEASE_APP_ID }}
+          client-id: ${{ secrets.RELEASE_APP_CLIENT_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
           permission-contents: write
 
