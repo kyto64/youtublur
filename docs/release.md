@@ -35,7 +35,7 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 
 [dependabot-daily-patch-release.yml](../.github/workflows/dependabot-daily-patch-release.yml) の checkout／`master` への push は、次の **優先順**でトークンを選ぶ。
 
-1. **`RELEASE_APP_ID` と `RELEASE_APP_PRIVATE_KEY`**（GitHub App `youtublur-release-bot`。ruleset `master-ci` の bypass 対象）。`actions/create-github-app-token` で発行したトークンを使う。コミット／タグの author は App の bot（`youtublur-release-bot[bot]`）。tag push が `publish.yml` の `on: push tags` を起動するため、**`dispatch-publish` は実行しない**（二重公開防止）。
+1. **`RELEASE_APP_CLIENT_ID` と `RELEASE_APP_PRIVATE_KEY`**（GitHub App `youtublur-release-bot`。ruleset `master-ci` の bypass 対象）。`actions/create-github-app-token` で発行したトークンを使う。コミット／タグの author は App の bot（`youtublur-release-bot[bot]`）。tag push が `publish.yml` の `on: push tags` を起動するため、**`dispatch-publish` は実行しない**（二重公開防止）。
 2. **`RELEASE_PUSH_TOKEN`**（legacy。`contents: write` 付き classic PAT など）。tag push で `publish.yml` が起動するため dispatch は行わない。
 3. **上記いずれも未設定**（`GITHUB_TOKEN` のみ）。`master` への push が ruleset で拒否される環境ではリリース自体が失敗しうるが、**パッチリリースを実際に作ったときだけ**、tag push のあと別ジョブ `dispatch-publish` から `publish.yml` を **`workflow_dispatch`** で起動し、作成したタグ名を `inputs.tag` に渡す。App のトークン発行に失敗した場合は PAT へ自動フォールバックしない（ジョブは失敗する）。同時に `build_from_tag=true` を指定し、拡張は **タグ付きコミット**からビルドする（`GITHUB_TOKEN` で `actions: write` が必要。UI の boolean `true` でも `gh workflow run -f build_from_tag=true` の文字列 `"true"` でもタグを checkout する）。dispatch の前にタグが origin にあることを確認する。
 
@@ -52,7 +52,7 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 | 必須チェック（Dependabot auto-merge） | Ruleset `master-ci` → **Required status checks** | 下表のジョブ名を追加する。paths フィルタで PR に走らないチェックを必須にするとマージが詰まる（本リポジトリの Test / Lint / E2E / Semgrep は `pull_request` に paths なし） |
 | Allow auto-merge | **Settings → General → Pull Requests** | **Allow auto-merge** をオン |
 | `master` への push | Branch protection / Rulesets | PR 必須 ruleset 下では GitHub App（`RELEASE_APP_*`）または bypass 付き PAT。`GITHUB_TOKEN` だけでは拒否されうる |
-| タグ後の `publish.yml` まで自動化 | **Settings → Secrets and variables → Actions** | **`RELEASE_APP_ID` / `RELEASE_APP_PRIVATE_KEY`**（推奨）または `RELEASE_PUSH_TOKEN` を設定すると tag push で `publish.yml` が起動し、`dispatch-publish` はスキップされる。未設定時は日次ワークフローが `workflow_dispatch` で起動 |
+| タグ後の `publish.yml` まで自動化 | **Settings → Secrets and variables → Actions** | **`RELEASE_APP_CLIENT_ID` / `RELEASE_APP_PRIVATE_KEY`**（推奨）または `RELEASE_PUSH_TOKEN` を設定すると tag push で `publish.yml` が起動し、`dispatch-publish` はスキップされる。未設定時は日次ワークフローが `workflow_dispatch` で起動 |
 | 日次 cron の時刻 | [dependabot-daily-patch-release.yml](../.github/workflows/dependabot-daily-patch-release.yml) の `cron` | GitHub は **UTC**。変更する場合はこの行を編集する |
 
 ### PR レビュー
