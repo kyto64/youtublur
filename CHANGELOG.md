@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.38](https://github.com/kyto64/youtublur/compare/v1.12.37...v1.12.38) (2026-10-29)
+
+### Features
+
+* 拡張アイコンを v1 案B（再生＋サイドぼかし）に差し替え ([#221](https://github.com/kyto64/youtublur/issues/221)) ([90d4bac](https://github.com/kyto64/youtublur/commit/90d4bac989cd6487d6baec8ea68911456c430814))
+
 ## [1.12.37](https://github.com/kyto64/youtublur/compare/v1.12.36...v1.12.37) (2026-10-28)
 
 ## [1.12.36](https://github.com/kyto64/youtublur/compare/v1.12.35...v1.12.36) (2026-10-26)
