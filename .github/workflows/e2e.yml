@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test-e2e:
     timeout-minutes: 10
@@ -38,8 +42,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # chromium は --headless=new でフル Chrome を使うため headless shell は不要（--no-shell）。
+      # ダウンロード詰まりで job 全体（10 分）を食わないよう、短い timeout と再試行を付ける。
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps ${{ matrix.browser }}
+        timeout-minutes: 5
+        run: |
+          flags=""
+          if [ "${{ matrix.browser }}" = "chromium" ]; then flags="--no-shell"; fi
+          for attempt in 1 2 3; do
+            if timeout 90 npx playwright install --with-deps $flags ${{ matrix.browser }}; then
+              exit 0
+            fi
+            echo "playwright install failed (attempt ${attempt}/3)"
+            sleep $((attempt * 5))
+          done
+          exit 1
 
       - name: Run Playwright tests
         run: pnpm run test:e2e --project=${{ matrix.browser }}

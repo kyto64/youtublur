@@ -84,6 +84,11 @@ async function assertAmbientBandBlurred(youtublurCanvas) {
 }
 
 test('should load extension and apply blur on YouTube', async ({ page, extensionId, context, browserName }) => {
+  // 待ち時間の合計（canvas 検証 15s + 追従 15s + 帯 15s + ポップアップ往復）が既定の 30s を超え得るため、
+  // このテストだけ延ばす。CI で workers=2 になり YouTube の描画が遅くなっても、
+  // 個々の poll が先にタイムアウトして原因が分かるようにする。
+  test.setTimeout(90000);
+
   if (browserName !== 'firefox') {
     await page.setViewportSize({ width: 2048, height: 1152 });
   }
@@ -106,8 +111,20 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
 
     // シアター/ワイドレイアウトに切り替えてアンビエント帯を発生させ、その帯が
     // 正しくブラー描画されていること、サイズ追従が維持されていることを検証する。
+    // 帯の画素判定は video のメタデータ（videoWidth/Height）が揃うまで常に false になるため、
+    // レイアウト切替の前に動画の準備完了を待つ（poll の 15s を無駄に消費しない）。
+    await page.waitForFunction(
+      () => {
+        const video = document.querySelector('#movie_player video');
+        return !!video && video.videoWidth > 0 && video.videoHeight > 0;
+      },
+      null,
+      { timeout: 15000 }
+    );
     await page.locator('#movie_player').hover();
-    await page.locator('.ytp-size-button').click({ timeout: 5000 }).catch(() => {});
+    const sizeButton = page.locator('.ytp-size-button');
+    await sizeButton.waitFor({ state: 'visible', timeout: 5000 }).catch(() => {});
+    await sizeButton.click({ timeout: 5000 }).catch(() => {});
     await assertCanvasTracksContainer(youtublurCanvas);
     await assertAmbientBandBlurred(youtublurCanvas);
   }
@@ -131,50 +148,44 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
   await expect(reloadedCanvas).toBeHidden({ timeout: 15000 });
 });
 
-test('should apply blur after SPA navigation from a non-player page (issue #107)', async ({ page, browserName }) => {
-  // 回帰テスト本体。直接 /watch を開く（F5 相当）と不具合が出ないため、
-  // content script を非プレイヤーページで初期化 → SPA 遷移で /watch に入る経路を必ず通す。
-  // 修正前はこの経路で blur canvas が生成されず（タブ切替まで反映されない）、
-  // yt-navigate-finish の購読によりタブ切替なしで生成されることを検証する。
-  if (browserName === 'firefox') {
-    test.skip(true, 'Firefox E2E は chrome API モックを使うため、SPA 遷移経路の検証はスキップする。');
-  }
+// Firefox E2E は chrome API モックを使い、実拡張のポップアップや SPA 遷移経路を検証できない。
+// fixture（ブラウザ起動）の前にスキップされるよう、条件付き skip を describe 先頭に置く。
+test.describe('Chromium only', () => {
+  test.skip(({ browserName }) => browserName === 'firefox', 'Firefox E2E uses a chrome API mock instead of a real extension.');
 
-  await page.setViewportSize({ width: 2048, height: 1152 });
-  await navigateToWatchViaSpa(page);
+  test('should apply blur after SPA navigation from a non-player page (issue #107)', async ({ page }) => {
+    // 回帰テスト本体。直接 /watch を開く（F5 相当）と不具合が出ないため、
+    // content script を非プレイヤーページで初期化 → SPA 遷移で /watch に入る経路を必ず通す。
+    // 修正前はこの経路で blur canvas が生成されず（タブ切替まで反映されない）、
+    // yt-navigate-finish の購読によりタブ切替なしで生成されることを検証する。
+    await page.setViewportSize({ width: 2048, height: 1152 });
+    await navigateToWatchViaSpa(page);
 
-  const youtublurCanvas = youtublurCanvasLocator(page);
-  // タブ切替・サイズ変更などの修復操作を一切せず、SPA 遷移だけで canvas が生成されること
-  await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
-  await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
-  await assertCanvasTracksContainer(youtublurCanvas);
-});
+    const youtublurCanvas = youtublurCanvasLocator(page);
+    // タブ切替・サイズ変更などの修復操作を一切せず、SPA 遷移だけで canvas が生成されること
+    await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
+    await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
+    await assertCanvasTracksContainer(youtublurCanvas);
+  });
 
-test('should keep blur visible when extension popup is opened in a tab (Chromium)', async ({
-  page,
-  context,
-  extensionId,
-  browserName,
-}) => {
-  if (browserName === 'firefox') {
-    test.skip(
-      true,
-      'Firefox E2E uses a chrome API mock instead of a real extension.'
-    );
-  }
+  test('should keep blur visible when extension popup is opened in a tab (Chromium)', async ({
+    page,
+    context,
+    extensionId,
+  }) => {
+    await page.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
+    await waitForWatchPlayer(page);
 
-  await page.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
-  await waitForWatchPlayer(page);
+    const youtublurCanvas = youtublurCanvasLocator(page);
+    await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
+    await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
 
-  const youtublurCanvas = youtublurCanvasLocator(page);
-  await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
-  await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
+    const popupPage = await openExtensionPopup(context, extensionId);
+    await expect(popupPage.locator('#popupHeading')).toBeVisible();
 
-  const popupPage = await openExtensionPopup(context, extensionId);
-  await expect(popupPage.locator('#popupHeading')).toBeVisible();
+    await page.bringToFront();
+    await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
 
-  await page.bringToFront();
-  await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
-
-  await popupPage.close();
+    await popupPage.close();
+  });
 });
