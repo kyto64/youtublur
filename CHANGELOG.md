@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.39](https://github.com/kyto64/youtublur/compare/v1.12.38...v1.12.39) (2026-10-31)
+
+### Bug Fixes
+
+* minimatch の脆弱性で落ちる pnpm audit を dotgitignore パッチで修正 ([#225](https://github.com/kyto64/youtublur/issues/225)) ([4aa5de8](https://github.com/kyto64/youtublur/commit/4aa5de86d2d93b1dcfbeae4aceeb6d3105f18deb))
+
 ## [1.12.38](https://github.com/kyto64/youtublur/compare/v1.12.37...v1.12.38) (2026-10-29)
 
 ### Features
