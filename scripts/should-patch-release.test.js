@@ -22,6 +22,7 @@ const dailyWorkflow = readFileSync(
   'utf8'
 );
 const publishWorkflow = readFileSync(join(repoRoot, '.github/workflows/publish.yml'), 'utf8');
+const actionsLock = readFileSync(join(repoRoot, '.github/workflows/actions.lock'), 'utf8');
 
 function initRepo(version = '1.12.29') {
   const dir = mkdtempSync(join(tmpdir(), 'should-patch-'));
@@ -212,9 +213,27 @@ describe('daily workflow wiring', () => {
   });
 
   it('issues a GitHub App token for master push when App secrets are set', () => {
-    expect(dailyWorkflow).toMatch(
-      /actions\/create-github-app-token@[0-9a-f]{40} # v\d+\.\d+\.\d+/
+    // SHA pinning lives in .github/workflows/actions.lock; the workflow uses the tag form.
+    const tagUse = dailyWorkflow.match(/uses: (actions\/create-github-app-token@v\d+\.\d+\.\d+)$/m);
+    expect(tagUse).toBeTruthy();
+    const action = tagUse[1];
+    const workflowKey = "'.github/workflows/dependabot-daily-patch-release.yml':";
+    const workflowsSection = actionsLock.slice(
+      actionsLock.indexOf('workflows:'),
+      actionsLock.indexOf('dependencies:')
     );
+    expect(workflowsSection).toContain(workflowKey);
+    const workflowActions = workflowsSection
+      .slice(workflowsSection.indexOf(workflowKey) + workflowKey.length)
+      .split(/^ {4}'/m)[0];
+    expect(workflowActions).toContain(`- '${action}'`);
+    const dependencyKey = `'${action}':`;
+    const dependenciesSection = actionsLock.slice(actionsLock.indexOf('dependencies:'));
+    expect(dependenciesSection).toContain(`\n    ${dependencyKey}\n`);
+    const dependencyEntry = dependenciesSection
+      .slice(dependenciesSection.indexOf(dependencyKey) + dependencyKey.length)
+      .split(/^ {4}'/m)[0];
+    expect(dependencyEntry).toMatch(/^\s+commit: 'sha1-[0-9a-f]{40}'$/m);
     expect(dailyWorkflow).toContain('secrets.RELEASE_APP_CLIENT_ID');
     expect(dailyWorkflow).toContain('secrets.RELEASE_APP_PRIVATE_KEY');
     expect(dailyWorkflow).toContain('id: release_auth');
