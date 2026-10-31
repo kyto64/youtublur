@@ -541,4 +541,5 @@ open coverage/index.html
 
 - CI の Playwright は `workers: 2`（`playwright.config.js`）。`fullyParallel` のため、YouTube の描画待ちが長いテストでは負荷で不安定になり得る。不安定化したら `test.setTimeout` や待ち条件を見直し、それでも直らなければ `workers` を 1 に戻す。
 - Firefox プロジェクトは chrome API モックで `content.js` を注入するだけで実拡張を読めないため、`testMatch` で `shorts.spec.js` / `spa-navigation.spec.js` / `blur.spec.js` に絞っている（それ以外は常に skip になるので、ブラウザ起動前に除外する）。`blur.spec.js` の実拡張が必要なテストは `describe` 先頭の `test.skip(({ browserName }) => ...)` でブラウザ起動前に skip する。Firefox で走らせるスペックを増やすときは `testMatch` に足す。
+- E2E ジョブの上限は `timeout-minutes: 15`。CI では `playwright.config.js` の `globalTimeout`（8 分）が先に効き、reporter は `list`（テストごとの結果をログへ即出力）と `html`。失敗時は `playwright-report/` と `test-results/` を artifact に上げる。
 - E2E ワークフローは Playwright ブラウザのインストールに `timeout-minutes: 5` と最大 3 回のリトライを付け、chromium は `--no-shell`（`--headless=new` でフル Chrome を使うため）。`e2e` / `test` / `lint` ワークフローには `concurrency`（PR のときだけ古い実行をキャンセル）を設定している。

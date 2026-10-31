@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   test-e2e:
-    timeout-minutes: 10
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -66,5 +66,7 @@ jobs:
         if: always()
         with:
           name: playwright-report-${{ matrix.browser }}
-          path: playwright-report/
+          path: |
+            playwright-report/
+            test-results/
           retention-days: 7

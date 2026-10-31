@@ -30,10 +30,16 @@ async function waitForExtensionStorageMode(popupPage, expectedMode, options = {}
 }
 
 /**
+ * playwright.config の actionTimeout は 0（無制限）なので、タイムアウトを明示しないと
+ * YouTube が遅いときにテスト全体の timeout まで黙って待ち続け、どこで詰まったか分からない。
  * @param {import('@playwright/test').Page} page
+ * @param {{ timeout?: number }} [options]
  */
-async function waitForWatchPlayer(page) {
-  await page.waitForSelector('#ytd-player', { state: 'attached' });
+async function waitForWatchPlayer(page, options = {}) {
+  await page.waitForSelector('#ytd-player', {
+    state: 'attached',
+    timeout: options.timeout ?? 30000,
+  });
 }
 
 /**
