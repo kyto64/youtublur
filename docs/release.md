@@ -43,6 +43,15 @@ GitHub の仕様として、`GITHUB_TOKEN` による push が原因で起きた�
 
 `dispatch-publish` は `scripts/dispatch-publish.sh` を常に **`master`** から checkout する。`workflow_dispatch` を別 ref から起動しても、`patch-release` がリリースした master のスクリプトを使う。ジョブを分けているのは、dispatch だけが失敗したときに **そのジョブだけ再実行**できるようにするため。`patch-release` を再実行すると、push 済みのタグ以降にリリース対象のコミットが無く、リリースも dispatch もスキップされる。`gh workflow run` は起動に成功したことまでを見て、ストア公開の完了は待たない。公開ジョブ自体が失敗したときは [Publish extensions](https://github.com/kyto64/youtublur/actions/workflows/publish.yml) を手動で再実行する。
 
+### dotgitignore のパッチ（minimatch 脆弱性 GHSA-g3hv-75wg-m249 対応）
+
+`commit-and-tag-version`（最新の 13.3.0 でも）は `dotgitignore@2.1.0` 経由で `minimatch@^3`（脆弱）に依存し、`pnpm audit --audit-level=moderate` が落ちる。対応として次を入れている。
+
+- `package.json` の `pnpm.overrides` に `"dotgitignore>minimatch": ">=11.0.1"`（`dotgitignore` 配下だけ minimatch を v11 にする）
+- `pnpm.patchedDependencies` で [`patches/dotgitignore.patch`](../patches/dotgitignore.patch) を適用。minimatch v10 以降は `makeRe` が無いため、`lib/dotignore.js` の `minimatch.makeRe(line)` を `new Minimatch(line)` の `match` を呼ぶ `.test()` 互換オブジェクトに置き換える（呼び出し側は `.test()` しか使わない）
+
+外す条件: 上流（`commit-and-tag-version` / `dotgitignore`）が minimatch 修正版に対応したら、`overrides` の該当行・`patchedDependencies`・`patches/dotgitignore.patch` を削除する。パッチ適用中は `pnpm install --frozen-lockfile` と `npx commit-and-tag-version --dry-run` で動作を確認すること。
+
 ### GitHub 側の確認（初回）
 
 | 確認項目 | 場所 | メモ |
