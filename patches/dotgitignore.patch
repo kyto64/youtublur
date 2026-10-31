@@ -1,0 +1,24 @@
+diff --git a/lib/dotignore.js b/lib/dotignore.js
+index dccde987744d147b2d92b9062006bee6f781bbf8..67fead14b17bc352f57f208979e89c2f9882677f 100644
+--- a/lib/dotignore.js
++++ b/lib/dotignore.js
+@@ -1,7 +1,7 @@
+ // MIT License
+ // Bradley Meck
+ // https://github.com/bmeck/dotignore
+-var minimatch = require('minimatch')
++var Minimatch = require('minimatch').Minimatch
+ var path = require('path')
+ 
+ function IgnoreMatcher (str) {
+@@ -20,7 +20,9 @@ function IgnoreMatcher (str) {
+     var isShellGlob = line.indexOf('/') >= 0
+     negated[idx] = negatedLine
+     rooted[idx] = rootedLine || isShellGlob
+-    return minimatch.makeRe(line)
++    // minimatch >= 10 has no makeRe; keep the .test() interface used below
++    var mm = new Minimatch(line)
++    return { test: function (str) { return mm.match(str) } }
+   })
+   return this
+ }
