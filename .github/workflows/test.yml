@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 # Workflow name stays "Test". Dependabot patch/minor PRs use GitHub
 # auto-merge; ruleset required checks should list each job below by name.
 # A matrix is still one run: the conclusion is success only when every job
