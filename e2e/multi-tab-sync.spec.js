@@ -22,6 +22,8 @@ test.describe('Multi-tab synchronization', () => {
         'Firefox E2E uses mock chrome API; multi-tab test requires real extension'
       );
     }
+    // 実 YouTube を 2 タブ・計 4 回ロードするため、遅い CI では 60 秒（test.use）でも足りない。
+    test.slow();
 
     // Open first YouTube tab
     await page.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
