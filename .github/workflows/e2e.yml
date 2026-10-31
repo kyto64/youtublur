@@ -31,7 +31,7 @@ jobs:
         uses: pnpm/action-setup@v6.1.0
 
       - name: Setup Vite+
-        uses: voidzero-dev/setup-vp@v1.21.2
+        uses: voidzero-dev/setup-vp@v1.22.0
         with:
           # One Node version. This job already matrices chromium/firefox.
           # Latest 22.x satisfies engines ^22.22.2. The Test workflow covers

@@ -9,22 +9,22 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'actions/create-github-app-token@v3.3.0'
         - 'pnpm/action-setup@v6.1.0'
-        - 'voidzero-dev/setup-vp@v1.21.2'
+        - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/e2e.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
         - 'pnpm/action-setup@v6.1.0'
-        - 'voidzero-dev/setup-vp@v1.21.2'
+        - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/lint.yml':
         - 'actions/checkout@v7.0.1'
         - 'pnpm/action-setup@v6.1.0'
-        - 'voidzero-dev/setup-vp@v1.21.2'
+        - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/publish.yml':
         - 'actions/checkout@v7.0.1'
         - 'browser-actions/release-firefox-addon@v0.2.1'
         - 'pnpm/action-setup@v6.1.0'
         - 'softprops/action-gh-release@v3.0.3'
-        - 'voidzero-dev/setup-vp@v1.21.2'
+        - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/security-audit.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-node@v7.1.0'
@@ -36,7 +36,7 @@ workflows:
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
         - 'pnpm/action-setup@v6.1.0'
-        - 'voidzero-dev/setup-vp@v1.21.2'
+        - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/verify-actions-lock.yml':
         - 'actions/checkout@v7.0.1'
 dependencies:
@@ -85,8 +85,8 @@ dependencies:
         commit: 'sha1-efb35369e0ad2afab669f228072c1b0d510eae64'
         owner_id: 2242
         repo_id: 204253808
-    'voidzero-dev/setup-vp@v1.21.2':
-        ref: 'v1.21.2'
-        commit: 'sha1-68f39c78aaf39be468cabd2afb09c162574c84af'
+    'voidzero-dev/setup-vp@v1.22.0':
+        ref: 'v1.22.0'
+        commit: 'sha1-cab1ab9eaff52d4857875f4f2c016e36af8f2c76'
         owner_id: 149750581
         repo_id: 1133264797
