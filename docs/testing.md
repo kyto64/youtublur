@@ -536,3 +536,9 @@ open coverage/index.html
 - [Vitestドキュメント](https://vitest.dev/)
 - [Playwrightドキュメント](https://playwright.dev/)
 - [jsdomドキュメント](https://github.com/jsdom/jsdom)
+
+## E2E の並列数と Firefox の対象スペック
+
+- CI の Playwright は `workers: 2`（`playwright.config.js`）。`fullyParallel` のため、YouTube の描画待ちが長いテストでは負荷で不安定になり得る。不安定化したら `test.setTimeout` や待ち条件を見直し、それでも直らなければ `workers` を 1 に戻す。
+- Firefox プロジェクトは chrome API モックで `content.js` を注入するだけで実拡張を読めないため、`testMatch` で `shorts.spec.js` / `spa-navigation.spec.js` / `blur.spec.js` に絞っている（それ以外は常に skip になるので、ブラウザ起動前に除外する）。`blur.spec.js` の実拡張が必要なテストは `describe` 先頭の `test.skip(({ browserName }) => ...)` でブラウザ起動前に skip する。Firefox で走らせるスペックを増やすときは `testMatch` に足す。
+- E2E ワークフローは Playwright ブラウザのインストールに `timeout-minutes: 5` と最大 3 回のリトライを付け、chromium は `--no-shell`（`--headless=new` でフル Chrome を使うため）。`e2e` / `test` / `lint` ワークフローには `concurrency`（PR のときだけ古い実行をキャンセル）を設定している。
