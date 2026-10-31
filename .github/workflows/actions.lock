@@ -37,6 +37,8 @@ workflows:
         - 'actions/upload-artifact@v7.0.2'
         - 'pnpm/action-setup@v6.1.0'
         - 'voidzero-dev/setup-vp@v1.21.2'
+    '.github/workflows/verify-actions-lock.yml':
+        - 'actions/checkout@v7.0.1'
 dependencies:
     'actions/checkout@v7.0.1':
         ref: 'v7.0.1'
