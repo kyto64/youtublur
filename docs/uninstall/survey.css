@@ -76,4 +76,6 @@ button {
 }
 button:disabled { opacity: 0.6; cursor: default; }
 button:focus-visible, textarea:focus-visible, input:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+/* Honeypot: kept out of view without display:none so bots still see and fill it. */
+.hp { position: absolute; left: -10000px; top: auto; width: 1px; height: 1px; overflow: hidden; }
 [hidden] { display: none !important; }

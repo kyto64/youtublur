@@ -24,7 +24,7 @@
 
 ## ユニットテスト
 
-アンインストール時のアンケート（`docs/uninstall/`）は `uninstall-survey.test.js`（辞書・言語解決・送信本文などの関数）に加え、`e2e/uninstall-survey.spec.js` が静的ページを `file://` で実際に開いて操作を見る。未選択で送信したときのエラー表示、送信先（Google フォームの `formResponse`）を `page.route` でモックして理由・コメント・version・lang が期待どおりの `entry.*` で POST されること、送信後（失敗時も）のお礼表示、`?lang=` による言語切替（ja / en）を確認する。拡張はロードせず外部への実リクエストは送らない。Chromium プロジェクトだけで動く（Firefox の `testMatch` には入れない）。
+アンインストール時のアンケート（`docs/uninstall/`）は `uninstall-survey.test.js`（辞書・言語解決・送信本文などの関数）に加え、`e2e/uninstall-survey.spec.js` が静的ページを `file://` で実際に開いて操作を見る。未選択で送信したときのエラー表示、送信先（Google フォームの `formResponse`）を `page.route` でモックして理由・コメント・version・lang が期待どおりの `entry.*` で POST されること、送信後（失敗時も）のお礼表示、`?lang=` による言語切替（ja / en）を確認する。荒らし対策として、ハニーポットが埋まっていると POST せずお礼表示だけ出すこと、二重送信と 10 分以内の再送信が POST 1 回に収まること、ページ表示から 3 秒未満の送信は POST しないこと、localStorage が使えなくても動くことも確認する（時計は `page.clock` で進め、待たない。判定は `uninstall-survey.test.js` の `skipReason` でも見る）。拡張はロードせず外部への実リクエストは送らない。Chromium プロジェクトだけで動く（Firefox の `testMatch` には入れない）。
 
 ### テストフレームワーク
 
