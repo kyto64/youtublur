@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.40](https://github.com/kyto64/youtublur/compare/v1.12.39...v1.12.40) (2026-11-04)
+
+### Features
+
+* アンインストールアンケートに荒らし対策を追加 ([#234](https://github.com/kyto64/youtublur/issues/234)) ([8b10b41](https://github.com/kyto64/youtublur/commit/8b10b4187e8ceafc46b28ac4a84b3547daa4532e))
+
 ## [1.12.39](https://github.com/kyto64/youtublur/compare/v1.12.38...v1.12.39) (2026-10-31)
 
 ### Bug Fixes
