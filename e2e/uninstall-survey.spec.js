@@ -1,6 +1,6 @@
 const path = require('path');
 const { pathToFileURL } = require('url');
-const { test, expect } = require('@playwright/test');
+const { test, expect } = require('./fixtures');
 
 // docs/uninstall/ の静的アンケートページを実際に開いて検証する。
 // 送信先（Google フォームの formResponse）は route でモックし、外部へは実リクエストを送らない。
