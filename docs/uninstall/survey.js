@@ -13,6 +13,12 @@
   };
   var MAX_COMMENT = 1000;
   var MAX_VERSION = 32;
+  // Anti-abuse. A visitor who sends within MIN_FILL_MS of the page showing, fills the hidden
+  // honeypot, or already sent within COOLDOWN_MS from this browser gets the normal thank-you
+  // but nothing is posted (so a bot learns nothing).
+  var MIN_FILL_MS = 3000;
+  var COOLDOWN_MS = 10 * 60 * 1000;
+  var STORAGE_KEY = 'youtublur.uninstallSurvey.lastSentAt';
   var SUPPORTED = ['en', 'ja', 'ko', 'es', 'id', 'pt_BR', 'zh_CN', 'zh_TW'];
 
   var STRINGS = {
@@ -206,7 +212,35 @@
     return body;
   }
 
+  // Returns why a submission must not be posted ('honeypot' | 'too_fast' | 'cooldown'), or ''.
+  function skipReason(state) {
+    if (state.honeypot) return 'honeypot';
+    if (!(state.now - state.loadedAt >= MIN_FILL_MS)) return 'too_fast';
+    var elapsed = state.now - state.lastSentAt;
+    if (typeof state.lastSentAt === 'number' && elapsed >= 0 && elapsed < COOLDOWN_MS) return 'cooldown';
+    return '';
+  }
+
+  // localStorage can throw or be missing (privacy modes, file://, sandboxed frames): never let it break the form.
+  function readLastSent() {
+    try {
+      var n = Number(window.localStorage.getItem(STORAGE_KEY));
+      return isFinite(n) && n > 0 ? n : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function writeLastSent(ts) {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, String(ts));
+    } catch {
+      /* ignore */
+    }
+  }
+
   function init() {
+    var loadedAt = Date.now();
     var lang = resolveLang(location.search, navigator);
     var t = STRINGS[lang];
     var version = sanitizeVersion(new URLSearchParams(location.search).get('v'));
@@ -242,6 +276,16 @@
       }
       sent = true;
       submit.disabled = true;
+      var finish = function () {
+        form.hidden = true;
+        $('done').hidden = false;
+      };
+      var now = Date.now();
+      if (skipReason({ honeypot: $('website').value, loadedAt: loadedAt, now: now, lastSentAt: readLastSent() })) {
+        finish();
+        return;
+      }
+      writeLastSent(now);
       submit.textContent = t.sending;
       var body = buildBody({
         reason: checked.value,
@@ -251,10 +295,6 @@
       });
       // no-cors: the response is opaque, so a resolved fetch is the best signal we get.
       // Show the thanks either way; a failed send must not trap the visitor on the form.
-      var finish = function () {
-        form.hidden = true;
-        $('done').hidden = false;
-      };
       fetch(FORM_URL, { method: 'POST', mode: 'no-cors', body: body }).then(finish, finish);
     });
   }
@@ -263,6 +303,6 @@
     init();
   }
   if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { normalizeLang: normalizeLang, resolveLang: resolveLang, buildBody: buildBody, sanitizeVersion: sanitizeVersion, STRINGS: STRINGS, SUPPORTED: SUPPORTED };
+    module.exports = { normalizeLang: normalizeLang, resolveLang: resolveLang, buildBody: buildBody, skipReason: skipReason, MIN_FILL_MS: MIN_FILL_MS, COOLDOWN_MS: COOLDOWN_MS, sanitizeVersion: sanitizeVersion, STRINGS: STRINGS, SUPPORTED: SUPPORTED };
   }
 })();

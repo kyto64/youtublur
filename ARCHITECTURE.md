@@ -95,7 +95,7 @@ youtublur は YouTube 視聴ページのプレイヤー背景を単色/ブラー
   - モードとブラー強度はポップアップと同じ `saveModeToStorage` / `saveBlurStrengthToStorage` で保存する（キーの形は変えない）
   - 開いている全タブへ既存メッセージ `BG_MODE_CHANGED` / `BLUR_STRENGTH_CHANGED` を送る。タブ URL は読まない（`tabs` 権限や `host_permissions` を足さない）。コンテンツスクリプトがある YouTube タブだけが受け取る
   - `runtime.onInstalled` は `reason === 'install'` のときだけ `installTimestamp` を保存し、ウェルカムページ（`welcome.html`）を 1 回だけ開く。`update` などでは案内を出さない。`onInstalled`・`onStartup`・`chrome.alarms`（6 時間ごと。ブラウザを開いたまま 7 日経つ場合に備える）でレビュー促しの時期を判定し、アクションのバッジを付け外しする（`onboarding.js`）
-  - アンインストール時のアンケート: `onInstalled` と background の起動ごとに `configureUninstallSurvey()`（`onboarding.js`）が `runtime.setUninstallURL` で `https://kyto64.github.io/youtublur/uninstall/?v=<manifest version>&lang=<UI 言語を 8 ロケールに丸めた値>`（255 文字以内）を登録する。API が無い環境では何もしない。ページは GitHub Pages（master の `/docs`）の静的ファイル（`docs/uninstall/`）で、回答は Google フォームの `formResponse` に POST する。拡張側から通信はしない
+  - アンインストール時のアンケート: `onInstalled` と background の起動ごとに `configureUninstallSurvey()`（`onboarding.js`）が `runtime.setUninstallURL` で `https://kyto64.github.io/youtublur/uninstall/?v=<manifest version>&lang=<UI 言語を 8 ロケールに丸めた値>`（255 文字以内）を登録する。API が無い環境では何もしない。ページは GitHub Pages（master の `/docs`）の静的ファイル（`docs/uninstall/`）で、回答は Google フォームの `formResponse` に POST する。荒らし対策として、画面外のハニーポット入力欄が埋まっている、表示から 3 秒未満、同じブラウザから 10 分以内（localStorage のタイムスタンプ。使えなくても動く）の送信は POST せず、通常と同じお礼表示だけを出す。送信中・送信後はボタンを無効にして二重送信しない。拡張側から通信はしない
   - Chrome は `background.service_worker`（`importScripts` で `storage-mode.js`、`shortcut-actions.js`、`review-nudge.js`、`onboarding.js` を読む）。Firefox は `background.scripts` のイベントページ（Chrome 121 以降は `scripts` を無視する）
 - **popup.html**:
   - シンプルな操作インターフェース
