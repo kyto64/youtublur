@@ -24,6 +24,8 @@
 
 ## ユニットテスト
 
+アンインストール時のアンケート（`docs/uninstall/`）は `uninstall-survey.test.js`（辞書・言語解決・送信本文などの関数）に加え、`e2e/uninstall-survey.spec.js` が静的ページを `file://` で実際に開いて操作を見る。未選択で送信したときのエラー表示、送信先（Google フォームの `formResponse`）を `page.route` でモックして理由・コメント・version・lang が期待どおりの `entry.*` で POST されること、送信後（失敗時も）のお礼表示、`?lang=` による言語切替（ja / en）を確認する。拡張はロードせず外部への実リクエストは送らない。Chromium プロジェクトだけで動く（Firefox の `testMatch` には入れない）。
+
 ### テストフレームワーク
 
 - **Vitest**: Viteベースの高速なテストランナー
