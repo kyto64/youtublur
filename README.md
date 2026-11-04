@@ -24,6 +24,9 @@ Chrome Web Store / Firefox AMO への公開手順は [docs/release.md](docs/rele
 - Chrome（Manifest V3）
 - Firefox（Manifest V3）
 
+## プライバシー（アンインストール時のアンケート）
+アンインストール時に任意のアンケートページ（https://kyto64.github.io/youtublur/uninstall/ 、ソースは [docs/uninstall/](docs/uninstall/)）を開く。送られるのはユーザーが入力した回答と、拡張のバージョン・表示言語だけ。回答しなければ何も送られない。拡張本体は外部通信を行わず、ページ側も外部スクリプト・トラッキング・Cookie を使わない。
+
 ## ライセンス
 
 proprietary。利用条件は [LICENSE](LICENSE) を参照。

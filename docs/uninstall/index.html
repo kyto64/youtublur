@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>youtublur</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="survey.css">
+</head>
+<body>
+  <main>
+    <form id="surveyForm" novalidate>
+      <h1 id="title"></h1>
+      <p id="thanks" class="sub"></p>
+      <fieldset>
+        <legend id="question"></legend>
+        <label><input type="radio" name="reason" value="broken"><span data-reason="broken"></span></label>
+        <label><input type="radio" name="reason" value="slow"><span data-reason="slow"></span></label>
+        <label><input type="radio" name="reason" value="look"><span data-reason="look"></span></label>
+        <label><input type="radio" name="reason" value="not_needed"><span data-reason="not_needed"></span></label>
+        <label><input type="radio" name="reason" value="switched"><span data-reason="switched"></span></label>
+        <label><input type="radio" name="reason" value="other"><span data-reason="other"></span></label>
+      </fieldset>
+      <label class="comment">
+        <span id="commentLabel"></span>
+        <textarea id="comment" name="comment" maxlength="1000" rows="4"></textarea>
+      </label>
+      <p id="error" class="error" role="alert" hidden></p>
+      <button type="submit" id="submit"></button>
+    </form>
+    <section id="done" hidden>
+      <h1 id="doneTitle"></h1>
+      <p id="doneBody" class="sub"></p>
+    </section>
+  </main>
+  <script src="survey.js"></script>
+</body>
+</html>
