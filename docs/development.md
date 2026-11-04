@@ -280,7 +280,7 @@ git push --follow-tags origin master
 ### セキュリティ
 
 - 最小権限の原則を遵守
-- 外部ネットワーク通信は行わない
+- 外部ネットワーク通信は行わない（アンインストール時のアンケート URL の登録を除く。`docs/uninstall/` は GitHub Pages で配信する静的ページ）
 - XSS対策を施す
 - ユーザーデータはローカルにのみ保存
 

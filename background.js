@@ -116,6 +116,9 @@ function registerOnboarding() {
     const runtime = typeof chrome !== 'undefined' ? chrome.runtime : undefined;
     if (!runtime)
         return;
+    // Every worker start (and install) re-registers the survey URL. Cheap and idempotent.
+    if (typeof configureUninstallSurvey === 'function')
+        configureUninstallSurvey();
     const refreshBadge = () => {
         if (typeof refreshReviewBadge !== 'function')
             return Promise.resolve();
@@ -123,6 +126,8 @@ function registerOnboarding() {
     };
     // Only reason === 'install' opens the welcome page. Updates just re-check the badge.
     runtime.onInstalled?.addListener((details) => {
+        if (typeof configureUninstallSurvey === 'function')
+            configureUninstallSurvey();
         const install = typeof handleExtensionInstalled === 'function'
             ? handleExtensionInstalled(details)
             : Promise.resolve(false);

@@ -187,3 +187,88 @@ describe('onboarding.js', () => {
     });
   });
 });
+
+describe('uninstall survey URL', () => {
+  const {
+    UNINSTALL_SURVEY_BASE_URL,
+    normalizeSurveyLanguage,
+    buildUninstallSurveyUrl,
+    configureUninstallSurvey
+  } = require('./onboarding.js');
+
+  afterEach(() => {
+    delete global.chrome;
+  });
+
+  test.each([
+    ['en', 'en'],
+    ['en-US', 'en'],
+    ['ja', 'ja'],
+    ['ko', 'ko'],
+    ['es-419', 'es'],
+    ['id', 'id'],
+    ['in', 'id'],
+    ['pt-BR', 'pt_BR'],
+    ['pt-PT', 'pt_BR'],
+    ['zh-CN', 'zh_CN'],
+    ['zh', 'zh_CN'],
+    ['zh-Hans', 'zh_CN'],
+    ['zh-TW', 'zh_TW'],
+    ['zh-HK', 'zh_TW'],
+    ['zh-Hant-TW', 'zh_TW'],
+    ['fr', 'en'],
+    ['', 'en'],
+    [undefined, 'en'],
+    [42, 'en']
+  ])('normalizeSurveyLanguage(%j) is %s', (input, expected) => {
+    expect(normalizeSurveyLanguage(input)).toBe(expected);
+  });
+
+  test('buildUninstallSurveyUrl joins version and language', () => {
+    expect(buildUninstallSurveyUrl('1.12.39', 'pt-BR')).toBe(
+      `${UNINSTALL_SURVEY_BASE_URL}?v=1.12.39&lang=pt_BR`
+    );
+    expect(UNINSTALL_SURVEY_BASE_URL).toBe('https://kyto64.github.io/youtublur/uninstall/');
+  });
+
+  test('buildUninstallSurveyUrl rejects bad versions and stays within 255 characters', () => {
+    expect(buildUninstallSurveyUrl('', 'en')).toBeNull();
+    expect(buildUninstallSurveyUrl(undefined, 'en')).toBeNull();
+    expect(buildUninstallSurveyUrl('1.0&x=1', 'en')).toBeNull();
+    expect(buildUninstallSurveyUrl('1'.repeat(300), 'en')).toBeNull();
+    expect(buildUninstallSurveyUrl('1.12.39', 'zh-TW').length).toBeLessThanOrEqual(255);
+  });
+
+  test('configureUninstallSurvey registers the URL', () => {
+    const setUninstallURL = vi.fn();
+    global.chrome = {
+      runtime: { setUninstallURL, getManifest: () => ({ version: '2.3.4' }) },
+      i18n: { getUILanguage: () => 'zh-TW' }
+    };
+    expect(configureUninstallSurvey()).toBe(true);
+    expect(setUninstallURL).toHaveBeenCalledWith(`${UNINSTALL_SURVEY_BASE_URL}?v=2.3.4&lang=zh_TW`);
+  });
+
+  test('configureUninstallSurvey falls back to en without i18n', () => {
+    const setUninstallURL = vi.fn(() => Promise.reject(new Error('nope')));
+    global.chrome = { runtime: { setUninstallURL, getManifest: () => ({ version: '1.0.0' }) } };
+    expect(configureUninstallSurvey()).toBe(true);
+    expect(setUninstallURL).toHaveBeenCalledWith(`${UNINSTALL_SURVEY_BASE_URL}?v=1.0.0&lang=en`);
+  });
+
+  test('configureUninstallSurvey does nothing when the API is missing or throws', () => {
+    delete global.chrome;
+    expect(configureUninstallSurvey()).toBe(false);
+    global.chrome = { runtime: { getManifest: () => ({ version: '1.0.0' }) } };
+    expect(configureUninstallSurvey()).toBe(false);
+    global.chrome = {
+      runtime: {
+        setUninstallURL: () => {
+          throw new Error('boom');
+        },
+        getManifest: () => ({ version: '1.0.0' })
+      }
+    };
+    expect(configureUninstallSurvey()).toBe(false);
+  });
+});

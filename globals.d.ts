@@ -26,6 +26,7 @@ declare function markReviewNudgeHandled(): Promise<boolean>;
 declare function getReviewStoreUrl(): string;
 declare function openReviewStorePage(): void;
 declare function clearReviewBadge(): void;
+declare function configureUninstallSurvey(): boolean;
 
 interface Navigator {
   /** Non-standard but widely available; used for device-performance heuristics. */
