@@ -102,7 +102,7 @@ YouTube 視聴ページのプレイヤー背景を単色/ブラー表示に切�
 | ビルド（TS → JS） | `pnpm build` / 監視モード `pnpm build:watch` |
 | ユニットテスト | `pnpm test`（pretest で自動 `tsc`） |
 | カバレッジ付きユニットテスト | `pnpm run test:coverage`（レポートは `coverage/`） |
-| E2E テスト | `pnpm run test:e2e` |
+| E2E テスト | `pnpm run test:e2e`（大半はローカル fixture で `--project=chromium`。実 youtube.com の `@live` は `--project=chromium-live`、CI では非ブロッキング。[docs/testing.md](./docs/testing.md) の「fixture と `@live`」） |
 | AI 検証（ブラー描画） | `pnpm run verify:ai-blur`（詳細は下記「検証方法」） |
 | Lint | `pnpm exec vp lint` |
 | リリース | `pnpm run release` → `git push --follow-tags origin master` |

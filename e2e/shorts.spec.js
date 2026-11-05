@@ -1,6 +1,7 @@
 const { test, expect } = require('./fixtures');
 
-test('should load extension and apply blur on YouTube Shorts', async ({ page }) => {
+// Shorts は fixture で再現しないため実 YouTube に当てる（非ブロッキングの @live 経路）。
+test('should load extension and apply blur on YouTube Shorts', { tag: '@live' }, async ({ page }) => {
   // Shorts feed: first video is chosen by YouTube (stable entry point for CI).
   await page.goto('https://www.youtube.com/shorts/');
 
