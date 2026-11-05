@@ -16,4 +16,4 @@ Como usar
 Onde funciona melhor
 Qualquer layout que deixe margens ao redor do player, como o modo cinema do YouTube clássico ou uma janela larga com espaços laterais.
 
-Leve e respeitoso com a privacidade: youtublur não coleta dados.
+Leve. A extensão em si não envia dados para lugar nenhum. Após a desinstalação, abre-se uma página de pesquisa opcional; somente se você respondê-la, suas respostas, a versão da extensão e o idioma de exibição são enviados pelo Google Forms.

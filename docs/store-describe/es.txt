@@ -16,4 +16,4 @@ Cómo usarlo
 Dónde funciona mejor
 Cualquier diseño que deje márgenes alrededor del reproductor, como el modo cine del YouTube clásico o una ventana ancha con huecos laterales.
 
-Ligero y respetuoso con la privacidad: youtublur no recopila datos.
+Ligero. La extensión en sí no envía datos a ningún sitio. Tras desinstalarla se abre una página de encuesta opcional; solo si la respondes, tus respuestas, la versión de la extensión y el idioma de visualización se envían mediante Google Forms.

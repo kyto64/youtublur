@@ -109,9 +109,33 @@ function buildUninstallSurveyUrl(version, uiLanguage) {
     const url = `${UNINSTALL_SURVEY_BASE_URL}?v=${encodeURIComponent(v)}&lang=${normalizeSurveyLanguage(uiLanguage)}`;
     return url.length <= UNINSTALL_URL_MAX_LENGTH ? url : null;
 }
+/** getBrowserInfo exists only in Firefox, which is where data_collection_permissions apply. */
+function isFirefoxRuntime(runtime) {
+    return typeof runtime.getBrowserInfo === 'function';
+}
+/**
+ * Firefox only: the consent state for "technicalAndInteraction" (extension version and
+ * browser language in the uninstall URL). Firefox 139 and older have no data_collection
+ * key and no consent UI, so the parameters are left out there too.
+ */
+function allowsTechnicalData(granted) {
+    const list = granted?.data_collection;
+    return Array.isArray(list) && list.includes('technicalAndInteraction');
+}
+function setUninstallUrl(runtime, url) {
+    try {
+        ignoreRejection(runtime.setUninstallURL(url));
+    }
+    catch (error) {
+        console.warn('[youtublur] failed to set the uninstall URL:', error);
+    }
+}
 /**
  * Register the uninstall survey page. Safe to call on every worker start and on install:
  * it does nothing where setUninstallURL (or the manifest) is unavailable, and never throws.
+ * Chrome always gets ?v=&lang=. Firefox gets them only while the user keeps the optional
+ * technicalAndInteraction data permission: the plain URL is registered first, and the
+ * parameters are added once permissions.getAll() confirms the consent.
  */
 function configureUninstallSurvey() {
     try {
@@ -127,7 +151,19 @@ function configureUninstallSurvey() {
         const url = buildUninstallSurveyUrl(runtime.getManifest().version, uiLanguage);
         if (!url)
             return false;
-        ignoreRejection(runtime.setUninstallURL(url));
+        if (!isFirefoxRuntime(runtime)) {
+            ignoreRejection(runtime.setUninstallURL(url));
+            return true;
+        }
+        ignoreRejection(runtime.setUninstallURL(UNINSTALL_SURVEY_BASE_URL));
+        const permissions = chrome.permissions;
+        if (permissions && typeof permissions.getAll === 'function') {
+            permissions.getAll((granted) => {
+                void runtime.lastError; // a failed lookup keeps the plain URL
+                if (allowsTechnicalData(granted))
+                    setUninstallUrl(runtime, url);
+            });
+        }
         return true;
     }
     catch (error) {

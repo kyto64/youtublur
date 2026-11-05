@@ -16,4 +16,4 @@ How to use
 Where it works best
 Any layout that leaves margins around the player, such as theater mode on classic YouTube or a wide window with side gaps.
 
-Lightweight and privacy-friendly: youtublur collects no data.
+Lightweight. The extension itself sends no data anywhere. After uninstalling, an optional survey page opens; only if you answer it are your answers, the extension version and display language sent via Google Forms.

@@ -129,6 +129,12 @@ function registerOnboarding() {
   if (!runtime) return;
   // Every worker start (and install) re-registers the survey URL. Cheap and idempotent.
   if (typeof configureUninstallSurvey === 'function') configureUninstallSurvey();
+  // Firefox: re-evaluate when the user grants or revokes the optional data permission.
+  const reconfigureSurvey = () => {
+    if (typeof configureUninstallSurvey === 'function') configureUninstallSurvey();
+  };
+  chrome.permissions?.onAdded?.addListener(reconfigureSurvey);
+  chrome.permissions?.onRemoved?.addListener(reconfigureSurvey);
   const refreshBadge = () => {
     if (typeof refreshReviewBadge !== 'function') return Promise.resolve();
     return refreshReviewBadge().then(

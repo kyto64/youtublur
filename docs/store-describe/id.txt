@@ -16,4 +16,4 @@ Cara memakai
 Paling cocok di
 Tata letak apa pun yang menyisakan margin di sekitar pemutar, misalnya mode teater YouTube klasik atau jendela lebar dengan celah samping.
 
-Ringan dan ramah privasi: youtublur tidak mengumpulkan data.
+Ringan. Ekstensi itu sendiri tidak mengirim data ke mana pun. Setelah dihapus, halaman survei opsional akan terbuka; hanya jika Anda menjawabnya, jawaban Anda, versi ekstensi, dan bahasa tampilan dikirim melalui Google Forms.

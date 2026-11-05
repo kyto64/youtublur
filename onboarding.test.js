@@ -256,6 +256,63 @@ describe('uninstall survey URL', () => {
     expect(setUninstallURL).toHaveBeenCalledWith(`${UNINSTALL_SURVEY_BASE_URL}?v=1.0.0&lang=en`);
   });
 
+  describe('Firefox data_collection consent', () => {
+    const withFirefox = (granted) => {
+      const setUninstallURL = vi.fn();
+      global.chrome = {
+        runtime: {
+          setUninstallURL,
+          getManifest: () => ({ version: '2.3.4' }),
+          getBrowserInfo: vi.fn()
+        },
+        i18n: { getUILanguage: () => 'ja' },
+        permissions: { getAll: vi.fn((cb) => cb(granted)) }
+      };
+      return setUninstallURL;
+    };
+
+    test('adds v and lang when technicalAndInteraction is granted', () => {
+      const setUninstallURL = withFirefox({ permissions: [], data_collection: ['technicalAndInteraction'] });
+      expect(configureUninstallSurvey()).toBe(true);
+      expect(setUninstallURL).toHaveBeenLastCalledWith(`${UNINSTALL_SURVEY_BASE_URL}?v=2.3.4&lang=ja`);
+    });
+
+    test('uses the plain URL when data_collection is empty (consent removed)', () => {
+      const setUninstallURL = withFirefox({ permissions: [], data_collection: [] });
+      expect(configureUninstallSurvey()).toBe(true);
+      expect(setUninstallURL).toHaveBeenCalledTimes(1);
+      expect(setUninstallURL).toHaveBeenCalledWith(UNINSTALL_SURVEY_BASE_URL);
+    });
+
+    test('uses the plain URL when Firefox has no data_collection key (139 and older)', () => {
+      const setUninstallURL = withFirefox({ permissions: [] });
+      expect(configureUninstallSurvey()).toBe(true);
+      expect(setUninstallURL).toHaveBeenCalledTimes(1);
+      expect(setUninstallURL).toHaveBeenCalledWith(UNINSTALL_SURVEY_BASE_URL);
+    });
+
+    test('keeps the plain URL when permissions.getAll is unavailable', () => {
+      const setUninstallURL = withFirefox({});
+      delete global.chrome.permissions;
+      expect(configureUninstallSurvey()).toBe(true);
+      expect(setUninstallURL).toHaveBeenCalledTimes(1);
+      expect(setUninstallURL).toHaveBeenCalledWith(UNINSTALL_SURVEY_BASE_URL);
+    });
+
+    test('Chrome keeps the parameters and never reads permissions', () => {
+      const getAll = vi.fn();
+      const setUninstallURL = vi.fn();
+      global.chrome = {
+        runtime: { setUninstallURL, getManifest: () => ({ version: '2.3.4' }) },
+        i18n: { getUILanguage: () => 'ja' },
+        permissions: { getAll }
+      };
+      expect(configureUninstallSurvey()).toBe(true);
+      expect(setUninstallURL).toHaveBeenCalledWith(`${UNINSTALL_SURVEY_BASE_URL}?v=2.3.4&lang=ja`);
+      expect(getAll).not.toHaveBeenCalled();
+    });
+  });
+
   test('configureUninstallSurvey does nothing when the API is missing or throws', () => {
     delete global.chrome;
     expect(configureUninstallSurvey()).toBe(false);

@@ -115,9 +115,35 @@ function buildUninstallSurveyUrl(version: unknown, uiLanguage: unknown): string 
   return url.length <= UNINSTALL_URL_MAX_LENGTH ? url : null;
 }
 
+/** getBrowserInfo exists only in Firefox, which is where data_collection_permissions apply. */
+function isFirefoxRuntime(runtime: typeof chrome.runtime): boolean {
+  return typeof (runtime as { getBrowserInfo?: unknown }).getBrowserInfo === 'function';
+}
+
+/**
+ * Firefox only: the consent state for "technicalAndInteraction" (extension version and
+ * browser language in the uninstall URL). Firefox 139 and older have no data_collection
+ * key and no consent UI, so the parameters are left out there too.
+ */
+function allowsTechnicalData(granted: unknown): boolean {
+  const list = (granted as { data_collection?: unknown } | undefined)?.data_collection;
+  return Array.isArray(list) && list.includes('technicalAndInteraction');
+}
+
+function setUninstallUrl(runtime: typeof chrome.runtime, url: string): void {
+  try {
+    ignoreRejection(runtime.setUninstallURL(url) as unknown);
+  } catch (error) {
+    console.warn('[youtublur] failed to set the uninstall URL:', error);
+  }
+}
+
 /**
  * Register the uninstall survey page. Safe to call on every worker start and on install:
  * it does nothing where setUninstallURL (or the manifest) is unavailable, and never throws.
+ * Chrome always gets ?v=&lang=. Firefox gets them only while the user keeps the optional
+ * technicalAndInteraction data permission: the plain URL is registered first, and the
+ * parameters are added once permissions.getAll() confirms the consent.
  */
 function configureUninstallSurvey(): boolean {
   try {
@@ -132,7 +158,18 @@ function configureUninstallSurvey(): boolean {
         : undefined;
     const url = buildUninstallSurveyUrl(runtime.getManifest().version, uiLanguage);
     if (!url) return false;
-    ignoreRejection(runtime.setUninstallURL(url) as unknown);
+    if (!isFirefoxRuntime(runtime)) {
+      ignoreRejection(runtime.setUninstallURL(url) as unknown);
+      return true;
+    }
+    ignoreRejection(runtime.setUninstallURL(UNINSTALL_SURVEY_BASE_URL) as unknown);
+    const permissions = chrome.permissions;
+    if (permissions && typeof permissions.getAll === 'function') {
+      permissions.getAll((granted) => {
+        void runtime.lastError; // a failed lookup keeps the plain URL
+        if (allowsTechnicalData(granted)) setUninstallUrl(runtime, url);
+      });
+    }
     return true;
   } catch (error) {
     console.warn('[youtublur] failed to set the uninstall URL:', error);
