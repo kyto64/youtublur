@@ -229,6 +229,7 @@ PR 作成前のレビューは Workflow の **Review**（実装とは別の新�
 | マニフェスト | [`manifest.json`](./manifest.json) |
 | 文言（i18n） | [`_locales/*/messages.json`](./_locales/)（基準は [`en`](./_locales/en/messages.json)） |
 | E2E テスト | [`e2e/`](./e2e/) |
+| 実 YouTube DOM 定期チェック | [`e2e/dom-watch/`](./e2e/dom-watch/)（契約 `youtube-dom-contract.js` が単一の正。`youtube-dom-contract.test.js` が `src/content.ts` / `style.css` と同期）、[`playwright.dom-watch.config.js`](./playwright.dom-watch.config.js)、[`scripts/dom-watch-issue.mjs`](./scripts/dom-watch-issue.mjs)、[`.github/workflows/youtube-dom-watch.yml`](./.github/workflows/youtube-dom-watch.yml)。詳細は [docs/testing.md](./docs/testing.md) |
 | AI 検証ハーネス | [`e2e/ai-verify/`](./e2e/ai-verify/)（`pnpm run verify:ai-blur`、ブラー描画の証跡採取） |
 | 補助スクリプト | [`scripts/`](./scripts/)（sync-version, publish, refresh-token, dependabot-merge, should-patch-release, cloud-agent-install） |
 | エージェントハーネス | [`AGENTS.md`](./AGENTS.md)、[`.cursor/agents/`](./.cursor/agents/)、[`.cursor/commands/`](./.cursor/commands/)、[`scripts/cloud-agent-install.sh`](./scripts/cloud-agent-install.sh)（Devin の blueprint から呼ぶ）。説明は [docs/development.md](./docs/development.md) |

@@ -11,6 +11,9 @@ node_modules
 playwright-report/
 test-results/
 
+# 実 YouTube DOM 定期チェックの採取物
+dom-watch-results/
+
 # AI-Agentic 検証ハーネスの採取物
 e2e/ai-verify/artifacts/
 

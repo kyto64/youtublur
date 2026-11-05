@@ -123,7 +123,7 @@ youtublur/
 ├── onboarding.test.js            # ユニットテスト
 ├── welcome.test.js               # ユニットテスト
 ├── _locales/                     # i18n（en, es, id, ja, ko, pt_BR, zh_CN, zh_TW）
-├── e2e/                          # Playwright E2E と AI 検証
+├── e2e/                          # Playwright E2E、AI 検証、実 YouTube DOM 定期チェック（dom-watch/）
 ├── scripts/                      # 補助スクリプト
 ├── docs/                         # ドキュメント
 └── ...
