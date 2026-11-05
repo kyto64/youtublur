@@ -25,6 +25,8 @@ Chrome Web Store / Firefox AMO への公開手順は [docs/release.md](docs/rele
 - Firefox（Manifest V3）
 
 ## プライバシー（アンインストール時のアンケート）
+プライバシーポリシー（日本語・英語）: https://kyto64.github.io/youtublur/privacy/ （ソースは [docs/privacy/](docs/privacy/)）
+
 アンインストール時に任意のアンケートページ（https://kyto64.github.io/youtublur/uninstall/ 、ソースは [docs/uninstall/](docs/uninstall/)）を開く。ユーザーがページで自分で回答して送信した場合だけ、理由コード（reason）・自由記述（comment、任意・最大1000字）・拡張のバージョン（version）・表示言語（lang）の4項目が Google フォームに送られる。回答しなければ何も送られない。拡張本体は外部通信を行わず、ページ側も外部スクリプト・トラッキング・Cookie を使わない。
 
 Firefox では、ストア表記（`data_collection_permissions`）に合わせて任意の技術データ（`technicalAndInteraction`）の同意を外すと、アンケート URL に version と lang を付けない（Firefox 139 以下も付けない）。Chrome は常に付ける。
