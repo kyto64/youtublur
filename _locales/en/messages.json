@@ -8,16 +8,16 @@
     "description": "Short description for the Chrome Web Store and extension details."
   },
   "popupHeading": {
-    "message": "Player background",
-    "description": "Heading in the toolbar popup."
+    "message": "Margins around the player",
+    "description": "Heading in the toolbar popup. The effect fills the empty margins around the YouTube player."
   },
   "modeBlur": {
-    "message": "Blur (video)",
-    "description": "Radio option: blurred video as background."
+    "message": "Blur",
+    "description": "Radio option: fill the margins around the player with a soft blur that follows the video. The video itself is not filtered."
   },
   "modeSolid": {
     "message": "Solid",
-    "description": "Radio option: flat color behind the player."
+    "description": "Radio option: fill the margins around the player with a flat color."
   },
   "reloadButton": {
     "message": "Reload",
@@ -27,9 +27,12 @@
     "message": "Reloading...",
     "description": "Reload button text while the reload is in progress."
   },
-  "modeBlurSub": { "message": "Frosted ambient glow" },
+  "modeBlurSub": {
+    "message": "Soft blur that follows the video",
+    "description": "Subtitle for blur mode, shown under the mode name."
+  },
   "modeSolidSub": {
-    "message": "A color you choose",
+    "message": "Fill with a color you choose",
     "description": "Subtitle for solid mode, shown under the mode name."
   },
   "previewLabel": { "message": "Preview" },
@@ -46,8 +49,8 @@
     "description": "Unit shown beside the blur-strength number."
   },
   "solidColorLabel": {
-    "message": "Background color",
-    "description": "Label for the solid-mode color controls. Shown only while solid mode is selected."
+    "message": "Margin color",
+    "description": "Label for the solid-mode color controls (the color of the margins around the player). Shown only while solid mode is selected."
   },
   "solidColorCustomLabel": {
     "message": "Custom color",
@@ -74,15 +77,15 @@
   "popupPhrase2": { "message": "Blur the noise, keep the joy" },
   "popupPhrase3": { "message": "Soft edges, sharp mind" },
   "popupPhrase4": { "message": "YouTube, but make it cozy" },
-  "popupPhrase5": { "message": "Ambient vibes, on demand" },
-  "popupPhrase6": { "message": "Background, beautified" },
+  "popupPhrase5": { "message": "No more empty margins" },
+  "popupPhrase6": { "message": "Margins, beautifully filled" },
   "popupPhrase7": { "message": "Your visual comfort, upgraded" },
   "reviewNudgeTitle": {
     "message": "Settling in with youtublur?",
     "description": "Title for the optional review prompt shown after about a week of use."
   },
   "reviewNudgeBody": {
-    "message": "If the softer player background has been useful, would you mind leaving an honest review? It helps other people find the extension. Any rating that matches your experience is welcome.",
+    "message": "If filling the margins around the player has been useful, would you mind leaving an honest review? It helps other people find the extension. Any rating that matches your experience is welcome.",
     "description": "Body copy for the optional review prompt."
   },
   "reviewNudgeLeaveReview": {
@@ -102,12 +105,12 @@
     "description": "Heading on the welcome page opened once after a fresh install."
   },
   "welcomeTheaterHint": {
-    "message": "The effect shows in theater mode. On a YouTube video, press the t key (or the theater mode button) to see the soft background around the player.",
-    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+    "message": "The effect fills the margins around the player, which are easiest to see in theater mode. On a YouTube video, press the t key (or the theater mode button) to see the blurred or solid margins.",
+    "description": "Welcome page: the effect fills the margins around the player and is easiest to see in theater mode, toggled with the t key on YouTube."
   },
   "welcomePopupHint": {
-    "message": "Click the youtublur icon in the toolbar to switch between blur and solid color.",
-    "description": "Welcome page: where to switch between blur and solid."
+    "message": "Click the youtublur icon in the toolbar to choose how the margins are filled: blur or solid color.",
+    "description": "Welcome page: where to switch how the margins are filled (blur or solid)."
   },
   "welcomeClose": {
     "message": "Got it",
@@ -146,7 +149,7 @@
     "description": "Description for the reserved _execute_action command. Opens the toolbar popup. Suggested key is Alt+Shift+U."
   },
   "commandReloadEffect": {
-    "message": "Reload player background",
-    "description": "Description for the reload command. It reapplies the player background. No suggested key is set."
+    "message": "Reload margin fill",
+    "description": "Description for the reload command. It reapplies the fill of the margins around the player. No suggested key is set."
   }
 }

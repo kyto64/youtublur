@@ -8,16 +8,16 @@
     "description": "Descrição curta para a Chrome Web Store e detalhes da extensão."
   },
   "popupHeading": {
-    "message": "Fundo do player",
-    "description": "Título no pop-up da barra de ferramentas."
+    "message": "Margens do player",
+    "description": "Título no pop-up da barra de ferramentas. O efeito preenche as margens vazias ao redor do player do YouTube."
   },
   "modeBlur": {
-    "message": "Desfocado (vídeo)",
-    "description": "Opção de rádio: vídeo desfocado como fundo."
+    "message": "Desfoque",
+    "description": "Opção de rádio: preenche as margens ao redor do player com um desfoque suave que acompanha o vídeo. O vídeo em si não recebe filtro."
   },
   "modeSolid": {
     "message": "Sólido",
-    "description": "Opção de rádio: cor chapada atrás do player."
+    "description": "Opção de rádio: preenche as margens ao redor do player com uma cor chapada."
   },
   "reloadButton": {
     "message": "Recarregar",
@@ -27,9 +27,12 @@
     "message": "Recarregando...",
     "description": "Texto do botão enquanto recarrega."
   },
-  "modeBlurSub": { "message": "Brilho ambiente gelado" },
+  "modeBlurSub": {
+    "message": "Desfoque suave que acompanha o vídeo",
+    "description": "Subtítulo do modo desfoque, abaixo do nome do modo."
+  },
   "modeSolidSub": {
-    "message": "Uma cor à sua escolha",
+    "message": "Preenche com uma cor à sua escolha",
     "description": "Subtítulo do modo sólido, abaixo do nome do modo."
   },
   "previewLabel": { "message": "Pré-visualização" },
@@ -46,8 +49,8 @@
     "description": "Unidade exibida ao lado do número de intensidade."
   },
   "solidColorLabel": {
-    "message": "Cor de fundo",
-    "description": "Rótulo dos controles de cor do modo sólido. Visível só nesse modo."
+    "message": "Cor das margens",
+    "description": "Rótulo dos controles de cor do modo sólido (a cor das margens ao redor do player). Visível só nesse modo."
   },
   "solidColorCustomLabel": {
     "message": "Cor personalizada",
@@ -74,15 +77,15 @@
   "popupPhrase2": { "message": "Desfoque o ruído, mantenha a alegria" },
   "popupPhrase3": { "message": "Bordas suaves, mente afiada" },
   "popupPhrase4": { "message": "YouTube, mas aconchegante" },
-  "popupPhrase5": { "message": "Vibrações ambientes, sob demanda" },
-  "popupPhrase6": { "message": "Fundo, embelezado" },
+  "popupPhrase5": { "message": "Chega de margens vazias" },
+  "popupPhrase6": { "message": "Margens preenchidas com estilo" },
   "popupPhrase7": { "message": "Seu conforto visual, aprimorado" },
   "reviewNudgeTitle": {
     "message": "Já está se acostumando com o youtublur?",
     "description": "Título do aviso opcional de avaliação exibido após cerca de uma semana de uso."
   },
   "reviewNudgeBody": {
-    "message": "Se o fundo mais suave do player foi útil, você se importaria de deixar uma avaliação sincera? Isso ajuda outras pessoas a encontrar a extensão. Qualquer nota que reflita sua experiência é bem-vinda.",
+    "message": "Se preencher as margens ao redor do player foi útil, você se importaria de deixar uma avaliação sincera? Isso ajuda outras pessoas a encontrar a extensão. Qualquer nota que reflita sua experiência é bem-vinda.",
     "description": "Texto do aviso opcional de avaliação."
   },
   "reviewNudgeLeaveReview": {
@@ -102,12 +105,12 @@
     "description": "Heading on the welcome page opened once after a fresh install."
   },
   "welcomeTheaterHint": {
-    "message": "O efeito aparece no modo teatro. Em um vídeo do YouTube, pressione a tecla t (ou o botão de modo teatro) para ver o fundo suave ao redor do player.",
-    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+    "message": "O efeito preenche as margens ao redor do player, que ficam mais visíveis no modo teatro. Em um vídeo do YouTube, pressione a tecla t (ou o botão de modo teatro) para ver as margens com desfoque ou cor sólida.",
+    "description": "Página de boas-vindas: o efeito preenche as margens ao redor do player e fica mais visível no modo teatro (tecla t no YouTube)."
   },
   "welcomePopupHint": {
-    "message": "Clique no ícone do youtublur na barra de ferramentas para alternar entre desfoque e cor sólida.",
-    "description": "Welcome page: where to switch between blur and solid."
+    "message": "Clique no ícone do youtublur na barra de ferramentas para escolher como as margens são preenchidas: desfoque ou cor sólida.",
+    "description": "Página de boas-vindas: onde alternar como as margens são preenchidas (desfoque ou sólido)."
   },
   "welcomeClose": {
     "message": "Entendi",
@@ -146,7 +149,7 @@
     "description": "Descrição do comando reservado _execute_action. Abre o popup da barra de ferramentas. A tecla sugerida é Alt+Shift+U."
   },
   "commandReloadEffect": {
-    "message": "Recarregar o fundo do player",
-    "description": "Descrição do comando de recarregar. Reaplica o fundo do player. Não há tecla sugerida."
+    "message": "Recarregar o preenchimento das margens",
+    "description": "Descrição do comando de recarregar. Reaplica o preenchimento das margens ao redor do player. Não há tecla sugerida."
   }
 }

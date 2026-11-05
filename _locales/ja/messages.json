@@ -8,16 +8,16 @@
     "description": "ストア・詳細用の短い説明。"
   },
   "popupHeading": {
-    "message": "プレイヤー背景",
-    "description": "ポップアップの見出し。"
+    "message": "プレイヤーまわりの余白",
+    "description": "ポップアップの見出し。YouTube プレイヤーまわりの余白を埋める効果。"
   },
   "modeBlur": {
-    "message": "ブラー（動画のぼかし）",
-    "description": "ラジオ：動画をぼかして背景に表示。"
+    "message": "ブラー",
+    "description": "ラジオ：プレイヤーまわりの余白を、動画の色に合わせたやわらかいぼかしで埋める。動画そのものにはフィルターをかけない。"
   },
   "modeSolid": {
-    "message": "単色",
-    "description": "ラジオ：プレイヤー背面を単色で塗る。"
+    "message": "塗りつぶし",
+    "description": "ラジオ：プレイヤーまわりの余白を単色で塗りつぶす。"
   },
   "reloadButton": {
     "message": "リロード",
@@ -27,10 +27,13 @@
     "message": "リロード中...",
     "description": "リロード処理中のボタンテキスト。"
   },
-  "modeBlurSub": { "message": "やわらかなアンビエントグロー" },
+  "modeBlurSub": {
+    "message": "動画の色に合わせてやわらかくぼかす",
+    "description": "ブラーモードの補足。モード名の下に出す。"
+  },
   "modeSolidSub": {
-    "message": "選んだ色で塗りつぶす",
-    "description": "単色モードの補足。モード名の下に出す。"
+    "message": "選んだ色で余白を塗りつぶす",
+    "description": "塗りつぶしモードの補足。モード名の下に出す。"
   },
   "previewLabel": { "message": "プレビュー" },
   "blurStrengthLabel": {
@@ -46,8 +49,8 @@
     "description": "ブラー強度の数値の横に出す単位。"
   },
   "solidColorLabel": {
-    "message": "背景色",
-    "description": "単色モードの色コントロールのラベル。単色モードのときだけ表示する。"
+    "message": "余白の色",
+    "description": "塗りつぶしモードの色コントロールのラベル（プレイヤーまわりの余白の色）。塗りつぶしモードのときだけ表示する。"
   },
   "solidColorCustomLabel": {
     "message": "カスタム色",
@@ -74,15 +77,15 @@
   "popupPhrase2": { "message": "ノイズをぼかして、楽しさはそのまま" },
   "popupPhrase3": { "message": "なめらかな視界、クリアな集中" },
   "popupPhrase4": { "message": "居心地のよい YouTube へ" },
-  "popupPhrase5": { "message": "アンビエントな雰囲気を、手元に" },
-  "popupPhrase6": { "message": "背景を、もっと美しく" },
+  "popupPhrase5": { "message": "余白が、映像になじむ" },
+  "popupPhrase6": { "message": "余白を、もっと美しく" },
   "popupPhrase7": { "message": "視覚的な快適さを、あなたに" },
   "reviewNudgeTitle": {
     "message": "youtublur、しばらく使ってみてどうですか？",
     "description": "約1週間利用後に表示する任意のレビュー促しの見出し。"
   },
   "reviewNudgeBody": {
-    "message": "プレイヤー周りの表示が役に立っていたら、率直なレビューをいただけると助かります。ほかの人の参考にもなります。評価はご自身の実感に合わせて大丈夫です。",
+    "message": "プレイヤーまわりの余白を埋める表示が役に立っていたら、率直なレビューをいただけると助かります。ほかの人の参考にもなります。評価はご自身の実感に合わせて大丈夫です。",
     "description": "任意のレビュー促しの本文。"
   },
   "reviewNudgeLeaveReview": {
@@ -102,12 +105,12 @@
     "description": "新規インストール直後に1回だけ開くウェルカムページの見出し。"
   },
   "welcomeTheaterHint": {
-    "message": "効果はシアターモードで表示されます。YouTube の動画ページで t キー（またはシアターモードボタン）を押すと、プレイヤーの周りにやわらかな背景が出ます。",
-    "description": "ウェルカムページ: 効果はシアターモード（YouTube の t キー）で見えることの案内。"
+    "message": "効果はプレイヤーまわりの余白に出ます。余白はシアターモードで見えやすくなります。YouTube の動画ページで t キー（またはシアターモードボタン）を押すと、ブラーや塗りつぶしで埋まった余白を確認できます。",
+    "description": "ウェルカムページ: 効果はプレイヤーまわりの余白に出て、シアターモード（YouTube の t キー）で見えやすいことの案内。"
   },
   "welcomePopupHint": {
-    "message": "ツールバーの youtublur アイコンから、ブラーと単色を切り替えられます。",
-    "description": "ウェルカムページ: ブラーと単色の切り替え場所の案内。"
+    "message": "ツールバーの youtublur アイコンから、余白の埋め方（ブラー／塗りつぶし）を切り替えられます。",
+    "description": "ウェルカムページ: 余白の埋め方（ブラー／塗りつぶし）の切り替え場所の案内。"
   },
   "welcomeClose": {
     "message": "OK",
@@ -146,7 +149,7 @@
     "description": "予約コマンド _execute_action の説明。ツールバーのポップアップを開く。提案キーは Alt+Shift+U。"
   },
   "commandReloadEffect": {
-    "message": "プレイヤー背景を再読み込み",
-    "description": "プレイヤー背景を再適用するコマンドの説明。提案キーは付けない。"
+    "message": "余白の表示を再読み込み",
+    "description": "プレイヤーまわりの余白の表示を再適用するコマンドの説明。提案キーは付けない。"
   }
 }

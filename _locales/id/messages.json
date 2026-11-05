@@ -8,16 +8,16 @@
     "description": "Deskripsi singkat untuk Chrome Web Store dan detail ekstensi."
   },
   "popupHeading": {
-    "message": "Latar belakang pemutar",
-    "description": "Judul pada pop-up toolbar."
+    "message": "Margin di sekitar pemutar",
+    "description": "Judul pada pop-up toolbar. Efeknya mengisi margin kosong di sekitar pemutar YouTube."
   },
   "modeBlur": {
-    "message": "Blur (video)",
-    "description": "Opsi radio: video blur sebagai latar belakang."
+    "message": "Blur",
+    "description": "Opsi radio: mengisi margin di sekitar pemutar dengan blur lembut yang mengikuti video. Videonya sendiri tidak difilter."
   },
   "modeSolid": {
     "message": "Padat",
-    "description": "Opsi radio: warna datar di belakang pemutar."
+    "description": "Opsi radio: mengisi margin di sekitar pemutar dengan warna datar."
   },
   "reloadButton": {
     "message": "Muat ulang",
@@ -27,9 +27,12 @@
     "message": "Memuat ulang...",
     "description": "Teks tombol saat sedang memuat ulang."
   },
-  "modeBlurSub": { "message": "Cahaya ambien beku" },
+  "modeBlurSub": {
+    "message": "Blur lembut yang mengikuti video",
+    "description": "Subjudul mode blur, di bawah nama mode."
+  },
   "modeSolidSub": {
-    "message": "Warna pilihan Anda",
+    "message": "Isi dengan warna pilihan Anda",
     "description": "Subjudul mode padat, di bawah nama mode."
   },
   "previewLabel": { "message": "Pratinjau" },
@@ -46,8 +49,8 @@
     "description": "Satuan di samping angka kekuatan blur."
   },
   "solidColorLabel": {
-    "message": "Warna latar",
-    "description": "Label kontrol warna mode padat. Hanya tampil saat mode padat dipilih."
+    "message": "Warna margin",
+    "description": "Label kontrol warna mode padat (warna margin di sekitar pemutar). Hanya tampil saat mode padat dipilih."
   },
   "solidColorCustomLabel": {
     "message": "Warna kustom",
@@ -74,15 +77,15 @@
   "popupPhrase2": { "message": "Kaburkan kebisingan, jaga kesenangan" },
   "popupPhrase3": { "message": "Tepi lembut, pikiran jernih" },
   "popupPhrase4": { "message": "YouTube, tapi lebih nyaman" },
-  "popupPhrase5": { "message": "Suasana ambien, sesuai keinginan" },
-  "popupPhrase6": { "message": "Latar belakang, diperindah" },
+  "popupPhrase5": { "message": "Tak ada lagi margin kosong" },
+  "popupPhrase6": { "message": "Margin kosong, terisi dengan indah" },
   "popupPhrase7": { "message": "Kenyamanan visual Anda, ditingkatkan" },
   "reviewNudgeTitle": {
     "message": "Sudah nyaman dengan youtublur?",
     "description": "Judul permintaan ulasan opsional yang ditampilkan setelah sekitar seminggu pemakaian."
   },
   "reviewNudgeBody": {
-    "message": "Jika latar belakang pemutar yang lebih lembut ini berguna, boleh tinggalkan ulasan jujur? Ini membantu orang lain menemukan ekstensi ini. Berapa pun rating yang sesuai pengalaman Anda, kami terima kasih.",
+    "message": "Jika pengisian margin di sekitar pemutar ini berguna, boleh tinggalkan ulasan jujur? Ini membantu orang lain menemukan ekstensi ini. Berapa pun rating yang sesuai pengalaman Anda, kami terima kasih.",
     "description": "Teks permintaan ulasan opsional."
   },
   "reviewNudgeLeaveReview": {
@@ -102,12 +105,12 @@
     "description": "Heading on the welcome page opened once after a fresh install."
   },
   "welcomeTheaterHint": {
-    "message": "Efeknya terlihat di mode teater. Di video YouTube, tekan tombol t (atau tombol mode teater) untuk melihat latar lembut di sekitar pemutar.",
-    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+    "message": "Efeknya mengisi margin di sekitar pemutar, yang paling mudah terlihat di mode teater. Di video YouTube, tekan tombol t (atau tombol mode teater) untuk melihat margin dengan blur atau warna solid.",
+    "description": "Halaman sambutan: efek mengisi margin di sekitar pemutar dan paling mudah terlihat di mode teater (tombol t di YouTube)."
   },
   "welcomePopupHint": {
-    "message": "Klik ikon youtublur di toolbar untuk beralih antara blur dan warna solid.",
-    "description": "Welcome page: where to switch between blur and solid."
+    "message": "Klik ikon youtublur di toolbar untuk memilih cara margin diisi: blur atau warna solid.",
+    "description": "Halaman sambutan: tempat mengubah cara margin diisi (blur atau solid)."
   },
   "welcomeClose": {
     "message": "Mengerti",
@@ -146,7 +149,7 @@
     "description": "Deskripsi perintah khusus _execute_action. Membuka popup toolbar. Tombol yang disarankan adalah Alt+Shift+U."
   },
   "commandReloadEffect": {
-    "message": "Muat ulang latar pemutar",
-    "description": "Deskripsi perintah muat ulang. Menerapkan kembali latar pemutar. Tidak ada tombol yang disarankan."
+    "message": "Muat ulang isi margin",
+    "description": "Deskripsi perintah muat ulang. Menerapkan kembali isi margin di sekitar pemutar. Tidak ada tombol yang disarankan."
   }
 }

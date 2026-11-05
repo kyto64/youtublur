@@ -8,16 +8,16 @@
     "description": "Chrome Web Store 和擴充套件詳情中的簡短描述。"
   },
   "popupHeading": {
-    "message": "播放器背景",
-    "description": "工具列彈出視窗中的標題。"
+    "message": "播放器周圍的空白",
+    "description": "工具列彈出視窗中的標題。此效果會填補 YouTube 播放器周圍的空白。"
   },
   "modeBlur": {
-    "message": "模糊（影片）",
-    "description": "單選選項：將影片模糊後作為背景顯示。"
+    "message": "模糊",
+    "description": "單選選項：用跟隨影片色彩的柔和模糊填補播放器周圍的空白。不會對影片本身套用濾鏡。"
   },
   "modeSolid": {
     "message": "純色",
-    "description": "單選：在播放器後面鋪一層純色。"
+    "description": "單選：用純色填補播放器周圍的空白。"
   },
   "reloadButton": {
     "message": "重新載入",
@@ -27,9 +27,12 @@
     "message": "重新載入中...",
     "description": "重新載入進行中的按鈕文字。"
   },
-  "modeBlurSub": { "message": "磨砂氛圍光暈" },
+  "modeBlurSub": {
+    "message": "跟隨影片色彩的柔和模糊",
+    "description": "模糊模式的副標題，顯示在模式名稱下方。"
+  },
   "modeSolidSub": {
-    "message": "用所選顏色填滿",
+    "message": "用所選顏色填滿空白",
     "description": "純色模式的副標題，顯示在模式名稱下方。"
   },
   "previewLabel": { "message": "預覽" },
@@ -46,8 +49,8 @@
     "description": "顯示在模糊強度數字旁邊的單位。"
   },
   "solidColorLabel": {
-    "message": "背景顏色",
-    "description": "純色模式的顏色控制項標籤。只在純色模式顯示。"
+    "message": "空白顏色",
+    "description": "純色模式的顏色控制項標籤（播放器周圍空白的顏色）。只在純色模式顯示。"
   },
   "solidColorCustomLabel": {
     "message": "自訂顏色",
@@ -74,15 +77,15 @@
   "popupPhrase2": { "message": "模糊雜訊，留住愉悅" },
   "popupPhrase3": { "message": "柔和邊界，清晰專注" },
   "popupPhrase4": { "message": "讓 YouTube 更溫馨" },
-  "popupPhrase5": { "message": "氛圍感背景，隨時享用" },
-  "popupPhrase6": { "message": "背景，更美好" },
+  "popupPhrase5": { "message": "讓周圍的空白融入畫面" },
+  "popupPhrase6": { "message": "讓空白更美好" },
   "popupPhrase7": { "message": "視覺舒適，全面升級" },
   "reviewNudgeTitle": {
     "message": "youtublur 用得還順手嗎？",
     "description": "使用約一週後顯示的可選評價提示標題。"
   },
   "reviewNudgeBody": {
-    "message": "如果更柔和的播放器背景對你有幫助，願意留一則真實評價嗎？這能幫助其他人發現這款擴充功能。評分多少都可以，依你的真實體驗即可。",
+    "message": "如果填補播放器周圍的空白對你有幫助，願意留一則真實評價嗎？這能幫助其他人發現這款擴充功能。評分多少都可以，依你的真實體驗即可。",
     "description": "可選評價提示的正文。"
   },
   "reviewNudgeLeaveReview": {
@@ -102,12 +105,12 @@
     "description": "Heading on the welcome page opened once after a fresh install."
   },
   "welcomeTheaterHint": {
-    "message": "效果會在劇院模式中顯示。在 YouTube 影片頁面按下 t 鍵（或點選劇院模式按鈕），即可看到播放器周圍的柔和背景。",
-    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+    "message": "效果會出現在播放器周圍的空白處，在劇院模式中最容易看到。在 YouTube 影片頁面按下 t 鍵（或點選劇院模式按鈕），即可看到以模糊或純色填補的空白。",
+    "description": "歡迎頁：效果出現在播放器周圍的空白處，在劇院模式（YouTube 的 t 鍵）中最容易看到。"
   },
   "welcomePopupHint": {
-    "message": "點選工具列中的 youtublur 圖示，即可在模糊與純色之間切換。",
-    "description": "Welcome page: where to switch between blur and solid."
+    "message": "點選工具列中的 youtublur 圖示，即可切換空白的填補方式：模糊或純色。",
+    "description": "歡迎頁：切換空白填補方式（模糊/純色）的位置說明。"
   },
   "welcomeClose": {
     "message": "知道了",
@@ -146,7 +149,7 @@
     "description": "保留指令 _execute_action 的說明。開啟工具列彈出視窗。建議快速鍵是 Alt+Shift+U。"
   },
   "commandReloadEffect": {
-    "message": "重新套用播放器背景",
-    "description": "重新套用播放器背景的指令說明。不設定建議快速鍵。"
+    "message": "重新套用空白填補",
+    "description": "重新套用播放器周圍空白填補的指令說明。不設定建議快速鍵。"
   }
 }
