@@ -212,7 +212,7 @@ pnpm typecheck
 ### E2Eテスト
 
 ```bash
-# E2Eテストの実行
+# E2Eテストの実行（project 指定なしは fixture と @live の全部。fixture だけなら --project=chromium、実 youtube.com の @live は --project=chromium-live）
 pnpm run test:e2e
 ```
 

@@ -20,18 +20,39 @@ module.exports = defineConfig({
     trace: 'on-first-retry',
   },
   projects: [
+    // chromium / firefox は PR の required checks 用。ローカルの YouTube 風 fixture
+    // （e2e/youtube-fixture.js）だけに当たり、実 youtube.com に当てる @live テストは除外する。
     {
       name: 'chromium',
+      grepInvert: /@live/,
       use: {
         ...devices['Desktop Chrome'],
       },
     },
     {
       name: 'firefox',
+      grepInvert: /@live/,
       // Firefox は chrome API モックで content.js を注入するだけで、実拡張を読み込めない。
       // 実拡張が必要なスペックは Firefox では常に skip されるため、fixture でブラウザを
       // 起動する前に testMatch で除外する。Firefox で走らせるスペックを増やすときはここに足す。
-      testMatch: ['**/shorts.spec.js', '**/spa-navigation.spec.js', '**/blur.spec.js'],
+      testMatch: ['**/spa-navigation.spec.js', '**/blur.spec.js'],
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
+    // 実 youtube.com に当てる @live テスト。YouTube 側の変更や遅延で落ちうるため、
+    // CI では e2e.yml の非ブロッキング job（continue-on-error / schedule）でだけ実行する。
+    {
+      name: 'chromium-live',
+      grep: /@live/,
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'firefox-live',
+      grep: /@live/,
+      testMatch: ['**/shorts.spec.js', '**/blur.spec.js'],
       use: {
         ...devices['Desktop Firefox'],
       },

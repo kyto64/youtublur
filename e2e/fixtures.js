@@ -1,6 +1,7 @@
 const { test: base, chromium, firefox } = require('@playwright/test');
 const path = require('path');
 const fs = require('fs');
+const { installYouTubeFixture } = require('./youtube-fixture');
 
 const extensionPath = path.join(__dirname, '..');
 const GECKO_ID = 'youtublur@kyto64.github.io';
@@ -17,7 +18,7 @@ const CONSENT_COOKIE = {
 };
 
 const test = base.extend({
-  context: async ({ browserName }, use) => {
+  context: async ({ browserName }, use, testInfo) => {
     let context;
 
     if (browserName === 'firefox') {
@@ -86,6 +87,12 @@ const test = base.extend({
           `--mute-audio`,
         ],
       });
+    }
+
+    // 既定はローカルの YouTube 風 fixture（e2e/youtube-fixture.js）に差し替える。
+    // 実 youtube.com に当てるテストだけ `@live` タグを付ける（playwright.config.js の *-live project）。
+    if (!testInfo.tags.includes('@live')) {
+      await installYouTubeFixture(context);
     }
 
     await context.addCookies([CONSENT_COOKIE]);

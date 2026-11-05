@@ -83,7 +83,7 @@ async function assertAmbientBandBlurred(youtublurCanvas) {
     .toBe(true);
 }
 
-test('should load extension and apply blur on YouTube', async ({ page, extensionId, context, browserName }) => {
+test('should load extension and apply blur on YouTube', { tag: '@live' }, async ({ page, extensionId, context, browserName }) => {
   // 待ち時間の合計（canvas 検証 15s + 追従 15s + 帯 15s + ポップアップ往復）が既定の 30s を超え得るため、
   // このテストだけ延ばす。CI で workers=2 になり YouTube の描画が遅くなっても、
   // 個々の poll が先にタイムアウトして原因が分かるようにする。
@@ -148,16 +148,45 @@ test('should load extension and apply blur on YouTube', async ({ page, extension
   await expect(reloadedCanvas).toBeHidden({ timeout: 15000 });
 });
 
+// fixture（ローカルの YouTube 風ページ）に対する検証。実 YouTube が無くても PR ごとに
+// canvas の生成・寸法追従・アンビエント帯・SPA 経路を見る。実 YouTube での確認は @live 側。
+test('should apply blur and track the player size on the fixture page', async ({ page, browserName }) => {
+  if (browserName !== 'firefox') {
+    await page.setViewportSize({ width: 2048, height: 1152 });
+  }
+  await page.goto(`https://www.youtube.com/watch?v=${STABLE_WATCH_VIDEO_ID}`);
+  await waitForWatchPlayer(page);
+
+  const youtublurCanvas = youtublurCanvasLocator(page);
+  await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
+  await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
+  await expect(youtublurCanvas).toHaveCSS('z-index', '1');
+
+  if (browserName === 'firefox') return;
+  await assertCanvasTracksContainer(youtublurCanvas);
+
+  await page.waitForFunction(() => {
+    const video = document.querySelector('#movie_player video');
+    return !!video && video.videoWidth > 0 && video.videoHeight > 0;
+  });
+  await page.locator('.ytp-size-button').click();
+  await assertCanvasTracksContainer(youtublurCanvas);
+  await assertAmbientBandBlurred(youtublurCanvas);
+});
+
 // Firefox E2E は chrome API モックを使い、実拡張のポップアップや SPA 遷移経路を検証できない。
 // fixture（ブラウザ起動）の前にスキップされるよう、条件付き skip を describe 先頭に置く。
 test.describe('Chromium only', () => {
   test.skip(({ browserName }) => browserName === 'firefox', 'Firefox E2E uses a chrome API mock instead of a real extension.');
 
-  test('should apply blur after SPA navigation from a non-player page (issue #107)', async ({ page }) => {
-    // 回帰テスト本体。直接 /watch を開く（F5 相当）と不具合が出ないため、
-    // content script を非プレイヤーページで初期化 → SPA 遷移で /watch に入る経路を必ず通す。
-    // 修正前はこの経路で blur canvas が生成されず（タブ切替まで反映されない）、
-    // yt-navigate-finish の購読によりタブ切替なしで生成されることを検証する。
+  /**
+   * 回帰テスト本体（issue #107）。直接 /watch を開く（F5 相当）と不具合が出ないため、
+   * content script を非プレイヤーページで初期化 → SPA 遷移で /watch に入る経路を必ず通す。
+   * 修正前はこの経路で blur canvas が生成されず（タブ切替まで反映されない）、
+   * yt-navigate-finish の購読によりタブ切替なしで生成されることを検証する。
+   * fixture 版は PR ごとに、@live 版は実 YouTube で同じ経路を見る。
+   */
+  async function assertBlurAfterSpaNavigation(page) {
     await page.setViewportSize({ width: 2048, height: 1152 });
     await navigateToWatchViaSpa(page);
 
@@ -166,6 +195,14 @@ test.describe('Chromium only', () => {
     await expect(youtublurCanvas).toBeAttached({ timeout: 15000 });
     await expect(youtublurCanvas).toBeVisible({ timeout: 15000 });
     await assertCanvasTracksContainer(youtublurCanvas);
+  }
+
+  test('should apply blur after SPA navigation from a non-player page on the fixture (issue #107)', async ({ page }) => {
+    await assertBlurAfterSpaNavigation(page);
+  });
+
+  test('should apply blur after SPA navigation from a non-player page (issue #107)', { tag: '@live' }, async ({ page }) => {
+    await assertBlurAfterSpaNavigation(page);
   });
 
   test('should keep blur visible when extension popup is opened in a tab (Chromium)', async ({

@@ -5,6 +5,10 @@ on:
     branches:
       - master
   pull_request:
+  # 実 youtube.com に当てる @live テストを、PR と無関係に毎日回して YouTube 側の変更を検知する。
+  schedule:
+    - cron: '0 19 * * *'
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -14,7 +18,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # required checks（test-e2e (chromium) / test-e2e (firefox)）。ローカルの YouTube 風 fixture
+  # （e2e/youtube-fixture.js）だけに当たり、実 youtube.com には出ない。@live は除外される。
   test-e2e:
+    if: github.event_name != 'schedule'
     timeout-minutes: 15
     runs-on: ubuntu-latest
     permissions:
@@ -66,6 +73,62 @@ jobs:
         if: always()
         with:
           name: playwright-report-${{ matrix.browser }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  # 実 youtube.com に当てる @live テスト。YouTube 側の変更・遅延・ボット判定で落ちうるので
+  # 非ブロッキング（continue-on-error）。required checks には含めない。
+  # 失敗は schedule / workflow_dispatch の実行や artifact で気づく。
+  test-e2e-live:
+    continue-on-error: true
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox]
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.1.0
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version: '22'
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        timeout-minutes: 5
+        run: |
+          flags=""
+          if [ "${{ matrix.browser }}" = "chromium" ]; then flags="--no-shell"; fi
+          for attempt in 1 2 3; do
+            if timeout 90 npx playwright install --with-deps $flags ${{ matrix.browser }}; then
+              exit 0
+            fi
+            echo "playwright install failed (attempt ${attempt}/3)"
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      - name: Run Playwright tests (@live)
+        run: pnpm run test:e2e --project=${{ matrix.browser }}-live
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: playwright-report-live-${{ matrix.browser }}
           path: |
             playwright-report/
             test-results/

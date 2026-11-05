@@ -76,12 +76,7 @@ test('solid color is chosen from the keyboard and applied without reload', async
   await popup3.close();
 });
 
-test('saved solid color is applied after SPA navigation from a non-player page', async ({
-  page,
-  context,
-  extensionId,
-  browserName,
-}) => {
+async function assertSavedSolidColorAfterSpaNavigation({ page, context, extensionId, browserName }) {
   test.skip(
     browserName === 'firefox',
     'Firefox E2E uses a chrome API mock; the real popup and storage are not available.'
@@ -110,4 +105,12 @@ test('saved solid color is applied after SPA navigation from a non-player page',
   const player = page.locator('#movie_player, .html5-video-player').first();
   await expect(player).toHaveAttribute('data-yt-solid-color', '#000000', { timeout: 15000 });
   await expect(player).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+}
+
+test('saved solid color is applied after SPA navigation from a non-player page (fixture)', async ({ page, context, extensionId, browserName }) => {
+  await assertSavedSolidColorAfterSpaNavigation({ page, context, extensionId, browserName });
+});
+
+test('saved solid color is applied after SPA navigation from a non-player page', { tag: '@live' }, async ({ page, context, extensionId, browserName }) => {
+  await assertSavedSolidColorAfterSpaNavigation({ page, context, extensionId, browserName });
 });

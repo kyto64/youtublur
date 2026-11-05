@@ -133,6 +133,21 @@ const mockChrome = {
 
 単色の色は `solid-color.test.js` と `e2e/solid-color.spec.js`。未設定ではテーマ色のまま、選んだ `#rrggbb` はリロードなしで `#movie_player` の `data-yt-solid-color` に届き、テーマ属性を変えても維持される。ポップアップでは単色のときだけプリセットにフォーカスが当たり、矢印キーで移動する。保存済みの単色は、検索結果で content script を初期化したあと `navigateToWatchViaSpa` で `/watch` に入っても塗られる（直接 `/watch` を開く経路とは別）。
 
+### fixture と `@live`（実 youtube.com に当てるテストは少数だけ）
+
+E2E の大半は、実 youtube.com ではなくローカルの YouTube 風 fixture（[`e2e/youtube-fixture.js`](../e2e/youtube-fixture.js)）に対して走る。実 YouTube は描画待ちが長く、`#ytd-player` 待ちの TimeoutError で flake し、CI の chromium ジョブでは Playwright 実行が約 271 秒かかっていた（fixture 化後は約 45 秒）。
+
+- 拡張の `content_scripts` は `*://*.youtube.com/*` にしか一致しないため、`file://` ではなく **youtube.com の URL のまま** `context.route` で配信する。`e2e/fixtures.js` の `context` fixture が、`@live` タグが無いテストにだけ自動で入れる。youtube.com 以外のホストへの要求は abort し、実ネットワークには出ない。
+- fixture が再現するもの: `/watch` の `ytd-player#ytd-player > #movie_player.html5-video-player > video` と `.ytp-size-button`（クリックでシアター相当のレイアウトにしてアンビエント帯を作る）。video は `canvas.captureStream()` の本物のフレームで `videoWidth/Height` を持つ。`/` と `/results` は `ytd-video-renderer` の一覧（プレイヤー無し）で、リンクのクリックは `pushState` + `yt-navigate-finish` の SPA 遷移になる（プレイヤー DOM はイベントの少し後に出る。issue #107 の経路）。Shorts は再現しない。
+- 実 YouTube に当てるテストには `{ tag: '@live' }` を付ける。現在の `@live`: `blur.spec.js` のメインスモーク、同 issue #107 の SPA 経路（`navigateToWatchViaSpa`）、`shorts.spec.js`、`solid-color.spec.js` の SPA 経路。#107 と solid-color の SPA 経路は fixture 版（タイトル末尾に `fixture` / `(fixture)`）も同じ関数で走らせる。
+- project: `chromium` / `firefox` は `@live` を除外し fixture だけに当たる（PR の required checks `test-e2e (chromium)` / `test-e2e (firefox)`）。`chromium-live` / `firefox-live` は `@live` だけを実 YouTube に当てる。CI では `e2e.yml` の `test-e2e-live` ジョブ（`continue-on-error`。required checks に含めない。毎日 UTC 19:00 の `schedule` と `workflow_dispatch` でも走る）で実行する。
+- fixture で足りなくなったら（YouTube の DOM に追従するなど）`youtube-fixture.js` を直す。新しいテストは既定で fixture 側に置き、実 YouTube でしか確かめられないものだけ `@live` にする。
+
+```bash
+pnpm run test:e2e --project=chromium        # fixture（PR の required と同じ）
+pnpm run test:e2e --project=chromium-live   # 実 youtube.com（@live）
+```
+
 ### テストフレームワーク
 
 - **Playwright**: クロスブラウザのE2Eテスト
@@ -221,7 +236,7 @@ E2E を素通りした事例があるため、以下の前提と手順で検証�
    外部 resize イベントなしでループがサイズ不一致を自己修復することを検証する
    （`syncBlurCanvasSize` / 「blur loop self-heals canvas size ...」テスト）。
 
-2. **E2E**（`e2e/blur.spec.js`）— 実 YouTube 上で検証。
+2. **E2E**（`e2e/blur.spec.js`）— PR ごとに fixture 上で、実 YouTube 上の同じ検証は `@live`（非ブロッキング）で行う。
    - `assertCanvasTracksContainer()`: **無操作の初回ロード**で canvas がプレイヤー寸法に追従しているか
      （issue #107 の回帰ガード。ユーザー操作に依存しない）。
    - `assertAmbientBandBlurred()`: シアター切替で帯を発生させた後、帯のブラー描画と中央クリアを検証。
@@ -541,7 +556,7 @@ open coverage/index.html
 
 ## E2E の並列数と Firefox の対象スペック
 
-- CI の Playwright は `workers: 2`（`playwright.config.js`）。`fullyParallel` のため、YouTube の描画待ちが長いテストでは負荷で不安定になり得る。不安定化したら `test.setTimeout` や待ち条件を見直し、それでも直らなければ `workers` を 1 に戻す。
-- Firefox プロジェクトは chrome API モックで `content.js` を注入するだけで実拡張を読めないため、`testMatch` で `shorts.spec.js` / `spa-navigation.spec.js` / `blur.spec.js` に絞っている（それ以外は常に skip になるので、ブラウザ起動前に除外する）。`blur.spec.js` の実拡張が必要なテストは `describe` 先頭の `test.skip(({ browserName }) => ...)` でブラウザ起動前に skip する。Firefox で走らせるスペックを増やすときは `testMatch` に足す。
+- CI の Playwright は `workers: 2`（`playwright.config.js`）。`fullyParallel` のため、`@live` のように実 YouTube の描画待ちが長いテストでは負荷で不安定になり得る（fixture のテストは待ちが短い）。不安定化したら `test.setTimeout` や待ち条件を見直し、それでも直らなければ `workers` を 1 に戻す。
+- Firefox プロジェクトは chrome API モックで `content.js` を注入するだけで実拡張を読めないため、`testMatch` で `spa-navigation.spec.js` / `blur.spec.js` に絞っている（それ以外は常に skip になるので、ブラウザ起動前に除外する）。`firefox-live` は `shorts.spec.js` / `blur.spec.js` の `@live` だけを実 YouTube に当てる。`blur.spec.js` の実拡張が必要なテストは `describe` 先頭の `test.skip(({ browserName }) => ...)` でブラウザ起動前に skip する。Firefox で走らせるスペックを増やすときは `testMatch` に足す。
 - E2E ジョブの上限は `timeout-minutes: 15`。CI では `playwright.config.js` の `globalTimeout`（8 分）が先に効き、reporter は `list`（テストごとの結果をログへ即出力）と `html`。失敗時は `playwright-report/` と `test-results/` を artifact に上げる。
-- E2E ワークフローは Playwright ブラウザのインストールに `timeout-minutes: 5` と最大 3 回のリトライを付け、chromium は `--no-shell`（`--headless=new` でフル Chrome を使うため）。`e2e` / `test` / `lint` ワークフローには `concurrency`（PR のときだけ古い実行をキャンセル）を設定している。
+- E2E ワークフローは Playwright ブラウザのインストールに（`test-e2e` と `test-e2e-live` の両方で） `timeout-minutes: 5` と最大 3 回のリトライを付け、chromium は `--no-shell`（`--headless=new` でフル Chrome を使うため）。`e2e` / `test` / `lint` ワークフローには `concurrency`（PR のときだけ古い実行をキャンセル）を設定している。
