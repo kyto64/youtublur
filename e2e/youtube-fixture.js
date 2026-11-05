@@ -135,7 +135,7 @@ async function installYouTubeFixture(context) {
     async (route) => {
       const request = route.request();
       const host = new URL(request.url()).hostname;
-      if (!host.endsWith('youtube.com')) {
+      if (host !== 'youtube.com' && !host.endsWith('.youtube.com')) {
         await route.abort();
         return;
       }
