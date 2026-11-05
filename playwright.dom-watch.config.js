@@ -9,11 +9,14 @@ const { defineConfig, devices } = require('@playwright/test');
  * - 拡張はロードしない（DOM の構造だけを見る）。workers は増やさない（1 本ずつ直列）。
  * - リトライ（同意ダイアログ・広告・遅いロード）はテスト内の attempt ループで吸収する。
  *   test 自体の retries は 0 にして、失敗の理由がログに 1 回だけ出るようにする。
+ * - リトライ全体は時間予算（check.js の RETRY_BUDGET_MS = 100 秒。各待機は残り予算でクランプ）で、
+ *   SPA 遷移の待機（最大約 90 秒）と合わせても test の timeout（4 分）に収まる。
+ *   それでも時間切れになったときは afterEach が代わりのレポートを残す（レポート欠落で issue が作られないのを防ぐ）。
  */
 module.exports = defineConfig({
   testDir: './e2e/dom-watch',
   testMatch: '**/*.check.js',
-  timeout: 3 * 60 * 1000,
+  timeout: 4 * 60 * 1000,
   globalTimeout: 12 * 60 * 1000,
   expect: { timeout: 10_000 },
   fullyParallel: false,

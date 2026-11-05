@@ -27,6 +27,13 @@ const RESULTS_DIR = path.join(__dirname, '..', '..', 'dom-watch-results');
 const REPORT_DIR = path.join(RESULTS_DIR, 'report');
 const MAX_ATTEMPTS = 3;
 const READY_TIMEOUT_MS = 25_000;
+const NAV_TIMEOUT_MS = 45_000;
+// リトライ全体の時間予算。テスト全体の上限（playwright.dom-watch.config.js の timeout = 4 分）に収める。
+// 各待機は残り予算でクランプするので、attempt を重ねても予算＋評価の数秒を超えない。
+// これで writeReport まで必ず到達し、時間切れで「レポート欠落 → issue が作られない」を防ぐ。
+const RETRY_BUDGET_MS = 100_000;
+// 同意ダイアログを閉じる 1 回あたりの待機上限（click と読み込み待ち）。
+const CONSENT_STEP_TIMEOUT_MS = 5000;
 
 // 同意ダイアログ（EU など）を出にくくする Cookie。出てしまった場合は dismissConsent が押す。
 const COOKIES = [
@@ -34,9 +41,33 @@ const COOKIES = [
   { name: 'SOCS', value: 'CAI', domain: '.youtube.com', path: '/' },
 ];
 
+// 書き出し前のテストの情報。タイムアウトで writeReport に届かなかったときに afterEach が代わりのレポートを残す。
+let pending = null;
+
 test.beforeEach(async ({ context }) => {
   await context.addCookies(COOKIES);
+  pending = null;
 });
+
+test.afterEach(async ({ page }, testInfo) => {
+  if (!pending) return;
+  const info = pending;
+  pending = null;
+  // 通常は各テスト末尾の writeReport で pending が null になる。ここに来るのは時間切れなどで届かなかったとき。
+  const blocked = await detectBlocked(page).catch(() => '');
+  const run = {
+    results: [],
+    attempts: 0,
+    error: `テストが完了しなかった（status=${testInfo.status}, ${testInfo.timeout}ms 上限）。レポートを書く前に中断された`,
+    blocked,
+  };
+  const report = buildReport(info.name, info.kind, info.url, info.live, run);
+  await writeReport(page, info.name, report);
+});
+
+function startReport(name, kind, url, live) {
+  pending = { name, kind, url, live };
+}
 
 function ensureDirs() {
   fs.mkdirSync(REPORT_DIR, { recursive: true });
@@ -53,8 +84,8 @@ async function dismissConsent(page) {
     const button = page.getByRole('button', { name: buttonName }).first();
     const visible = await button.isVisible().catch(() => false);
     if (!onConsentHost && !visible) return;
-    await button.click({ timeout: 5000 }).catch(() => {});
-    await page.waitForLoadState('domcontentloaded').catch(() => {});
+    await button.click({ timeout: CONSENT_STEP_TIMEOUT_MS }).catch(() => {});
+    await page.waitForLoadState('domcontentloaded', { timeout: CONSENT_STEP_TIMEOUT_MS }).catch(() => {});
   }
 }
 
@@ -69,6 +100,20 @@ async function detectBlocked(page) {
   if (/^https?:\/\/consent\.(youtube|google)\.com\//.test(url)) return `同意ページを閉じられなかった（${url.slice(0, 80)}）`;
   const captcha = await page.locator('#captcha-form').count().catch(() => 0);
   return captcha > 0 ? 'reCAPTCHA フォームが表示された' : '';
+}
+
+/**
+ * 同意ダイアログを閉じたうえでブロック判定し、ブロック中なら run.blocked に反映する
+ * （buildReport は run.blocked があると failures を数えない）。
+ * @param {import('@playwright/test').Page} page
+ * @param {{ blocked: string }} run
+ * @returns {Promise<string>} ブロック理由（無ければ空文字）
+ */
+async function markBlocked(page, run) {
+  await dismissConsent(page).catch(() => {});
+  const blocked = await detectBlocked(page).catch(() => '');
+  if (blocked) run.blocked = blocked;
+  return blocked;
 }
 
 /**
@@ -106,26 +151,33 @@ async function domOutline(page) {
  * @param {{ url: string, kind: 'watch'|'shorts'|'results', readySelector: string, pathPattern?: RegExp, live: boolean }} opts
  */
 async function runContractWithRetry(page, opts) {
+  const deadline = Date.now() + RETRY_BUDGET_MS;
+  // 残り予算でクランプした待機時間（最低 1 秒）。
+  const within = (ms) => Math.max(1000, Math.min(ms, deadline - Date.now()));
   let results = [];
   let error = '';
   let blocked = '';
+  let attempts = 0;
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    // 次の attempt を始める余裕（最低でも ready 待ち分）が残っていなければ、そこで打ち切る。
+    if (attempt > 1 && deadline - Date.now() < READY_TIMEOUT_MS) break;
+    attempts = attempt;
     error = '';
     try {
       if (attempt === 1) {
-        await page.goto(opts.url, { waitUntil: 'domcontentloaded', timeout: 45_000 });
+        await page.goto(opts.url, { waitUntil: 'domcontentloaded', timeout: within(NAV_TIMEOUT_MS) });
       } else {
-        await page.reload({ waitUntil: 'domcontentloaded', timeout: 45_000 });
+        await page.reload({ waitUntil: 'domcontentloaded', timeout: within(NAV_TIMEOUT_MS) });
       }
       await dismissConsent(page);
       blocked = await detectBlocked(page);
       if (blocked) {
         // ブロックされているときは DOM を待っても無駄なので、間を空けて次の attempt へ。
-        await page.waitForTimeout(5000);
+        await page.waitForTimeout(within(5000));
         continue;
       }
       await page
-        .waitForSelector(opts.readySelector, { state: 'attached', timeout: READY_TIMEOUT_MS })
+        .waitForSelector(opts.readySelector, { state: 'attached', timeout: within(READY_TIMEOUT_MS) })
         .catch(() => {});
       // SPA で子孫（video 等）が少し遅れて出ることがあるため、短く待ってから評価する。
       await page.waitForTimeout(1500);
@@ -146,7 +198,7 @@ async function runContractWithRetry(page, opts) {
       error = e instanceof Error ? e.message : String(e);
     }
   }
-  return { results, attempts: MAX_ATTEMPTS, error, blocked };
+  return { results, attempts, error, blocked };
 }
 
 /**
@@ -168,6 +220,7 @@ async function writeReport(page, name, report) {
   }
   report.finalUrl = page.url();
   fs.writeFileSync(path.join(REPORT_DIR, `${name}.json`), JSON.stringify(report, null, 2));
+  pending = null;
 }
 
 function buildReport(name, kind, url, live, run, extraFailures = []) {
@@ -201,6 +254,7 @@ async function failIfNeeded(report) {
 }
 
 test('live: watch page', async ({ page }) => {
+  startReport('live-watch', 'watch', WATCH_URL, true);
   const run = await runContractWithRetry(page, {
     url: WATCH_URL,
     kind: 'watch',
@@ -227,6 +281,7 @@ test('live: watch page', async ({ page }) => {
 });
 
 test('live: shorts page', async ({ page }) => {
+  startReport('live-shorts', 'shorts', SHORTS_URL, true);
   const run = await runContractWithRetry(page, {
     url: SHORTS_URL,
     kind: 'shorts',
@@ -240,6 +295,7 @@ test('live: shorts page', async ({ page }) => {
 });
 
 test('live: SPA navigation (results -> watch)', async ({ page }) => {
+  startReport('live-spa', 'results', RESULTS_URL, true);
   const run = await runContractWithRetry(page, {
     url: RESULTS_URL,
     kind: 'results',
@@ -248,7 +304,7 @@ test('live: SPA navigation (results -> watch)', async ({ page }) => {
   });
   const extra = [];
   let spaReport = null;
-  if (requiredFailures(run.results).length === 0 && !run.error) {
+  if (requiredFailures(run.results).length === 0 && !run.error && !run.blocked) {
     // 拡張は yt-navigate-finish を購読して SPA 遷移後に observePlayer を再評価する（issue #107）。
     // 実 YouTube でこのイベントが発火し、その後 watch の契約が満たされることを確かめる。
     await page.evaluate(() => {
@@ -263,6 +319,8 @@ test('live: SPA navigation (results -> watch)', async ({ page }) => {
         .first();
       await link.click({ timeout: 20_000 });
       await page.waitForFunction(() => location.pathname === '/watch', null, { timeout: 30_000 });
+      // 遷移先が bot 判定や同意ページでないか（/watch のパスでも captcha が出ることがある）。
+      if (await markBlocked(page, run)) throw new Error(run.blocked);
       const fired = await page
         .waitForFunction(() => window.__ytNavFinishCount > 0, null, { timeout: 15_000 })
         .then(() => true)
@@ -279,9 +337,12 @@ test('live: SPA navigation (results -> watch)', async ({ page }) => {
       }
       await page.waitForSelector('#movie_player', { state: 'attached', timeout: READY_TIMEOUT_MS }).catch(() => {});
       await page.waitForTimeout(1500);
+      if (await markBlocked(page, run)) throw new Error(run.blocked);
       spaReport = await evaluateContract(page, 'watch', { fixture: false });
       extra.push(...requiredFailures(spaReport));
     } catch (e) {
+      // クリック後に google.com/sorry や同意ページへ飛ばされた場合は、DOM 障害ではなく環境ブロックとして報告する。
+      await markBlocked(page, run);
       extra.push({
         type: 'selector',
         target: 'SPA navigation (click -> /watch)',
@@ -305,6 +366,7 @@ for (const [kind, url, ready] of [
   ['results', RESULTS_URL, 'ytd-video-renderer'],
 ]) {
   test(`fixture: ${kind} page satisfies the contract`, async ({ page, context }) => {
+    startReport(`fixture-${kind}`, kind, url, false);
     await installYouTubeFixture(context);
     const run = await runContractWithRetry(page, { url, kind, readySelector: ready, live: false });
     const report = buildReport(`fixture-${kind}`, kind, url, false, run);
