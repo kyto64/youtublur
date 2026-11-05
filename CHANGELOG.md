@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.12.41](https://github.com/kyto64/youtublur/compare/v1.12.40...v1.12.41) (2026-11-05)
+
+### Bug Fixes
+
+* ストア表記とFirefoxのdata_collection_permissionsをアンケートの実挙動に合わせる ([#236](https://github.com/kyto64/youtublur/issues/236)) ([0f03ed9](https://github.com/kyto64/youtublur/commit/0f03ed95c67496ca9025941808d0256b5572ee53))
+
 ## [1.12.40](https://github.com/kyto64/youtublur/compare/v1.12.39...v1.12.40) (2026-11-04)
 
 ### Features
