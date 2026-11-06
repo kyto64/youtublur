@@ -8,16 +8,16 @@
     "description": "Descripción corta para Chrome Web Store y detalles de la extensión."
   },
   "popupHeading": {
-    "message": "Fondo del reproductor",
-    "description": "Encabezado en el pop-up de la barra de herramientas."
+    "message": "Márgenes del reproductor",
+    "description": "Encabezado en el pop-up de la barra de herramientas. El efecto rellena los márgenes vacíos alrededor del reproductor de YouTube."
   },
   "modeBlur": {
-    "message": "Borroso (video)",
-    "description": "Opción de radio: video borroso como fondo."
+    "message": "Desenfoque",
+    "description": "Opción de radio: rellena los márgenes alrededor del reproductor con un desenfoque suave que sigue el vídeo. El vídeo en sí no se filtra."
   },
   "modeSolid": {
     "message": "Sólido",
-    "description": "Opción de radio: color plano detrás del reproductor."
+    "description": "Opción de radio: rellena los márgenes alrededor del reproductor con un color plano."
   },
   "reloadButton": {
     "message": "Recargar",
@@ -27,9 +27,12 @@
     "message": "Recargando...",
     "description": "Texto del botón mientras se recarga."
   },
-  "modeBlurSub": { "message": "Resplandor ambiental helado" },
+  "modeBlurSub": {
+    "message": "Desenfoque suave que sigue el vídeo",
+    "description": "Subtítulo del modo desenfoque, debajo del nombre del modo."
+  },
   "modeSolidSub": {
-    "message": "Un color a tu elección",
+    "message": "Rellena con un color a tu elección",
     "description": "Subtítulo del modo sólido, debajo del nombre del modo."
   },
   "previewLabel": { "message": "Vista previa" },
@@ -46,8 +49,8 @@
     "description": "Unidad que aparece junto al número de intensidad."
   },
   "solidColorLabel": {
-    "message": "Color de fondo",
-    "description": "Etiqueta de los controles de color del modo sólido. Solo se muestra en ese modo."
+    "message": "Color de los márgenes",
+    "description": "Etiqueta de los controles de color del modo sólido (el color de los márgenes alrededor del reproductor). Solo se muestra en ese modo."
   },
   "solidColorCustomLabel": {
     "message": "Color personalizado",
@@ -74,15 +77,15 @@
   "popupPhrase2": { "message": "Difumina el ruido, conserva la alegría" },
   "popupPhrase3": { "message": "Bordes suaves, mente clara" },
   "popupPhrase4": { "message": "YouTube, pero más acogedor" },
-  "popupPhrase5": { "message": "Ambientes vibrantes, a demanda" },
-  "popupPhrase6": { "message": "Fondo, embellecido" },
+  "popupPhrase5": { "message": "Adiós a los márgenes vacíos" },
+  "popupPhrase6": { "message": "Márgenes bien rellenados" },
   "popupPhrase7": { "message": "Tu comodidad visual, mejorada" },
   "reviewNudgeTitle": {
     "message": "¿Te estás acostumbrando a youtublur?",
     "description": "Título del aviso opcional de reseña que aparece tras aproximadamente una semana de uso."
   },
   "reviewNudgeBody": {
-    "message": "Si el fondo más suave del reproductor te ha resultado útil, ¿podrías dejar una reseña sincera? Ayuda a otras personas a encontrar la extensión. Cualquier valoración acorde a tu experiencia es bienvenida.",
+    "message": "Si rellenar los márgenes alrededor del reproductor te ha resultado útil, ¿podrías dejar una reseña sincera? Ayuda a otras personas a encontrar la extensión. Cualquier valoración acorde a tu experiencia es bienvenida.",
     "description": "Texto del aviso opcional de reseña."
   },
   "reviewNudgeLeaveReview": {
@@ -102,12 +105,12 @@
     "description": "Heading on the welcome page opened once after a fresh install."
   },
   "welcomeTheaterHint": {
-    "message": "El efecto se ve en el modo cine. En un video de YouTube, pulsa la tecla t (o el botón de modo cine) para ver el fondo suave alrededor del reproductor.",
-    "description": "Welcome page: the effect is visible in theater mode, toggled with the t key on YouTube."
+    "message": "El efecto rellena los márgenes alrededor del reproductor, que se ven mejor en el modo cine. En un video de YouTube, pulsa la tecla t (o el botón de modo cine) para ver los márgenes con desenfoque o color sólido.",
+    "description": "Página de bienvenida: el efecto rellena los márgenes alrededor del reproductor y se ve mejor en el modo cine (tecla t en YouTube)."
   },
   "welcomePopupHint": {
-    "message": "Haz clic en el icono de youtublur en la barra de herramientas para cambiar entre desenfoque y color sólido.",
-    "description": "Welcome page: where to switch between blur and solid."
+    "message": "Haz clic en el icono de youtublur en la barra de herramientas para elegir cómo se rellenan los márgenes: desenfoque o color sólido.",
+    "description": "Página de bienvenida: dónde cambiar cómo se rellenan los márgenes (desenfoque o sólido)."
   },
   "welcomeClose": {
     "message": "Entendido",
@@ -146,7 +149,7 @@
     "description": "Descripción del comando reservado _execute_action. Abre la ventana emergente. La tecla sugerida es Alt+Shift+U."
   },
   "commandReloadEffect": {
-    "message": "Recargar el fondo del reproductor",
-    "description": "Descripción del comando de recarga. Vuelve a aplicar el fondo del reproductor. No tiene tecla sugerida."
+    "message": "Recargar el relleno de márgenes",
+    "description": "Descripción del comando de recarga. Vuelve a aplicar el relleno de los márgenes alrededor del reproductor. No tiene tecla sugerida."
   }
 }
