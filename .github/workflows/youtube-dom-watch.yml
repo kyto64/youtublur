@@ -1,0 +1,78 @@
+name: YouTube DOM Watch
+
+# 実 youtube.com の DOM が、拡張の依存セレクタ（e2e/dom-watch/youtube-dom-contract.js）と一致するかを
+# 毎日確認する。PR とは無関係（PR の required checks には含めない）。失敗時は issue
+# 「YouTube DOM 変化の疑い」を開く（既に open ならコメントで更新する）。
+# 03:00 JST = 18:00 UTC（日次パッチリリース 15:00 UTC より後、e2e.yml の @live schedule 19:00 UTC より前）。
+on:
+  schedule:
+    - cron: '0 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  dom-watch:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6.1.0
+
+      - name: Setup Vite+
+        uses: voidzero-dev/setup-vp@v1.22.0
+        with:
+          node-version: '22'
+          cache: true
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        timeout-minutes: 5
+        run: |
+          for attempt in 1 2 3; do
+            if timeout 90 npx playwright install --with-deps --no-shell chromium; then
+              exit 0
+            fi
+            echo "playwright install failed (attempt ${attempt}/3)"
+            sleep $((attempt * 5))
+          done
+          exit 1
+
+      # 失敗しても後続の issue 作成まで進めるため continue-on-error。最後のステップで job を落とす。
+      - name: Check live YouTube DOM against the contract
+        id: check
+        continue-on-error: true
+        run: npx playwright test --config=playwright.dom-watch.config.js
+
+      - name: Upload evidence (screenshots, DOM snippets, reports)
+        uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: youtube-dom-watch
+          path: dom-watch-results/
+          retention-days: 14
+          if-no-files-found: warn
+
+      - name: Open or update the issue on failure
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/dom-watch-issue.mjs
+
+      - name: Fail the run when the contract is broken
+        if: steps.check.outcome == 'failure'
+        run: |
+          echo "YouTube DOM contract check failed. See the issue 'YouTube DOM 変化の疑い' and the youtube-dom-watch artifact."
+          exit 1

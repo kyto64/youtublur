@@ -148,6 +148,24 @@ pnpm run test:e2e --project=chromium        # fixture（PR の required と同�
 pnpm run test:e2e --project=chromium-live   # 実 youtube.com（@live）
 ```
 
+### 実 YouTube の DOM 定期チェック（`youtube-dom-watch`）
+
+`@live` の 4 本は「拡張が実 YouTube で動くか」を見るが、DOM 変化そのものを機械的に検知する経路としては薄い。そこで、拡張が依存するセレクタ/構造が実 youtube.com にまだあるかだけを毎日確認する専用 CI を持つ。PR の required checks には含めない。
+
+- **ワークフロー**: [`.github/workflows/youtube-dom-watch.yml`](../.github/workflows/youtube-dom-watch.yml)。毎日 UTC 18:00（= 03:00 JST。日次パッチリリース 15:00 UTC の後、`e2e.yml` の `@live` の 19:00 UTC の前）と `workflow_dispatch`。ローカルでは `pnpm exec playwright test --config=playwright.dom-watch.config.js`（既定の `playwright.config.js` からは `*.check.js` のため拾われず、`pnpm run test:e2e` にも PR の E2E にも影響しない）。拡張はロードせず DOM だけを見る。workers は 1。
+- **単一の正（契約）**: [`e2e/dom-watch/youtube-dom-contract.js`](../e2e/dom-watch/youtube-dom-contract.js)。依存セレクタ（`#movie_player` / `.html5-video-player` / `video` / `ytd-player` / `#ytd-player` / `.ytp-size-button` / `ytd-shorts` / `ytd-video-renderer a#video-title` など）、親子関係、URL 形式、`required` / `optional`（レイアウトで有無が変わる `#player-container` 系）、fixture でも満たすべきか、を 1 か所に持つ。`youtube-dom-contract.test.js`（`pnpm test`）が `src/content.ts` の `querySelector` リテラルと `style.css` のセレクタを抽出して契約と突き合わせるため、コードにセレクタを足して契約を直し忘れると落ちる（手書きの重複リストをドリフトさせない）。拡張が実 YouTube の DOM に新しく依存するときは、契約を足す。
+- **検査内容**（`e2e/dom-watch/youtube-dom-watch.check.js`）: 通常の watch ページ、Shorts（`/shorts/`）、SPA ナビゲーション（検索結果 → クリック → `/watch`。`yt-navigate-finish` が発火し、遷移後に watch の契約を満たすこと）、テーマ指標（`html[dark]` / `--yt-spec-base-background`）。
+- **fixture との比較**: 同じ契約・同じ関数（`e2e/dom-watch/dom-checks.js`）を、ローカル fixture（`/watch` と `/results`）と live の両方に当てる。fixture 側は PR の E2E（`e2e/fixture-contract.spec.js`）でも毎回検査するので、契約に足したのに fixture が追従していない場合は PR 時点で落ちる。live だけ失敗して fixture が通るときは、issue に「fixture が実 YouTube から乖離した可能性」と一致数の比較を出す。`youtube-fixture.js` を直すときは契約も見る。
+- **フレーク吸収**: 各ページ最大 3 回（reload で再試行）。EU の同意ページ/ダイアログは `CONSENT` / `SOCS` Cookie と「Reject all / Accept all」ボタンで閉じる。広告は `#movie_player` 自体の有無を見るので影響しない。video の再生状態は見ない。
+- **blocked（bot 判定）**: `google.com/sorry`（reCAPTCHA）や閉じられない同意ページは YouTube の DOM 変化ではなく実行環境（IP）の問題なので、DOM 変化の issue にはしない。run は赤になり、ログと run のサマリに `[blocked]` が出る（DOM は評価できていない）。遷移前のページだけでなく、SPA 遷移の先（クリック後に `google.com/sorry` や同意ページへ飛ばされた場合）もブロック判定し、環境ブロックとして扱う。リトライ全体は時間予算（100 秒、各待機は残り予算でクランプ）でテスト上限（4 分）に収め、それでも時間切れで `writeReport` に届かなかったときは `afterEach` が `error` 付きの代わりのレポートを残す（レポート欠落で issue が作られないのを防ぐ）。ブロックが続くと監視が止まるので、赤い run が続くときは artifact のスクリーンショットを確認する。
+- **失敗時**: `scripts/dom-watch-issue.mjs` が issue「YouTube DOM 変化の疑い」を開く。同名の open issue があれば新規作成せずコメントで更新する。本文に、失敗したセレクタ/構造・一致数・ページ URL（最終 URL）・fixture の一致数・ワークフロー実行へのリンクを含める。スクリーンショット・DOM スニペット（`tag#id.class` のアウトライン）・レポート JSON は artifact `youtube-dom-watch`（14 日保持）に入る。issue の作成には `issues: write` だけを使い、追加 secret は不要。
+- **AI 判定は延期**: 現状は機械判定（セレクタの有無・親子関係・イベント発火）だけで足りるため、AI 判定や新しい secret / 有料 API は追加していない。DOM は変わっていないが見た目だけ崩れるケースが問題になったら、`pnpm run verify:ai-blur` の証跡採取を定期実行に組み込む形で検討する。
+
+```bash
+pnpm exec playwright test --config=playwright.dom-watch.config.js   # 実 youtube.com + fixture を契約で検査（レポートは dom-watch-results/）
+node scripts/dom-watch-issue.mjs --dry-run                          # issue 本文だけを表示（作成しない）
+```
+
 ### テストフレームワーク
 
 - **Playwright**: クロスブラウザのE2Eテスト
