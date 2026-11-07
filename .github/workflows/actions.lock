@@ -31,7 +31,7 @@ workflows:
         - 'pnpm/action-setup@v6.1.1'
     '.github/workflows/semgrep.yml':
         - 'actions/checkout@v7.0.1'
-        - 'semgrep/semgrep-action@v0.58.0'
+        - 'semgrep/semgrep-action@v1'
     '.github/workflows/test.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
@@ -80,8 +80,8 @@ dependencies:
         commit: 'sha1-73e46992e05b19abd31f2f3c20e0e7370d762115'
         owner_id: 21320719
         repo_id: 262289747
-    'semgrep/semgrep-action@v0.58.0':
-        ref: 'v0.58.0'
+    'semgrep/semgrep-action@v1':
+        ref: 'v1'
         commit: 'sha1-713efdd345f3035192eaa63f56867b88e63e4e5d'
         owner_id: 29760937
         repo_id: 237720648
