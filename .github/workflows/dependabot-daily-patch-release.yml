@@ -81,7 +81,7 @@ jobs:
         run: node scripts/should-patch-release.mjs
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v6.1.0
+        uses: pnpm/action-setup@v6.1.1
 
       - name: Setup Vite+
         if: steps.need.outputs.need_release == 'true'
