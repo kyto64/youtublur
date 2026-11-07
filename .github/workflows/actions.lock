@@ -8,41 +8,41 @@ workflows:
     '.github/workflows/dependabot-daily-patch-release.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/create-github-app-token@v3.3.0'
-        - 'pnpm/action-setup@v6.1.0'
+        - 'pnpm/action-setup@v6.1.1'
         - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/e2e.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
-        - 'pnpm/action-setup@v6.1.0'
+        - 'pnpm/action-setup@v6.1.1'
         - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/lint.yml':
         - 'actions/checkout@v7.0.1'
-        - 'pnpm/action-setup@v6.1.0'
+        - 'pnpm/action-setup@v6.1.1'
         - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/publish.yml':
         - 'actions/checkout@v7.0.1'
         - 'browser-actions/release-firefox-addon@v0.2.1'
-        - 'pnpm/action-setup@v6.1.0'
+        - 'pnpm/action-setup@v6.1.1'
         - 'softprops/action-gh-release@v3.0.3'
         - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/security-audit.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/setup-node@v7.1.0'
-        - 'pnpm/action-setup@v6.1.0'
+        - 'pnpm/action-setup@v6.1.1'
     '.github/workflows/semgrep.yml':
         - 'actions/checkout@v7.0.1'
         - 'semgrep/semgrep-action@v0.58.0'
     '.github/workflows/test.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
-        - 'pnpm/action-setup@v6.1.0'
+        - 'pnpm/action-setup@v6.1.1'
         - 'voidzero-dev/setup-vp@v1.22.0'
     '.github/workflows/verify-actions-lock.yml':
         - 'actions/checkout@v7.0.1'
     '.github/workflows/youtube-dom-watch.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
-        - 'pnpm/action-setup@v6.1.0'
+        - 'pnpm/action-setup@v6.1.1'
         - 'voidzero-dev/setup-vp@v1.22.0'
 dependencies:
     'actions/checkout@v7.0.1':
@@ -75,9 +75,9 @@ dependencies:
         commit: 'sha1-25dd0e34f4fe68f24cc83900b1fe3fe149efef98'
         owner_id: 27347476
         repo_id: 371068214
-    'pnpm/action-setup@v6.1.0':
-        ref: 'v6.1.0'
-        commit: 'sha1-ea17c68df8912ef543352723c149a84f56e3d413'
+    'pnpm/action-setup@v6.1.1':
+        ref: 'v6.1.1'
+        commit: 'sha1-73e46992e05b19abd31f2f3c20e0e7370d762115'
         owner_id: 21320719
         repo_id: 262289747
     'semgrep/semgrep-action@v0.58.0':
